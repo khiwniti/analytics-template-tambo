@@ -16,6 +16,23 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 
+## Artifacts
+
+### tambo-analytics (React + Vite, preview path: `/`)
+
+A Tambo AI analytics template. Ported from Next.js to Vite + React.
+
+- **Home page** (`/`): Setup checklist + link to chat. Source: `artifacts/tambo-analytics/src/pages/home.tsx`
+- **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
+- **AI Components**: Graph (bar/line/pie charts), SelectForm — registered in `src/lib/tambo.ts`
+- **Canvas storage**: Zustand store persisted to localStorage — `src/lib/canvas-storage.ts`
+- **TipTap editor**: Rich text input in `src/components/tambo/text-editor.tsx`
+- **Env var required**: `VITE_TAMBO_API_KEY` — Tambo API key from https://tambo.co/cli-auth
+
+### api-server (Express, preview path: `/api`)
+
+Minimal API server. No custom routes yet (only `/api/healthz`).
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

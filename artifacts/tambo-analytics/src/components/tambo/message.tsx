@@ -19,7 +19,6 @@ import { useTambo } from "@tambo-ai/react";
 import { cva, type VariantProps } from "class-variance-authority";
 import stringify from "json-stringify-pretty-compact";
 import { Check, ChevronDown, ExternalLink, Loader2, X } from "lucide-react";
-import Image from "next/image";
 import * as React from "react";
 import { useState } from "react";
 import { Streamdown } from "streamdown";
@@ -272,13 +271,12 @@ const MessageImages = React.forwardRef<HTMLDivElement, MessageImagesProps>(
             key={index}
             className="w-32 h-32 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
           >
-            <Image
+            <img
               src={imageUrl}
               alt={`Image ${index + 1}`}
               width={128}
               height={128}
               className="w-full h-full object-cover"
-              unoptimized
             />
           </div>
         ))}
