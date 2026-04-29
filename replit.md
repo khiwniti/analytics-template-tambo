@@ -22,8 +22,8 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 A Tambo AI analytics template. Ported from Next.js to Vite + React.
 
-- **Home page** (`/`): Setup checklist + link to chat. Source: `artifacts/tambo-analytics/src/pages/home.tsx`
-- **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
+- **Home page** (`/`): Ikkyu's personal portfolio (khiw.dev design). Dark theme with hero, stats, tech pills, scroll-reveal sections (About, Career, Projects, Domains, Skills, Side Projects). Features an AI chat starter with text input + 6 HR-focused suggestion chips that store the message in sessionStorage and navigate to `/chat`. Source: `artifacts/tambo-analytics/src/pages/home.tsx`
+- **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Auto-submits pending message stored in sessionStorage (from home page suggestion chips). Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
 - **AI Components**: Graph (bar/line/pie charts), SelectForm — registered in `src/lib/tambo.ts`
 - **Canvas storage**: Zustand store persisted to localStorage — `src/lib/canvas-storage.ts`
 - **TipTap editor**: Rich text input in `src/components/tambo/text-editor.tsx`
