@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomePage from "@/pages/home";
 import ChatPage from "@/pages/chat";
+import AdminPage from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -10,6 +11,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/chat" component={ChatPage} />
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );

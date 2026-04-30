@@ -55,6 +55,16 @@ portfolioRouter.get("/portfolio", (_req, res) => {
   }
 });
 
+portfolioRouter.get("/portfolio/auth-check", (req, res) => {
+  const adminToken = process.env.PORTFOLIO_ADMIN_TOKEN;
+  const providedToken = req.headers["x-admin-token"];
+  if (!adminToken || providedToken !== adminToken) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
 portfolioRouter.put("/portfolio", (req, res) => {
   const adminToken = process.env.PORTFOLIO_ADMIN_TOKEN;
   const providedToken = req.headers["x-admin-token"];
