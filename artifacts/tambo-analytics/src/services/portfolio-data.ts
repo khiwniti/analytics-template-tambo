@@ -4,25 +4,10 @@
  * To update portfolio content, edit the JSON file via PUT /api/portfolio
  * or directly edit artifacts/api-server/data/portfolio.json.
  *
- * Cache-coherence guarantee (Task #18 audit):
- *
- *  1. The API server (artifacts/api-server/src/routes/portfolio.ts) uses
- *     fs.readFileSync on every GET /api/portfolio request — there is zero
- *     server-side memoization, so the response is always the live file.
- *
- *  2. This module holds a 60-second in-memory cache (_cached / _cachedAt).
- *     When the admin page calls PUT /api/portfolio successfully it immediately
- *     calls clearPortfolioCache(), setting _cached = null / _cachedAt = 0.
- *     The next call to getPortfolioData() (from any consumer: home page,
- *     AI context builder, tools) skips the cache and fetches fresh data.
- *
- *  3. The AI chat context is built by getSystemResource() in chat.tsx, which
- *     calls `await buildPortfolioContextText()` → getPortfolioData() → fresh
- *     API fetch after cache is cleared. This means the AI's portfolio context
- *     is updated on the very next conversation turn after an admin save.
- *
- *  Result: admin save → clearPortfolioCache() → next AI turn → fresh context.
- *  No additional cache-busting code is required.
+ * After any successful PUT /api/portfolio, callers must invoke
+ * clearPortfolioCache() so the next getPortfolioData() (and therefore
+ * buildPortfolioContextText) fetches fresh data rather than serving stale
+ * cache. The API server itself holds no server-side cache.
  */
 
 const API_BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
