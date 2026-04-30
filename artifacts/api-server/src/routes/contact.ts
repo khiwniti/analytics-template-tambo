@@ -1,15 +1,16 @@
-import { Router } from "express";
+import { Router, type IRouter } from "express";
 import { db, contactsTable, insertContactSchema } from "@workspace/db";
 
-const contactRouter = Router();
+const router: IRouter = Router();
 
-contactRouter.post("/contact", async (req, res) => {
+router.post("/contact", async (req, res) => {
   const parsed = insertContactSchema.safeParse(req.body);
 
   if (!parsed.success) {
-    const errors = parsed.error.issues.map((e: { message: string }) => e.message).join(", ");
-    res.status(400).json({ error: errors });
-    return;
+    return res.status(400).json({
+      error: "Invalid submission",
+      details: parsed.error.flatten().fieldErrors,
+    });
   }
 
   const ip =
@@ -18,15 +19,17 @@ contactRouter.post("/contact", async (req, res) => {
     null;
 
   try {
-    const [contact] = await db
+    await db
       .insert(contactsTable)
-      .values({ ...parsed.data, ipAddress: ip ?? undefined })
-      .returning({ id: contactsTable.id, createdAt: contactsTable.createdAt });
+      .values({ ...parsed.data, ipAddress: ip ?? undefined });
 
-    res.status(201).json({ success: true, id: contact.id, createdAt: contact.createdAt });
-  } catch {
-    res.status(500).json({ error: "Failed to save your message. Please try again." });
+    return res.json({ success: true, message: "Message sent successfully!" });
+  } catch (err) {
+    console.error("Contact submission error:", err);
+    return res
+      .status(500)
+      .json({ error: "Failed to save your message. Please try again." });
   }
 });
 
-export default contactRouter;
+export default router;

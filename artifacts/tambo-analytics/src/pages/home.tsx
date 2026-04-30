@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 
 const C = {
@@ -169,114 +169,100 @@ function ChatStarter() {
   );
 }
 
-type FormState = "idle" | "loading" | "success" | "error";
+type ContactFormState = { name: string; email: string; company: string; role: string; message: string };
+type SubmitStatus = "idle" | "loading" | "success" | "error";
 
-function ContactForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<FormState>("idle");
+function ContactSection() {
+  const [form, setForm] = useState<ContactFormState>({ name: "", email: "", company: "", role: "", message: "" });
+  const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [focused, setFocused] = useState<string | null>(null);
 
-  async function handleSubmit(e: FormEvent) {
+  const set = useCallback((field: keyof ContactFormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm(f => ({ ...f, [field]: e.target.value }));
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name || !form.email || !form.message) return;
     setStatus("loading");
     setErrorMsg("");
     try {
-      const res = await fetch("/api/contact", {
+      const base = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+      const res = await fetch(`${base}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), message: message.trim() }),
+        body: JSON.stringify(form),
       });
-      const data = await res.json() as { error?: string };
-      if (!res.ok) {
-        setErrorMsg(data.error ?? "Something went wrong. Please try again.");
+      const data = await res.json() as { success?: boolean; error?: string };
+      if (res.ok && data.success) {
+        setStatus("success");
+        setForm({ name: "", email: "", company: "", role: "", message: "" });
+      } else {
         setStatus("error");
-        return;
+        setErrorMsg(data.error ?? "Something went wrong. Please try again.");
       }
-      setStatus("success");
-      setName(""); setEmail(""); setMessage("");
     } catch {
-      setErrorMsg("Network error. Please check your connection.");
       setStatus("error");
+      setErrorMsg("Network error. Please check your connection.");
     }
-  }
-
-  const inputStyle = {
-    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
-    borderRadius: 8, padding: "10px 14px", color: C.textBright,
-    fontFamily: F.sans, fontSize: 13, outline: "none",
-    transition: "border-color 0.2s", boxSizing: "border-box" as const,
   };
+
+  const inp = (field: keyof ContactFormState): React.CSSProperties => ({
+    background: "rgba(255,255,255,0.04)", border: `1px solid ${focused === field ? C.accent : C.border}`,
+    borderRadius: 8, padding: "10px 14px", color: C.textBright, fontFamily: F.sans, fontSize: 13,
+    outline: "none", width: "100%", boxSizing: "border-box", transition: "border-color 0.2s",
+  });
+
+  const onFocus = (field: string) => () => setFocused(field);
+  const onBlur = () => setFocused(null);
 
   if (status === "success") {
     return (
-      <div style={{ padding: "32px 24px", borderRadius: 12, background: C.surface, border: `1px solid rgba(52,211,153,0.2)`, textAlign: "center" }}>
-        <div style={{ fontSize: 28, marginBottom: 12 }}>✓</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: C.accent, marginBottom: 8 }}>Message sent!</div>
-        <div style={{ fontSize: 13, color: C.text }}>Thanks for reaching out. I'll get back to you soon.</div>
-        <button
-          onClick={() => setStatus("idle")}
-          style={{ marginTop: 20, padding: "8px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${C.border}`, color: C.text, fontFamily: F.mono, fontSize: 11, cursor: "pointer" }}
-        >Send another</button>
+      <div style={{ padding: "40px 32px", borderRadius: 16, background: C.accentBg, border: "1px solid rgba(52,211,153,0.2)", textAlign: "center" }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.textBright, marginBottom: 6 }}>Message Sent!</div>
+        <div style={{ fontSize: 13, color: C.muted }}>Thanks for reaching out. Ikkyu will get back to you soon.</div>
+        <button onClick={() => setStatus("idle")} style={{ marginTop: 20, padding: "8px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${C.accent}`, color: C.accent, fontFamily: F.mono, fontSize: 11, cursor: "pointer" }}>
+          Send another
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
-          <label style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Name</label>
-          <input
-            required value={name} onChange={e => setName(e.target.value)}
-            placeholder="Your name"
-            style={inputStyle}
-            onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
-            onBlur={e => (e.currentTarget.style.borderColor = C.border)}
-          />
+          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Name <span style={{ color: C.accent }}>*</span></div>
+          <input value={form.name} onChange={set("name")} onFocus={onFocus("name")} onBlur={onBlur} placeholder="Jane Smith" required style={inp("name")} />
         </div>
         <div>
-          <label style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Email</label>
-          <input
-            required type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            style={inputStyle}
-            onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
-            onBlur={e => (e.currentTarget.style.borderColor = C.border)}
-          />
+          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Email <span style={{ color: C.accent }}>*</span></div>
+          <input type="email" value={form.email} onChange={set("email")} onFocus={onFocus("email")} onBlur={onBlur} placeholder="jane@company.com" required style={inp("email")} />
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Company</div>
+          <input value={form.company} onChange={set("company")} onFocus={onFocus("company")} onBlur={onBlur} placeholder="Acme Corp" style={inp("company")} />
+        </div>
+        <div>
+          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Role / Position</div>
+          <input value={form.role} onChange={set("role")} onFocus={onFocus("role")} onBlur={onBlur} placeholder="CTO / Recruiter" style={inp("role")} />
         </div>
       </div>
       <div>
-        <label style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Message</label>
-        <textarea
-          required value={message} onChange={e => setMessage(e.target.value)}
-          placeholder="Tell me about your project or opportunity..."
-          rows={5}
-          style={{ ...inputStyle, resize: "vertical" }}
-          onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
-          onBlur={e => (e.currentTarget.style.borderColor = C.border)}
-        />
+        <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Message <span style={{ color: C.accent }}>*</span></div>
+        <textarea value={form.message} onChange={set("message")} onFocus={onFocus("message")} onBlur={onBlur} placeholder="Tell Ikkyu about the opportunity or project..." required rows={4}
+          style={{ ...inp("message"), resize: "vertical" as const, minHeight: 100 }} />
       </div>
       {status === "error" && (
-        <div style={{ fontSize: 12, color: "#f87171", fontFamily: F.mono, padding: "8px 12px", background: "rgba(248,113,113,0.05)", borderRadius: 6, border: "1px solid rgba(248,113,113,0.2)" }}>
-          {errorMsg}
-        </div>
+        <div style={{ fontSize: 12, color: "#f87171", padding: "8px 12px", borderRadius: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>{errorMsg}</div>
       )}
-      <button
-        type="submit"
-        disabled={status === "loading"}
-        style={{
-          padding: "12px 28px", borderRadius: 8, alignSelf: "flex-start",
-          background: status === "loading" ? "transparent" : C.accent,
-          border: `1px solid ${C.accent}`,
-          color: status === "loading" ? C.accent : C.primary,
-          fontFamily: F.mono, fontSize: 12, fontWeight: 700,
-          cursor: status === "loading" ? "default" : "pointer",
-          transition: "all 0.2s",
-        }}
-      >
-        {status === "loading" ? "Sending…" : "Send Message →"}
+      <button type="submit" disabled={status === "loading" || !form.name || !form.email || !form.message}
+        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "rgba(255,255,255,0.05)", color: form.name && form.email && form.message ? C.primary : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
+        {status === "loading" ? "Sending..." : "Send Message →"}
       </button>
     </form>
   );
@@ -457,9 +443,9 @@ export default function HomePage() {
       {/* ══ CONTACT ══ */}
       <section id="contact" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
         <Reveal><Label>Contact</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>Get in Touch</h2></Reveal>
-        <Reveal delay={0.08}><p style={{ fontSize: 14, color: C.text, marginBottom: 32 }}>Have a project in mind? I'd love to hear about it.</p></Reveal>
-        <Reveal delay={0.1}><ContactForm /></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>Want to work together?</h2></Reveal>
+        <Reveal delay={0.08}><p style={{ fontSize: 14, color: C.muted, marginBottom: 32, lineHeight: 1.7 }}>Recruiters, collaborators, and interesting humans welcome. Fill out the form below or reach out via <a href="mailto:kiw.brw@gmail.com" style={{ color: C.accent }}>kiw.brw@gmail.com</a>.</p></Reveal>
+        <Reveal delay={0.1}><ContactSection /></Reveal>
       </section>
 
       {/* ══ FOOTER ══ */}

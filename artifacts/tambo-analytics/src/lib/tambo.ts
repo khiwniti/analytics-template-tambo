@@ -13,6 +13,10 @@ import {
   ProjectShowcase,
   projectShowcaseSchema,
 } from "@/components/tambo/project-showcase";
+import {
+  ContactForm,
+  contactFormSchema,
+} from "@/components/tambo/contact-form";
 import type { TamboComponent, TamboTool } from "@tambo-ai/react";
 import { z } from "zod";
 import {
@@ -86,5 +90,13 @@ export const components: TamboComponent[] = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: SelectForm as any,
     propsSchema: selectFormSchema,
+  },
+  {
+    name: "ContactForm",
+    description:
+      "Render an interactive contact form on the canvas when a visitor wants to reach out, hire, or get in touch with Ikkyu. Use this when someone expresses interest in hiring, collaborating, or contacting Ikkyu. The form captures name, email, company, role, and a message. You can optionally prefill fields if the user has already provided that information in the conversation.",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: ContactForm as any,
+    propsSchema: contactFormSchema,
   },
 ];
