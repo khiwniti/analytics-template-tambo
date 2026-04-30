@@ -4,10 +4,10 @@
  * To update portfolio content, edit the JSON file via PUT /api/portfolio
  * or directly edit artifacts/api-server/data/portfolio.json.
  *
- * After any successful PUT /api/portfolio, callers must invoke
- * clearPortfolioCache() so the next getPortfolioData() (and therefore
- * buildPortfolioContextText) fetches fresh data rather than serving stale
- * cache. The API server itself holds no server-side cache.
+ * After any successful PUT /api/portfolio, call clearPortfolioCache() to
+ * immediately invalidate the 60-second in-memory cache and notify all other
+ * open browser tabs via BroadcastChannel so they also fetch fresh data.
+ * The API server itself holds no server-side cache.
  */
 
 const API_BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
@@ -15,6 +15,20 @@ const API_BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 const CACHE_TTL_MS = 60_000;
 let _cached: PortfolioProfile | null = null;
 let _cachedAt = 0;
+
+// BroadcastChannel propagates cache invalidation to other open tabs
+// (e.g. admin tab saves → chat tab receives "clear" → fetches fresh context).
+const _channel =
+  typeof BroadcastChannel !== "undefined"
+    ? new BroadcastChannel("portfolio-cache")
+    : null;
+
+_channel?.addEventListener("message", (event: MessageEvent) => {
+  if (event.data === "clear") {
+    _cached = null;
+    _cachedAt = 0;
+  }
+});
 
 async function fetchPortfolio(): Promise<PortfolioProfile> {
   const res = await fetch(`${API_BASE}/api/portfolio`);
@@ -32,6 +46,8 @@ async function getPortfolioData(): Promise<PortfolioProfile> {
 export function clearPortfolioCache(): void {
   _cached = null;
   _cachedAt = 0;
+  // Notify sibling tabs (e.g. an open chat tab) to also drop their cache
+  _channel?.postMessage("clear");
 }
 
 export type PortfolioProfile = {
