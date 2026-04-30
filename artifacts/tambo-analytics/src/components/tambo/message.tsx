@@ -1,7 +1,7 @@
 "use client";
 
 import { markdownComponents } from "@/components/tambo/markdown-components";
-import { generateId, useCanvasStore } from "@/lib/canvas-storage";
+import { useCanvasStore } from "@/lib/canvas-storage";
 import { components } from "@/lib/tambo";
 import {
   checkHasContent,
@@ -18,7 +18,7 @@ import type {
 import { useTambo } from "@tambo-ai/react";
 import { cva, type VariantProps } from "class-variance-authority";
 import stringify from "json-stringify-pretty-compact";
-import { Check, ChevronDown, ExternalLink, Loader2, X } from "lucide-react";
+import { Check, ChevronDown, Loader2, X } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 import { Streamdown } from "streamdown";
@@ -792,96 +792,77 @@ function extractComponentInfo(componentBlock: TamboComponentContent | undefined)
 }
 
 /**
- * Check if a component type supports drag/drop to canvas
- * Only Graph components should be draggable to the canvas
+ * All registered Tambo components are canvas-eligible.
  */
 function isDraggableComponent(componentType: string): boolean {
-  return componentType === "Graph";
+  return components.some((c) => c.name === componentType);
 }
 
 /**
- * Displays the `renderedComponent` associated with an assistant message.
- * Shows a button to view in canvas if a canvas space exists, otherwise renders inline.
- * Only renders if the message role is 'assistant' and `message.renderedComponent` exists.
+ * Automatically adds generated components to the canvas and shows a compact
+ * indicator in the chat. Components never render inline in the chat thread.
  * @component Message.RenderedComponentArea
  */
 const MessageRenderedComponentArea = React.forwardRef<
   HTMLDivElement,
   MessageRenderedComponentAreaProps
 >(({ className, children, ...props }, ref) => {
-  const { message, role } = useMessageContext();
+  const { message, role, isLoading } = useMessageContext();
   const { thread } = useTambo();
-  const [canvasExists, setCanvasExists] = React.useState(false);
   const { addComponent, activeCanvasId, createCanvas } = useCanvasStore();
+  const autoAddedRef = React.useRef(false);
 
   const componentBlocks = getComponentBlocks(message);
   const firstComponentBlock = componentBlocks[0];
   const renderedComponent = firstComponentBlock?.renderedComponent;
 
-  // Extract component info once to check if it's draggable
   const { componentType, componentProps } = React.useMemo(
     () => extractComponentInfo(firstComponentBlock),
     [firstComponentBlock],
   );
-  const canDrag = isDraggableComponent(componentType);
 
-  const addToDashboard = React.useCallback(() => {
+  const isCancelled = thread?.thread?.lastRunCancelled ?? false;
+
+  // Auto-add to canvas once generation is complete
+  React.useEffect(() => {
+    if (autoAddedRef.current) return;
+    if (!renderedComponent) return;
+    if (isLoading) return;
+    if (role !== "assistant") return;
+    if (isCancelled) return;
+    if (!isDraggableComponent(componentType)) return;
+
+    autoAddedRef.current = true;
+
     let targetCanvasId = activeCanvasId;
     if (!targetCanvasId) {
       const newCanvas = createCanvas();
       targetCanvasId = newCanvas.id;
     }
-
     if (!targetCanvasId) return;
 
-    const componentId = generateId();
+    // Stable ID based on message ID so re-renders never duplicate
+    const componentId = `auto-${message.id ?? Date.now()}-${componentType}`;
     addComponent(targetCanvasId, {
       ...componentProps,
       componentId,
       _inCanvas: true,
       _componentType: componentType,
     });
-  }, [componentType, componentProps, activeCanvasId, addComponent, createCanvas]);
+  }, [
+    renderedComponent,
+    isLoading,
+    role,
+    isCancelled,
+    componentType,
+    componentProps,
+    activeCanvasId,
+    addComponent,
+    createCanvas,
+    message.id,
+  ]);
 
-  const handleDragStart = React.useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      const dragData = {
-        component: componentType,
-        props: {
-          ...componentProps,
-          componentId: `id-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-          _inCanvas: false,
-          _componentType: componentType,
-        },
-      };
-      e.dataTransfer.setData("application/json", JSON.stringify(dragData));
-      e.dataTransfer.effectAllowed = "copy";
-    },
-    [componentType, componentProps],
-  );
-
-  // Check if canvas exists on mount and window resize
-  React.useEffect(() => {
-    const checkCanvasExists = () => {
-      const canvas = document.querySelector('[data-canvas-space="true"]');
-      setCanvasExists(!!canvas);
-    };
-
-    checkCanvasExists();
-    window.addEventListener("resize", checkCanvasExists);
-
-    return () => {
-      window.removeEventListener("resize", checkCanvasExists);
-    };
-  }, []);
-
-  const isCancelled = thread?.thread?.lastRunCancelled ?? false;
-
-  if (
-    !renderedComponent ||
-    role !== "assistant" ||
-    isCancelled
-  ) {
+  if (!renderedComponent || role !== "assistant" || isCancelled) {
     return null;
   }
 
@@ -892,60 +873,27 @@ const MessageRenderedComponentArea = React.forwardRef<
       data-slot="message-rendered-component-area"
       {...props}
     >
-      {children ??
-        (canvasExists && canDrag ? (
-          <div className="flex items-center gap-3 pl-4">
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  window.dispatchEvent(
-                    new CustomEvent("tambo:showComponent", {
-                      detail: {
-                        messageId: message.id,
-                        component: renderedComponent,
-                      },
-                    }),
-                  );
-                }
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer group"
-              aria-label="View component in canvas"
-            >
-              View component
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={addToDashboard}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer group"
-              aria-label="Add component to dashboard"
-            >
-              Add to dashboard
-            </button>
-          </div>
-        ) : canDrag ? (
-          <div>
-            <div className="flex justify-start pl-2">
-              <button
-                onClick={addToDashboard}
-                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer group"
-                aria-label="Add component to dashboard"
-              >
-                Add to dashboard
-              </button>
-            </div>
-            <div
-              className="w-full pt-2 px-2 cursor-move"
-              draggable={true}
-              onDragStart={handleDragStart}
-            >
-              {renderedComponent}
-            </div>
-          </div>
-        ) : (
-          <div className="w-full pt-2 px-2">
-            {renderedComponent}
-          </div>
-        ))}
+      {children ?? (
+        <div style={{ paddingTop: 6 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              fontSize: 10,
+              fontFamily: "JetBrains Mono, monospace",
+              color: isLoading ? "rgba(52,211,153,0.5)" : "rgba(52,211,153,0.8)",
+              background: "rgba(52,211,153,0.06)",
+              border: "1px solid rgba(52,211,153,0.15)",
+              borderRadius: 12,
+              padding: "3px 10px",
+              transition: "color 0.3s",
+            }}
+          >
+            {isLoading ? `◌ Rendering ${componentType}…` : `✓ ${componentType} → canvas`}
+          </span>
+        </div>
+      )}
     </div>
   );
 });
