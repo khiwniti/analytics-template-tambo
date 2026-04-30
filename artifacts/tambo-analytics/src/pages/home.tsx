@@ -7,6 +7,7 @@ const C = {
   border: "rgba(255,255,255,0.08)", borderHover: "rgba(52,211,153,0.2)",
   accent: "#34D399", accentDim: "rgba(52,211,153,0.5)", accentBg: "rgba(52,211,153,0.05)",
   textBright: "#e2e8f0", text: "#94a3b8", muted: "#64748b", faint: "#475569", ghost: "rgba(255,255,255,0.15)",
+  skelBase: "rgba(255,255,255,0.05)", skelShine: "rgba(255,255,255,0.10)",
 };
 const F = { sans: "'Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','Geist Mono',monospace", thai: "'Sarabun','Noto Sans Thai',sans-serif" };
 
@@ -50,6 +51,12 @@ function Pill({ children, on }: { children: React.ReactNode; on?: boolean }) {
     <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 9, fontFamily: F.mono, background: on ? C.accentBg : C.surface, border: `1px solid ${on ? "rgba(52,211,153,0.2)" : C.border}`, color: on ? C.accent : C.ghost, cursor: "default" }}>
       {children}
     </span>
+  );
+}
+
+function Skel({ w = "100%", h = 14, radius = 6, style: extra }: { w?: number | string; h?: number; radius?: number; style?: React.CSSProperties }) {
+  return (
+    <div style={{ width: w, height: h, borderRadius: radius, background: C.skelBase, backgroundImage: `linear-gradient(90deg,${C.skelBase} 0%,${C.skelShine} 50%,${C.skelBase} 100%)`, backgroundSize: "200% 100%", animation: "shimmer 1.6s ease-in-out infinite", flexShrink: 0, ...extra }} />
   );
 }
 
@@ -225,9 +232,20 @@ function ContactSection() {
 
 export default function HomePage() {
   const [profile, setProfile] = useState<PortfolioProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [contentVisible, setContentVisible] = useState(false);
 
   useEffect(() => {
-    getPortfolioProfile().then(setProfile).catch(() => {});
+    getPortfolioProfile()
+      .then(data => {
+        setProfile(data);
+        setLoading(false);
+        requestAnimationFrame(() => requestAnimationFrame(() => setContentVisible(true)));
+      })
+      .catch(() => {
+        setLoading(false);
+        requestAnimationFrame(() => requestAnimationFrame(() => setContentVisible(true)));
+      });
   }, []);
 
   const STATS = profile
@@ -298,6 +316,7 @@ export default function HomePage() {
         ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:${C.primary}} ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}
         a{color:${C.accent};text-decoration:none}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
       `}</style>
 
       {/* ══ HERO ══ */}
@@ -315,7 +334,20 @@ export default function HomePage() {
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34d399", animation: "pulse 2s infinite" }} />Available</span>
         </div></Reveal>
         <Reveal delay={0.25}><div style={{ display: "flex", gap: 24, marginTop: 28 }}>
-          {STATS.map((s, i) => <div key={i} style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 700, color: C.accentDim, fontFamily: F.mono }}>{s.n}</div><div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: 2, marginTop: 2, color: C.muted }}>{s.l}</div></div>)}
+          {loading
+            ? [0,1,2,3].map(i => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <Skel w={40} h={22} radius={4} style={{ margin: "0 auto" }} />
+                  <Skel w={52} h={9} radius={3} style={{ marginTop: 6 }} />
+                </div>
+              ))
+            : STATS.map((s, i) => (
+                <div key={i} style={{ textAlign: "center", opacity: contentVisible ? 1 : 0, transition: "opacity 0.5s ease" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: C.accentDim, fontFamily: F.mono }}>{s.n}</div>
+                  <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: 2, marginTop: 2, color: C.muted }}>{s.l}</div>
+                </div>
+              ))
+          }
         </div></Reveal>
         <Reveal delay={0.3}><div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6, marginTop: 24, maxWidth: 420 }}>
           {["LangGraph", "Claude Sonnet", "Qwen3", "MCP", "FastAPI", "Next.js", "TypeScript", "Cloudflare"].map((t, i) => <Pill key={i}>{t}</Pill>)}
@@ -371,7 +403,18 @@ export default function HomePage() {
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
         <Reveal><Label>Career</Label></Reveal>
         <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 32 }}>Timeline</h2></Reveal>
-        {CAREER.map((c, i) => (
+        {loading
+          ? [0,1,2,3,4].map(i => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 16, padding: "16px 0", borderBottom: i < 4 ? `1px solid ${C.border}` : "none" }}>
+                <Skel w={48} h={11} radius={3} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <Skel w="60%" h={14} radius={4} />
+                  <Skel w="40%" h={10} radius={3} />
+                  <Skel w="90%" h={10} radius={3} />
+                </div>
+              </div>
+            ))
+          : CAREER.map((c, i) => (
           <Reveal key={i} delay={0.03 * i}>
             <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 16, padding: "16px 0", borderBottom: i < CAREER.length - 1 ? `1px solid ${C.border}` : "none", transition: "background 0.2s", borderRadius: 4 }}
               onMouseEnter={e => (e.currentTarget.style.background = C.surface)}
@@ -402,21 +445,34 @@ export default function HomePage() {
         <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>Selected Work</h2></Reveal>
         <Reveal delay={0.08}><p style={{ fontSize: 12, color: C.muted, marginBottom: 24 }}>From {profile ? `${profile.stats.projects}+` : "50+"} Vercel deployments and {profile ? profile.stats.workers : 47} Cloudflare Workers</p></Reveal>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 10 }}>
-          {PROJECTS.map((p, i) => (
-            <Reveal key={i} delay={0.03 * i}>
-              <a href={p.u} target="_blank" rel="noopener noreferrer"
-                style={{ display: "block", padding: "14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, textDecoration: "none", color: C.text, transition: "all 0.25s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = C.surfaceHover; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "none"; e.currentTarget.style.background = C.surface; }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: C.textBright }}>{p.n}</div>
-                  <Pill on>{p.tag}</Pill>
+          {loading
+            ? [0,1,2,3,4,5].map(i => (
+                <div key={i} style={{ padding: "14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <Skel w="55%" h={13} radius={4} />
+                    <Skel w={32} h={18} radius={9} />
+                  </div>
+                  <Skel w="90%" h={10} radius={3} />
+                  <Skel w="70%" h={10} radius={3} />
+                  <Skel w="50%" h={9} radius={3} />
                 </div>
-                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, marginBottom: 6 }}>{p.d}</div>
-                <div style={{ fontSize: 9, fontFamily: F.mono, color: C.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.u.replace("https://", "")}</div>
-              </a>
-            </Reveal>
-          ))}
+              ))
+            : PROJECTS.map((p, i) => (
+              <Reveal key={i} delay={0.03 * i}>
+                <a href={p.u} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "block", padding: "14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, textDecoration: "none", color: C.text, transition: "all 0.25s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = C.surfaceHover; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "none"; e.currentTarget.style.background = C.surface; }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.textBright }}>{p.n}</div>
+                    <Pill on>{p.tag}</Pill>
+                  </div>
+                  <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, marginBottom: 6 }}>{p.d}</div>
+                  <div style={{ fontSize: 9, fontFamily: F.mono, color: C.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.u.replace("https://", "")}</div>
+                </a>
+              </Reveal>
+            ))
+          }
         </div>
       </section>
 
@@ -445,29 +501,49 @@ export default function HomePage() {
       <section id="skills" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
         <Reveal><Label>Skills</Label></Reveal>
         <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Tech Stack</h2></Reveal>
-        {SKILLS.map((s, i) => (
-          <Reveal key={i} delay={0.05 * i}><div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.c}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{s.s.map((t, j) => <Pill key={j}>{t}</Pill>)}</div>
-          </div></Reveal>
-        ))}
+        {loading
+          ? [0,1,2,3,4].map(i => (
+              <div key={i} style={{ marginBottom: 18 }}>
+                <Skel w={80} h={10} radius={3} style={{ marginBottom: 10 }} />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {[52,68,44,72,56,60].map((w, j) => <Skel key={j} w={w} h={22} radius={11} />)}
+                </div>
+              </div>
+            ))
+          : SKILLS.map((s, i) => (
+              <Reveal key={i} delay={0.05 * i}><div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.c}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{s.s.map((t, j) => <Pill key={j}>{t}</Pill>)}</div>
+              </div></Reveal>
+            ))
+        }
       </section>
 
       {/* ══ SIDE PROJECTS ══ */}
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
         <Reveal><Label>Open Source</Label></Reveal>
         <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Passion Projects</h2></Reveal>
-        {SIDE_PROJECTS.map((p, i) => (
-          <Reveal key={i} delay={0.08 * i}>
-            <div style={{ padding: "18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 10, borderLeft: `3px solid ${C.accent}` }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: C.accent }}>{p.name}</span>
+        {loading
+          ? [0,1].map(i => (
+              <div key={i} style={{ padding: "18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 10, borderLeft: `3px solid ${C.accent}`, display: "flex", flexDirection: "column", gap: 8 }}>
+                <Skel w="45%" h={14} radius={4} />
+                <Skel w="85%" h={10} radius={3} />
+                <Skel w="70%" h={10} radius={3} />
+                <Skel w="38%" h={9} radius={3} />
               </div>
-              <p style={{ fontSize: 12, color: C.text, lineHeight: 1.7, marginBottom: 6 }}>{p.description}</p>
-              {p.url && <span style={{ fontSize: 10, fontFamily: F.mono, color: C.faint }}>{p.url.replace("https://", "")}</span>}
-            </div>
-          </Reveal>
-        ))}
+            ))
+          : SIDE_PROJECTS.map((p, i) => (
+              <Reveal key={i} delay={0.08 * i}>
+                <div style={{ padding: "18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 10, borderLeft: `3px solid ${C.accent}` }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: C.accent }}>{p.name}</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: C.text, lineHeight: 1.7, marginBottom: 6 }}>{p.description}</p>
+                  {p.url && <span style={{ fontSize: 10, fontFamily: F.mono, color: C.faint }}>{p.url.replace("https://", "")}</span>}
+                </div>
+              </Reveal>
+            ))
+        }
       </section>
 
       {/* ══ CONTACT ══ */}
