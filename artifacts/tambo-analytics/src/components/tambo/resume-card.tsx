@@ -143,6 +143,32 @@ async function generatePdf(props: ResumeCardProps) {
   doc.setTextColor(...whiteText);
   doc.text([p.email, p.website, p.location].join("   ·   "), 14, 35);
 
+  // --- Relevance scoring helpers ---
+  const keywords = [
+    ...props.emphasis.map((e) => e.toLowerCase()),
+    ...(props.targetRole ? props.targetRole.toLowerCase().split(/\s+/) : []),
+    ...(props.requesterType ? props.requesterType.toLowerCase().split(/\s+/) : []),
+  ].filter(Boolean);
+
+  function scoreText(text: string): number {
+    if (!keywords.length) return 0;
+    const lower = text.toLowerCase();
+    return keywords.reduce((acc, kw) => acc + (lower.includes(kw) ? 1 : 0), 0);
+  }
+
+  function scoredSort<T>(items: T[], getTexts: (item: T) => string[]): T[] {
+    if (!keywords.length) return items;
+    return [...items].sort((a, b) => {
+      const sa = getTexts(a).reduce((sum, t) => sum + scoreText(t), 0);
+      const sb = getTexts(b).reduce((sum, t) => sum + scoreText(t), 0);
+      return sb - sa;
+    });
+  }
+
+  const rankedCareer = scoredSort(p.career, (j) => [j.role, j.company, j.description]).slice(0, 5);
+  const rankedProjects = scoredSort(p.projects, (pr) => [pr.name, pr.description, pr.tag]).slice(0, 4);
+  // --- End relevance scoring ---
+
   let y = 48;
 
   // Custom summary box — dark bg, white text
@@ -187,7 +213,7 @@ async function generatePdf(props: ResumeCardProps) {
   doc.text("EXPERIENCE", 14, y);
   y += 3;
 
-  for (const job of p.career.slice(0, 5)) {
+  for (const job of rankedCareer) {
     autoTable(doc, {
       startY: y,
       head: [[`${job.role}`, `${job.company}  |  ${job.year}`]],
@@ -209,7 +235,7 @@ async function generatePdf(props: ResumeCardProps) {
   doc.text("SELECTED PROJECTS", 14, y);
   y += 3;
 
-  for (const proj of p.projects.slice(0, 4)) {
+  for (const proj of rankedProjects) {
     autoTable(doc, {
       startY: y,
       head: [[`${proj.name}  [${proj.tag}]`, proj.url]],
