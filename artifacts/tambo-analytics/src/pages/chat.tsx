@@ -21,6 +21,7 @@ import { useAnonymousUserKey } from "@/lib/use-anonymous-user-key";
 import { components, tools } from "@/lib/tambo";
 import { TamboProvider, useTamboThreadInput } from "@tambo-ai/react";
 import { TamboMcpProvider } from "@tambo-ai/react/mcp";
+import { buildPortfolioContextText } from "@/services/portfolio-data";
 
 const PENDING_KEY = "tambo-pending-message";
 
@@ -52,99 +53,28 @@ function AutoSubmitPendingMessage() {
 }
 
 function FloatingChat() {
-  const [open, setOpen] = useState(false);
+  // Lazy initializer — open immediately if there's a pending message
+  const [open, setOpen] = useState(() => !!sessionStorage.getItem(PENDING_KEY));
   const { containerRef } = useThreadContainerContext();
-
-  // Auto-open when there's a pending message
-  useEffect(() => {
-    if (sessionStorage.getItem(PENDING_KEY)) {
-      setOpen(true);
-    }
-  }, []);
 
   return (
     <>
-      {/* ── Chat Panel ── */}
+      {/* ── Headless transparent chat panel ── */}
       <div
         style={{
           position: "fixed",
-          bottom: open ? 136 : -600,
+          bottom: open ? 148 : -700,
           right: 16,
           zIndex: 50,
           width: 340,
-          height: 460,
+          height: 420,
           display: "flex",
           flexDirection: "column",
-          borderRadius: 16,
-          overflow: "hidden",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-          border: "1px solid hsl(var(--border))",
-          background: "hsl(var(--card))",
           transition: "bottom 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.25s",
           opacity: open ? 1 : 0,
           pointerEvents: open ? "auto" : "none",
         }}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 16px",
-            borderBottom: "1px solid hsl(var(--border))",
-            background: "hsl(var(--card))",
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: "hsl(var(--primary))",
-                display: "inline-block",
-                animation: "pulse 2s infinite",
-                boxShadow: "0 0 8px hsl(var(--primary) / 0.6)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "hsl(var(--card-foreground))",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              Ask Ikkyu's AI
-            </span>
-          </div>
-          <button
-            onClick={() => setOpen(false)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "hsl(var(--muted-foreground))",
-              fontSize: 18,
-              lineHeight: 1,
-              padding: "2px 6px",
-              borderRadius: 6,
-              transition: "color 0.15s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = "hsl(var(--card-foreground))")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "hsl(var(--muted-foreground))")
-            }
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Messages + Input */}
         <ThreadContainer
           ref={containerRef}
           disableSidebarSpacing
@@ -152,37 +82,46 @@ function FloatingChat() {
         >
           <AutoSubmitPendingMessage />
 
+          {/* Scrollable messages — no background, bubbles float over canvas */}
           <ScrollableMessageContainer
-            style={{ flex: 1, padding: "12px", overflowY: "auto" }}
+            style={{ flex: 1, padding: "8px 4px", overflowY: "auto" }}
           >
             <ThreadContent>
               <ThreadContentMessages />
             </ThreadContent>
           </ScrollableMessageContainer>
 
-          {/* Input area */}
-          <div
-            style={{
-              padding: "10px 12px",
-              borderTop: "1px solid hsl(var(--border))",
-              flexShrink: 0,
-            }}
-          >
+          {/* Floating pill input at the bottom of messages */}
+          <div style={{ flexShrink: 0, paddingTop: 8, paddingBottom: 4 }}>
             <MessageInput>
               <div
                 style={{
                   display: "flex",
                   alignItems: "flex-end",
                   gap: 8,
-                  background: "hsl(var(--muted))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 12,
-                  padding: "8px 10px",
+                  background: "rgba(13,17,23,0.85)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(52,211,153,0.25)",
+                  borderRadius: 24,
+                  padding: "8px 10px 8px 16px",
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.08)",
                 }}
               >
                 <MessageInputTextarea
                   placeholder="Ask anything about Ikkyu..."
-                  style={{ flex: 1, minHeight: 20, maxHeight: 100, resize: "none" }}
+                  style={{
+                    flex: 1,
+                    minHeight: 20,
+                    maxHeight: 80,
+                    resize: "none",
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    color: "#e6edf3",
+                    fontSize: 13,
+                    fontFamily: "Quicksand, sans-serif",
+                  }}
                 />
                 <MessageInputSubmitButton
                   style={{ flexShrink: 0, alignSelf: "flex-end" }}
@@ -193,14 +132,14 @@ function FloatingChat() {
         </ThreadContainer>
       </div>
 
-      {/* ── Toggle FAB ── */}
+      {/* ── Toggle FAB — sits above the ComponentsCanvas "Clear Canvas" button ── */}
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
           position: "fixed",
-          bottom: 72,
+          bottom: 84,
           right: 16,
-          zIndex: 51,
+          zIndex: 53,
           width: 52,
           height: 52,
           borderRadius: "50%",
@@ -233,6 +172,15 @@ function FloatingChat() {
   );
 }
 
+const portfolioContextHelpers = [
+  {
+    name: "getPortfolioContext",
+    description:
+      "Returns Ikkyu's complete portfolio profile including career history, skills, projects, education, personality, and agent instructions. Always use this context to answer questions about Ikkyu.",
+    run: async () => buildPortfolioContextText(),
+  },
+];
+
 export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
@@ -246,6 +194,8 @@ export default function ChatPage() {
         components={components}
         tools={tools}
         mcpServers={mcpServers}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        contextHelpers={portfolioContextHelpers as any}
       >
         <TamboMcpProvider>
           {/* Hidden Tambo interactables — needed for AI canvas control */}

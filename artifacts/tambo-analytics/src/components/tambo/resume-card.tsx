@@ -1,0 +1,582 @@
+"use client";
+
+import * as React from "react";
+import { z } from "zod";
+import { PORTFOLIO_PROFILE } from "@/services/portfolio-data";
+
+export const resumeCardSchema = z.object({
+  targetRole: z.string().describe("The job role or position being applied for"),
+  targetCompany: z
+    .string()
+    .optional()
+    .describe("The company name (optional, for personalization)"),
+  requesterType: z
+    .enum(["hr", "recruiter", "technical", "general"])
+    .describe(
+      "Type of person requesting: hr (wants culture fit + background), recruiter (wants quick scannable facts), technical (wants depth on stack + architecture), general (balanced overview)",
+    ),
+  emphasis: z
+    .array(z.string())
+    .describe(
+      "Skill categories to highlight, e.g. ['AI/ML', 'Full-Stack', 'Leadership', 'Fintech', 'Government']",
+    ),
+  summary: z
+    .string()
+    .describe(
+      "AI-generated custom 2-3 sentence summary tailored to this role/requester",
+    ),
+});
+
+export type ResumeCardProps = z.infer<typeof resumeCardSchema>;
+
+const C = {
+  bg: "#0d1117",
+  surface: "#161b22",
+  border: "rgba(52,211,153,0.15)",
+  accent: "#34D399",
+  accentDim: "rgba(52,211,153,0.6)",
+  text: "#e6edf3",
+  muted: "#8b949e",
+  tag: "rgba(52,211,153,0.12)",
+};
+
+function Section({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 10,
+          paddingBottom: 6,
+          borderBottom: `1px solid ${C.border}`,
+        }}
+      >
+        <div
+          style={{
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            background: C.accent,
+            boxShadow: `0 0 6px ${C.accentDim}`,
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            fontSize: 9,
+            fontFamily: "JetBrains Mono, monospace",
+            color: C.accentDim,
+            letterSpacing: 2.5,
+            textTransform: "uppercase",
+          }}
+        >
+          {label}
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function SkillPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "2px 8px",
+        borderRadius: 20,
+        fontSize: 10,
+        fontFamily: "JetBrains Mono, monospace",
+        background: C.tag,
+        border: `1px solid ${C.border}`,
+        color: C.accent,
+        marginRight: 4,
+        marginBottom: 4,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+async function generatePdf(props: ResumeCardProps) {
+  const { default: jsPDF } = await import("jspdf");
+  const { default: autoTable } = await import("jspdf-autotable");
+
+  const p = PORTFOLIO_PROFILE;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const accent = [52, 211, 153] as [number, number, number];
+  const dark = [10, 14, 23] as [number, number, number];
+  const white = [230, 237, 243] as [number, number, number];
+
+  // Header bar
+  doc.setFillColor(...dark);
+  doc.rect(0, 0, 210, 40, "F");
+
+  // Name
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(...white);
+  doc.text(p.name, 14, 18);
+
+  // Title
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(...accent);
+  doc.text(props.targetRole ? `${p.title} — ${props.targetRole}` : p.title, 14, 27);
+
+  // Contact row
+  doc.setFontSize(8);
+  doc.setTextColor(...white);
+  doc.text(
+    [p.email, p.website, p.location].join("   ·   "),
+    14,
+    35,
+  );
+
+  let y = 48;
+
+  // Summary section
+  doc.setFillColor(22, 27, 34);
+  doc.roundedRect(10, y - 2, 190, 20, 2, 2, "F");
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(...white);
+  const summaryLines = doc.splitTextToSize(props.summary, 180);
+  doc.text(summaryLines, 14, y + 5);
+  y += summaryLines.length * 5 + 8;
+
+  // Skills section
+  const allSkills = [
+    ...p.skills.aiMl,
+    ...p.skills.frontend,
+    ...p.skills.backend,
+    ...p.skills.infrastructure,
+  ];
+  const highlighted = props.emphasis.length
+    ? allSkills.filter((s) =>
+        props.emphasis.some((e) =>
+          s.toLowerCase().includes(e.toLowerCase()) ||
+          e.toLowerCase().includes(s.toLowerCase().split(" ")[0]),
+        ),
+      ).slice(0, 16)
+    : allSkills.slice(0, 16);
+
+  const skillDisplay = highlighted.length ? highlighted : allSkills.slice(0, 16);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...accent);
+  doc.text("SKILLS", 14, y);
+  y += 5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...white);
+  const skillText = skillDisplay.join("  ·  ");
+  const skillLines = doc.splitTextToSize(skillText, 182);
+  doc.text(skillLines, 14, y);
+  y += skillLines.length * 4 + 6;
+
+  // Experience
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...accent);
+  doc.text("EXPERIENCE", 14, y);
+  y += 3;
+
+  for (const job of p.career) {
+    autoTable(doc, {
+      startY: y,
+      head: [[`${job.role}`, `${job.company}  |  ${job.period}`]],
+      body: job.highlights.slice(0, 3).map((h) => [`• ${h}`, ""]),
+      theme: "plain",
+      styles: { fontSize: 8, cellPadding: 1.5, textColor: white },
+      headStyles: {
+        fillColor: dark,
+        textColor: white,
+        fontStyle: "bold",
+        fontSize: 9,
+      },
+      columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 60, halign: "right" } },
+      margin: { left: 10, right: 10 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 4;
+  }
+
+  // Projects
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...accent);
+  doc.text("SELECTED PROJECTS", 14, y);
+  y += 3;
+
+  const featuredProjects = p.projects.filter((p) => p.featured).slice(0, 3);
+  for (const proj of featuredProjects) {
+    autoTable(doc, {
+      startY: y,
+      head: [[`${proj.name}`, proj.tag]],
+      body: [[proj.description, proj.tech.slice(0, 4).join(", ")]],
+      theme: "plain",
+      styles: { fontSize: 8, cellPadding: 1.5, textColor: white },
+      headStyles: { fillColor: dark, textColor: white, fontStyle: "bold", fontSize: 9 },
+      columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 50, halign: "right" } },
+      margin: { left: 10, right: 10 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 3;
+  }
+
+  // Education
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...accent);
+  doc.text("EDUCATION", 14, y + 2);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...white);
+  doc.text(
+    `${p.education.degree}  ·  ${p.education.university}  ·  ${p.education.year}  ·  ${p.education.honors}`,
+    14,
+    y + 8,
+  );
+
+  const slug = props.targetRole.toLowerCase().replace(/\s+/g, "-");
+  doc.save(`ikkyu-resume-${slug}.pdf`);
+}
+
+export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
+  (props, ref) => {
+    const { targetRole, targetCompany, requesterType, emphasis, summary } =
+      props;
+    const [downloading, setDownloading] = React.useState(false);
+    const p = PORTFOLIO_PROFILE;
+
+    const relevantSkills = React.useMemo(() => {
+      const all = [
+        ...p.skills.aiMl,
+        ...p.skills.frontend,
+        ...p.skills.backend,
+        ...p.skills.infrastructure,
+      ];
+      if (!emphasis.length) return all.slice(0, 12);
+      const highlighted = all.filter((s) =>
+        emphasis.some(
+          (e) =>
+            s.toLowerCase().includes(e.toLowerCase()) ||
+            e.toLowerCase().includes(s.toLowerCase().split(" ")[0]),
+        ),
+      );
+      return highlighted.length ? highlighted.slice(0, 14) : all.slice(0, 12);
+    }, [emphasis]);
+
+    const handleDownload = async () => {
+      setDownloading(true);
+      try {
+        await generatePdf(props);
+      } finally {
+        setDownloading(false);
+      }
+    };
+
+    return (
+      <div
+        ref={ref}
+        style={{
+          background: C.bg,
+          border: `1px solid ${C.border}`,
+          borderRadius: 16,
+          padding: "24px 28px",
+          fontFamily: "Quicksand, sans-serif",
+          color: C.text,
+          maxWidth: 560,
+          boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+          position: "relative",
+        }}
+      >
+        {/* Header */}
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 22,
+                  fontWeight: 800,
+                  color: C.text,
+                  lineHeight: 1.2,
+                }}
+              >
+                {p.name}
+              </h2>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: C.accent,
+                  fontWeight: 600,
+                  marginTop: 4,
+                }}
+              >
+                {targetRole
+                  ? `${p.title} → ${targetRole}`
+                  : p.title}
+                {targetCompany && (
+                  <span style={{ color: C.muted, fontWeight: 400 }}>
+                    {" "}
+                    @ {targetCompany}
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: C.muted,
+                  marginTop: 6,
+                  fontFamily: "JetBrains Mono, monospace",
+                }}
+              >
+                {p.email} · {p.website} · {p.location}
+              </div>
+            </div>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              style={{
+                background: downloading
+                  ? "rgba(52,211,153,0.1)"
+                  : "rgba(52,211,153,0.15)",
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                padding: "8px 14px",
+                color: C.accent,
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: downloading ? "not-allowed" : "pointer",
+                fontFamily: "JetBrains Mono, monospace",
+                flexShrink: 0,
+                transition: "all 0.2s",
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                if (!downloading)
+                  e.currentTarget.style.background = "rgba(52,211,153,0.25)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(52,211,153,0.15)";
+              }}
+            >
+              {downloading ? "Generating..." : "⬇ Download PDF"}
+            </button>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <Section label="Summary">
+          <p
+            style={{
+              margin: 0,
+              fontSize: 13,
+              color: C.text,
+              lineHeight: 1.6,
+              fontStyle: "italic",
+              opacity: 0.9,
+            }}
+          >
+            {summary}
+          </p>
+        </Section>
+
+        {/* Skills */}
+        <Section label="Highlighted Skills">
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {relevantSkills.map((s) => (
+              <SkillPill key={s}>{s}</SkillPill>
+            ))}
+          </div>
+        </Section>
+
+        {/* Experience */}
+        <Section label="Experience">
+          {p.career.map((job) => (
+            <div
+              key={job.company}
+              style={{
+                marginBottom: 14,
+                paddingLeft: 10,
+                borderLeft: `2px solid ${C.border}`,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{ fontSize: 12, fontWeight: 700, color: C.text }}
+                >
+                  {job.role}
+                </span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    color: C.muted,
+                    fontFamily: "JetBrains Mono, monospace",
+                    flexShrink: 0,
+                  }}
+                >
+                  {job.period}
+                </span>
+              </div>
+              <div
+                style={{ fontSize: 11, color: C.accent, marginBottom: 4 }}
+              >
+                {job.company}
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 14 }}>
+                {job.highlights.slice(0, requesterType === "technical" ? 4 : 3).map((h) => (
+                  <li
+                    key={h}
+                    style={{ fontSize: 11, color: C.muted, marginBottom: 2, lineHeight: 1.5 }}
+                  >
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </Section>
+
+        {/* Projects */}
+        <Section label="Featured Projects">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 8,
+            }}
+          >
+            {p.projects
+              .filter((pr) => pr.featured)
+              .slice(0, 3)
+              .map((proj) => (
+                <div
+                  key={proj.name}
+                  style={{
+                    background: C.surface,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: C.text,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {proj.name}
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 8,
+                      background: C.tag,
+                      color: C.accent,
+                      padding: "1px 6px",
+                      borderRadius: 10,
+                      fontFamily: "JetBrains Mono, monospace",
+                    }}
+                  >
+                    {proj.tag}
+                  </span>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      color: C.muted,
+                      marginTop: 4,
+                      marginBottom: 0,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {proj.description.substring(0, 80)}…
+                  </p>
+                </div>
+              ))}
+          </div>
+        </Section>
+
+        {/* Education */}
+        <Section label="Education">
+          <div style={{ fontSize: 12, color: C.text }}>
+            {p.education.degree}
+          </div>
+          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
+            {p.education.university} · {p.education.year} ·{" "}
+            <span style={{ color: C.accent }}>{p.education.honors}</span>
+          </div>
+        </Section>
+
+        {/* Requester type badge */}
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            right: requesterType !== "general" ? 130 : "unset",
+            display: "none",
+          }}
+        />
+        <div
+          style={{
+            marginTop: 8,
+            paddingTop: 12,
+            borderTop: `1px solid ${C.border}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 9,
+              color: C.muted,
+              fontFamily: "JetBrains Mono, monospace",
+            }}
+          >
+            Tailored for: {requesterType.toUpperCase()}
+            {targetCompany ? ` · ${targetCompany}` : ""}
+          </span>
+          <span
+            style={{
+              fontSize: 9,
+              color: C.accentDim,
+              fontFamily: "JetBrains Mono, monospace",
+            }}
+          >
+            khiw.dev
+          </span>
+        </div>
+      </div>
+    );
+  },
+);
+
+ResumeCard.displayName = "ResumeCard";
