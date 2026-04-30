@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useLocation } from "wouter";
 
 const C = {
@@ -169,6 +169,119 @@ function ChatStarter() {
   );
 }
 
+type FormState = "idle" | "loading" | "success" | "error";
+
+function ContactForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<FormState>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setStatus("loading");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), message: message.trim() }),
+      });
+      const data = await res.json() as { error?: string };
+      if (!res.ok) {
+        setErrorMsg(data.error ?? "Something went wrong. Please try again.");
+        setStatus("error");
+        return;
+      }
+      setStatus("success");
+      setName(""); setEmail(""); setMessage("");
+    } catch {
+      setErrorMsg("Network error. Please check your connection.");
+      setStatus("error");
+    }
+  }
+
+  const inputStyle = {
+    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
+    borderRadius: 8, padding: "10px 14px", color: C.textBright,
+    fontFamily: F.sans, fontSize: 13, outline: "none",
+    transition: "border-color 0.2s", boxSizing: "border-box" as const,
+  };
+
+  if (status === "success") {
+    return (
+      <div style={{ padding: "32px 24px", borderRadius: 12, background: C.surface, border: `1px solid rgba(52,211,153,0.2)`, textAlign: "center" }}>
+        <div style={{ fontSize: 28, marginBottom: 12 }}>✓</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.accent, marginBottom: 8 }}>Message sent!</div>
+        <div style={{ fontSize: 13, color: C.text }}>Thanks for reaching out. I'll get back to you soon.</div>
+        <button
+          onClick={() => setStatus("idle")}
+          style={{ marginTop: 20, padding: "8px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${C.border}`, color: C.text, fontFamily: F.mono, fontSize: 11, cursor: "pointer" }}
+        >Send another</button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div>
+          <label style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Name</label>
+          <input
+            required value={name} onChange={e => setName(e.target.value)}
+            placeholder="Your name"
+            style={inputStyle}
+            onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
+            onBlur={e => (e.currentTarget.style.borderColor = C.border)}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Email</label>
+          <input
+            required type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            style={inputStyle}
+            onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
+            onBlur={e => (e.currentTarget.style.borderColor = C.border)}
+          />
+        </div>
+      </div>
+      <div>
+        <label style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Message</label>
+        <textarea
+          required value={message} onChange={e => setMessage(e.target.value)}
+          placeholder="Tell me about your project or opportunity..."
+          rows={5}
+          style={{ ...inputStyle, resize: "vertical" }}
+          onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
+          onBlur={e => (e.currentTarget.style.borderColor = C.border)}
+        />
+      </div>
+      {status === "error" && (
+        <div style={{ fontSize: 12, color: "#f87171", fontFamily: F.mono, padding: "8px 12px", background: "rgba(248,113,113,0.05)", borderRadius: 6, border: "1px solid rgba(248,113,113,0.2)" }}>
+          {errorMsg}
+        </div>
+      )}
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        style={{
+          padding: "12px 28px", borderRadius: 8, alignSelf: "flex-start",
+          background: status === "loading" ? "transparent" : C.accent,
+          border: `1px solid ${C.accent}`,
+          color: status === "loading" ? C.accent : C.primary,
+          fontFamily: F.mono, fontSize: 12, fontWeight: 700,
+          cursor: status === "loading" ? "default" : "pointer",
+          transition: "all 0.2s",
+        }}
+      >
+        {status === "loading" ? "Sending…" : "Send Message →"}
+      </button>
+    </form>
+  );
+}
+
 export default function HomePage() {
   return (
     <div style={{ background: C.primary, color: C.text, fontFamily: F.sans, minHeight: "100vh", overflowX: "hidden" }}>
@@ -206,7 +319,7 @@ export default function HomePage() {
         <Reveal delay={0.35}><ChatStarter /></Reveal>
 
         <Reveal delay={0.4}><div style={{ display: "flex", gap: 8, marginTop: 24 }}>
-          {["About", "Projects", "Skills"].map((b, i) => (
+          {["About", "Projects", "Skills", "Contact"].map((b, i) => (
             <button key={i} onClick={() => document.getElementById(b.toLowerCase())?.scrollIntoView({ behavior: "smooth" })}
               style={{ padding: "8px 20px", borderRadius: 6, border: `2px solid ${C.border}`, background: "transparent", color: C.text, fontSize: 13, fontWeight: 700, fontFamily: F.sans, cursor: "pointer", transition: "all 0.2s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
@@ -339,6 +452,14 @@ export default function HomePage() {
             </div>
           </Reveal>
         ))}
+      </section>
+
+      {/* ══ CONTACT ══ */}
+      <section id="contact" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
+        <Reveal><Label>Contact</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>Get in Touch</h2></Reveal>
+        <Reveal delay={0.08}><p style={{ fontSize: 14, color: C.text, marginBottom: 32 }}>Have a project in mind? I'd love to hear about it.</p></Reveal>
+        <Reveal delay={0.1}><ContactForm /></Reveal>
       </section>
 
       {/* ══ FOOTER ══ */}

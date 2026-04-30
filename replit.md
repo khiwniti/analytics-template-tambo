@@ -22,16 +22,22 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 A Tambo AI analytics template. Ported from Next.js to Vite + React.
 
-- **Home page** (`/`): Ikkyu's personal portfolio (khiw.dev design). Dark theme with hero, stats, tech pills, scroll-reveal sections (About, Career, Projects, Domains, Skills, Side Projects). Features an AI chat starter with text input + 6 HR-focused suggestion chips that store the message in sessionStorage and navigate to `/chat`. Source: `artifacts/tambo-analytics/src/pages/home.tsx`
-- **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Auto-submits pending message stored in sessionStorage (from home page suggestion chips). Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
-- **AI Components**: Graph (bar/line/pie charts), SelectForm — registered in `src/lib/tambo.ts`
+- **Home page** (`/`): Ikkyu's personal portfolio (khiw.dev design). Dark theme with hero, stats, tech pills, scroll-reveal sections (About, Career, Projects, Domains, Skills, Side Projects, Contact). Features AI chat starter with suggestion chips + contact form that saves to the DB. Nav buttons: About / Projects / Skills / Contact. Source: `artifacts/tambo-analytics/src/pages/home.tsx`
+- **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Auto-submits pending message stored in sessionStorage (from home page). TamboProvider configured with portfolio tools (ResumeCard, ProjectShowcase), contextHelpers, and systemContext resource. Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
+- **AI Components**: ResumeCard (PDF generation with relevance scoring), ProjectShowcase — registered in `src/lib/tambo.ts`. Portfolio data in `src/services/portfolio-data.ts`.
 - **Canvas storage**: Zustand store persisted to localStorage — `src/lib/canvas-storage.ts`
-- **TipTap editor**: Rich text input in `src/components/tambo/text-editor.tsx`
-- **Env var required**: `VITE_TAMBO_API_KEY` — Tambo API key from https://tambo.co/cli-auth
+- **Vite proxy**: `/api` → `localhost:8080` (api-server) for dev mode
 
-### api-server (Express, preview path: `/api`)
+### api-server (Express, port 8080)
 
-Minimal API server. No custom routes yet (only `/api/healthz`).
+- `GET /api/healthz` — health check
+- `POST /api/contact` — save contact form submission to `contacts` table. Validates name/email/message (Zod). Returns `{ success, id, createdAt }`.
+
+### Database (PostgreSQL + Drizzle)
+
+- **contacts** table: `id, name, email, message, ip_address, created_at`
+- Schema: `lib/db/src/schema/contacts.ts`
+- Migrate: `pnpm --filter @workspace/db run push`
 
 ## Key Commands
 
