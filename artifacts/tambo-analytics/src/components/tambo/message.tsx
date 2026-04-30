@@ -792,9 +792,19 @@ function extractComponentInfo(componentBlock: TamboComponentContent | undefined)
 }
 
 /**
- * All registered Tambo components are canvas-eligible.
+ * Components that use Tambo-specific hooks (useTamboComponentState,
+ * useTamboStreamStatus) MUST stay rendered inline in the chat thread so they
+ * have access to the ThreadContainer context. They cannot be moved to the
+ * canvas which lives outside that context.
+ */
+const INLINE_ONLY_COMPONENTS = new Set(["SelectForm", "ContactForm"]);
+
+/**
+ * Returns true for registered display components that are safe to render on
+ * the canvas outside the ThreadContainer context.
  */
 function isDraggableComponent(componentType: string): boolean {
+  if (INLINE_ONLY_COMPONENTS.has(componentType)) return false;
   return components.some((c) => c.name === componentType);
 }
 
@@ -866,6 +876,8 @@ const MessageRenderedComponentArea = React.forwardRef<
     return null;
   }
 
+  const isCanvasSafe = isDraggableComponent(componentType);
+
   return (
     <div
       ref={ref}
@@ -874,25 +886,34 @@ const MessageRenderedComponentArea = React.forwardRef<
       {...props}
     >
       {children ?? (
-        <div style={{ paddingTop: 6 }}>
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              fontSize: 10,
-              fontFamily: "JetBrains Mono, monospace",
-              color: isLoading ? "rgba(52,211,153,0.5)" : "rgba(52,211,153,0.8)",
-              background: "rgba(52,211,153,0.06)",
-              border: "1px solid rgba(52,211,153,0.15)",
-              borderRadius: 12,
-              padding: "3px 10px",
-              transition: "color 0.3s",
-            }}
-          >
-            {isLoading ? `◌ Rendering ${componentType}…` : `✓ ${componentType} → canvas`}
-          </span>
-        </div>
+        isCanvasSafe ? (
+          // Display components: auto-added to canvas, show a compact badge in chat
+          <div style={{ paddingTop: 6 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 10,
+                fontFamily: "JetBrains Mono, monospace",
+                color: isLoading ? "rgba(52,211,153,0.5)" : "rgba(52,211,153,0.8)",
+                background: "rgba(52,211,153,0.06)",
+                border: "1px solid rgba(52,211,153,0.15)",
+                borderRadius: 12,
+                padding: "3px 10px",
+                transition: "color 0.3s",
+              }}
+            >
+              {isLoading ? `◌ Rendering ${componentType}…` : `✓ ${componentType} → canvas`}
+            </span>
+          </div>
+        ) : (
+          // Interactive components (SelectForm, ContactForm): render inline in
+          // chat so they retain Tambo's ThreadContainer context for state hooks
+          <div className="w-full pt-2 px-2">
+            {renderedComponent}
+          </div>
+        )
       )}
     </div>
   );
