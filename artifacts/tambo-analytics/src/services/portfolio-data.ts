@@ -24,6 +24,11 @@ async function getPortfolioData(): Promise<PortfolioProfile> {
   return _cached;
 }
 
+export function clearPortfolioCache(): void {
+  _cached = null;
+  _cachedAt = 0;
+}
+
 export type PortfolioProfile = {
   name: string;
   handle: string;

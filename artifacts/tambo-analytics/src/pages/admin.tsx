@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { type PortfolioProfile } from "../services/portfolio-data";
+import { type PortfolioProfile, clearPortfolioCache } from "../services/portfolio-data";
 
 const C = {
   primary: "#0a0e17",
@@ -355,6 +355,7 @@ export default function AdminPage() {
         return;
       }
       if (res.ok && data.success) {
+        clearPortfolioCache();
         setSaveStatus("saved");
         setTimeout(() => setSaveStatus("idle"), 2500);
       } else {
