@@ -172,14 +172,9 @@ function FloatingChat() {
   );
 }
 
-const portfolioContextHelpers = [
-  {
-    name: "getPortfolioContext",
-    description:
-      "Returns Ikkyu's complete portfolio profile including career history, skills, projects, education, personality, and agent instructions. Always use this context to answer questions about Ikkyu.",
-    run: async () => buildPortfolioContextText(),
-  },
-];
+const portfolioContextHelpers = {
+  getPortfolioContext: () => buildPortfolioContextText(),
+};
 
 export default function ChatPage() {
   const mcpServers = useMcpServers();
@@ -194,8 +189,7 @@ export default function ChatPage() {
         components={components}
         tools={tools}
         mcpServers={mcpServers}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        contextHelpers={portfolioContextHelpers as any}
+        contextHelpers={portfolioContextHelpers}
       >
         <TamboMcpProvider>
           {/* Hidden Tambo interactables — needed for AI canvas control */}
