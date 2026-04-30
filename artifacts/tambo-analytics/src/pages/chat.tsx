@@ -196,7 +196,7 @@ async function listSystemResources() {
 async function getSystemResource(uri: string) {
   if (uri === SYSTEM_CONTEXT_URI) {
     return {
-      contents: [{ uri, mimeType: "text/plain", text: buildPortfolioContextText() }],
+      contents: [{ uri, mimeType: "text/plain", text: await buildPortfolioContextText() }],
     };
   }
   return { contents: [] };

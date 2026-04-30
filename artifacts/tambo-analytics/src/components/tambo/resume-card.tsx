@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { z } from "zod";
-import { PORTFOLIO_PROFILE } from "@/services/portfolio-data";
+import { getPortfolioProfile, type PortfolioProfile } from "@/services/portfolio-data";
 
 export const resumeCardSchema = z.object({
   targetRole: z.string().describe("The job role or position being applied for"),
@@ -107,12 +107,10 @@ function SkillPill({ children }: { children: React.ReactNode }) {
   );
 }
 
-async function generatePdf(props: ResumeCardProps) {
+async function generatePdf(props: ResumeCardProps, p: PortfolioProfile) {
   const { default: jsPDF } = await import("jspdf");
   const autoTableModule = await import("jspdf-autotable");
   const autoTable = autoTableModule.default;
-
-  const p = PORTFOLIO_PROFILE;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   // Colors: header = dark bg with white/green text; body = white bg with dark text
@@ -271,9 +269,14 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
   (props, ref) => {
     const { targetRole, targetCompany, requesterType, emphasis, summary } = props;
     const [downloading, setDownloading] = React.useState(false);
-    const p = PORTFOLIO_PROFILE;
+    const [p, setP] = React.useState<PortfolioProfile | null>(null);
+
+    React.useEffect(() => {
+      getPortfolioProfile().then(setP).catch(console.error);
+    }, []);
 
     const highlightedSkills = React.useMemo(() => {
+      if (!p) return [];
       if (!emphasis.length) {
         return p.skills.slice(0, 2).flatMap((s) => s.items).slice(0, 12);
       }
@@ -286,16 +289,38 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
         .flatMap((s) => s.items)
         .slice(0, 14);
       return matched.length ? matched : p.skills.slice(0, 2).flatMap((s) => s.items).slice(0, 12);
-    }, [emphasis]);
+    }, [emphasis, p]);
 
     const handleDownload = async () => {
+      if (!p) return;
       setDownloading(true);
       try {
-        await generatePdf(props);
+        await generatePdf(props, p);
       } finally {
         setDownloading(false);
       }
     };
+
+    if (!p) {
+      return (
+        <div
+          ref={ref}
+          style={{
+            background: C.bg,
+            border: `1px solid ${C.border}`,
+            borderRadius: 16,
+            padding: "24px 28px",
+            color: C.muted,
+            maxWidth: 560,
+            textAlign: "center",
+            fontFamily: "JetBrains Mono, monospace",
+            fontSize: 12,
+          }}
+        >
+          Loading resume…
+        </div>
+      );
+    }
 
     return (
       <div
