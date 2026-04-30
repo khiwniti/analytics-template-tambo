@@ -39,7 +39,7 @@ export const ProjectShowcase = React.forwardRef<
   HTMLDivElement,
   ProjectShowcaseProps
 >((props, ref) => {
-  const { projectName, tag, description, url, highlights, tech } = props;
+  const { projectName, tag, description, url, highlights = [], tech = [] } = props;
   const [hovered, setHovered] = React.useState(false);
 
   return (
