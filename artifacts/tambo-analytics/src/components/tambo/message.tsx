@@ -809,8 +809,18 @@ function isDraggableComponent(componentType: string): boolean {
 }
 
 /**
- * Automatically adds generated components to the canvas and shows a compact
- * indicator in the chat. Components never render inline in the chat thread.
+ * Routes AI-generated components to the correct display path:
+ *
+ *  • Canvas-safe components (ResumeCard, ProjectShowcase, Graph):
+ *      – Auto-added to the canvas via useEffect once !isLoading
+ *      – Only a compact green "✓ {Type} → canvas" badge appears in the chat
+ *
+ *  • Inline-only components (SelectForm, ContactForm):
+ *      – Rendered directly in the chat thread so Tambo's ThreadContainer
+ *        context is available for useTamboComponentState /
+ *        useTamboStreamStatus hooks (moving these to the canvas would break
+ *        them because the canvas is outside the ThreadContainer)
+ *
  * @component Message.RenderedComponentArea
  */
 const MessageRenderedComponentArea = React.forwardRef<
