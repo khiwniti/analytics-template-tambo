@@ -1,23 +1,20 @@
 {
   "name": "Ikkyu Khiw",
   "handle": "khiw.dev / getintheQ",
-  "title": "AI-Augmented Full-Stack Developer · AI Agent Architect",
+  "title": "",
   "location": "Bangkok, Thailand 🇹🇭",
   "email": "kiw.brw@gmail.com",
   "website": "khiw.dev",
   "github": "github.com/getintheQ",
   "linkedin": "linkedin.com/in/getintheq",
   "resume": "https://www.khiw.dev/api/resume",
-
   "summary": "Mechanical-engineer-turned-AI-architect with First Class Honors from Naresuan University (2019). Career spans welding inspections at Bangchack Refinery, ANSYS analysis at Hitachi, nuclear radiopharmaceuticals (I-131) at TINT, injection molding at CP Group, and now AI agent architecture + Thai government digital transformation. Shipped 50+ projects on Vercel and 47 Cloudflare Workers across 9 industries.",
-
   "stats": {
     "live": 29,
     "projects": 50,
     "workers": 47,
     "industries": 9
   },
-
   "career": [
     {
       "year": "2025–Now",
@@ -75,7 +72,6 @@
       "description": "EPC at Bangchack Refinery. QC Welding (ASME IX). AutoCAD Plant 3D."
     }
   ],
-
   "projects": [
     {
       "name": "CarbonBIM",
@@ -150,24 +146,105 @@
       "description": "ETL pipeline visualization tool"
     }
   ],
-
   "domains": [
-    { "icon": "◆", "label": "BIM & Construction", "detail": "IFC, EN 15978, TGO, EDGE, TREES, BOQ-to-cost" },
-    { "icon": "◇", "label": "Weather & Earth Science", "detail": "FourCastNet, PINNs, GFS, CesiumJS, NOAA" },
-    { "icon": "▣", "label": "Thai Government", "detail": "DDPM, TPQI, NSDF, NDWC, Rainmaking, AOT" },
-    { "icon": "△", "label": "Hospitality & F&B", "detail": "BiteBase, HotelCSI, Wongnai, LINE MAN" },
-    { "icon": "○", "label": "Engineering Simulation", "detail": "ANSYS, COMSOL, OpenFOAM, DeepXDE, Moldex3D" },
-    { "icon": "□", "label": "Healthcare", "detail": "FHIR R4, Thai NLP, LINE OA, lab analysis" }
+    {
+      "icon": "◆",
+      "label": "BIM & Construction",
+      "detail": "IFC, EN 15978, TGO, EDGE, TREES, BOQ-to-cost"
+    },
+    {
+      "icon": "◇",
+      "label": "Weather & Earth Science",
+      "detail": "FourCastNet, PINNs, GFS, CesiumJS, NOAA"
+    },
+    {
+      "icon": "▣",
+      "label": "Thai Government",
+      "detail": "DDPM, TPQI, NSDF, NDWC, Rainmaking, AOT"
+    },
+    {
+      "icon": "△",
+      "label": "Hospitality & F&B",
+      "detail": "BiteBase, HotelCSI, Wongnai, LINE MAN"
+    },
+    {
+      "icon": "○",
+      "label": "Engineering Simulation",
+      "detail": "ANSYS, COMSOL, OpenFOAM, DeepXDE, Moldex3D"
+    },
+    {
+      "icon": "□",
+      "label": "Healthcare",
+      "detail": "FHIR R4, Thai NLP, LINE OA, lab analysis"
+    }
   ],
-
   "skills": [
-    { "category": "AI / Agents", "items": ["LangGraph", "Claude Sonnet", "Qwen3", "MCP", "A2A", "Huggingface", "Typhoon", "PINNs", "DeepXDE"] },
-    { "category": "Full-Stack", "items": ["Next.js", "React", "TypeScript", "Tailwind", "FastAPI", "Express", "shadcn/ui"] },
-    { "category": "Data / Cloud", "items": ["PostgreSQL", "MongoDB", "Azure", "Airflow", "Docker", "K8s", "Pandas", "Power BI", "Tableau"] },
-    { "category": "Engineering", "items": ["ANSYS Fluent", "COMSOL", "OpenFOAM", "Moldex3D", "SolidWorks", "AutoCAD", "CFD", "FEA"] },
-    { "category": "Platforms", "items": ["Vercel", "Cloudflare Workers", "Supabase", "LINE OA", "Postman", "Git", "LangSmith"] }
+    {
+      "category": "AI / Agents",
+      "items": [
+        "LangGraph",
+        "Claude Sonnet",
+        "Qwen3",
+        "MCP",
+        "A2A",
+        "Huggingface",
+        "Typhoon",
+        "PINNs",
+        "DeepXDE"
+      ]
+    },
+    {
+      "category": "Full-Stack",
+      "items": [
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Tailwind",
+        "FastAPI",
+        "Express",
+        "shadcn/ui"
+      ]
+    },
+    {
+      "category": "Data / Cloud",
+      "items": [
+        "PostgreSQL",
+        "MongoDB",
+        "Azure",
+        "Airflow",
+        "Docker",
+        "K8s",
+        "Pandas",
+        "Power BI",
+        "Tableau"
+      ]
+    },
+    {
+      "category": "Engineering",
+      "items": [
+        "ANSYS Fluent",
+        "COMSOL",
+        "OpenFOAM",
+        "Moldex3D",
+        "SolidWorks",
+        "AutoCAD",
+        "CFD",
+        "FEA"
+      ]
+    },
+    {
+      "category": "Platforms",
+      "items": [
+        "Vercel",
+        "Cloudflare Workers",
+        "Supabase",
+        "LINE OA",
+        "Postman",
+        "Git",
+        "LangSmith"
+      ]
+    }
   ],
-
   "education": {
     "degree": "B.Eng Mechanical Engineering",
     "university": "Naresuan University",
@@ -175,7 +252,6 @@
     "honors": "First Class Honors, GPA 3.50",
     "languages": "EF SET C2 (72/100) · Thai (Native) · English (Professional)"
   },
-
   "sideProjects": [
     {
       "name": "kidpen.org",
@@ -183,7 +259,6 @@
       "description": "Free, open-source STEM education platform for Thai students. Because the skills that changed my career shouldn't be locked behind paywalls."
     }
   ],
-
   "contact": {
     "email": "kiw.brw@gmail.com",
     "github": "https://github.com/getintheQ",
