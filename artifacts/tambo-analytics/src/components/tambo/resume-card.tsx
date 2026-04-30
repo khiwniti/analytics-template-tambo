@@ -115,43 +115,47 @@ async function generatePdf(props: ResumeCardProps) {
   const p = PORTFOLIO_PROFILE;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  const accent: [number, number, number] = [52, 211, 153];
+  // Colors: header = dark bg with white/green text; body = white bg with dark text
+  const accent: [number, number, number] = [16, 120, 80];     // dark green, readable on white
+  const accentHeader: [number, number, number] = [52, 211, 153]; // bright green for dark bg
   const dark: [number, number, number] = [10, 14, 23];
-  const white: [number, number, number] = [230, 237, 243];
-  const muted: [number, number, number] = [139, 148, 158];
+  const darkBg: [number, number, number] = [22, 27, 34];
+  const whiteText: [number, number, number] = [230, 237, 243];  // for dark backgrounds only
+  const bodyText: [number, number, number] = [30, 30, 40];      // dark, readable on white page
+  const subText: [number, number, number] = [80, 90, 100];      // muted dark, readable on white
 
-  // Header bar
+  // Header bar — dark bg, white/green text
   doc.setFillColor(...dark);
   doc.rect(0, 0, 210, 40, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(...white);
+  doc.setTextColor(...whiteText);
   doc.text(p.name, 14, 18);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.setTextColor(...accent);
+  doc.setTextColor(...accentHeader);
   const headLine = props.targetRole ? `${p.title.split("·")[0].trim()} — ${props.targetRole}` : p.title;
   doc.text(headLine, 14, 27);
 
   doc.setFontSize(8);
-  doc.setTextColor(...white);
+  doc.setTextColor(...whiteText);
   doc.text([p.email, p.website, p.location].join("   ·   "), 14, 35);
 
   let y = 48;
 
-  // Custom summary
-  doc.setFillColor(22, 27, 34);
+  // Custom summary box — dark bg, white text
+  doc.setFillColor(...darkBg);
   const summaryLines = doc.splitTextToSize(props.summary, 180);
-  doc.roundedRect(10, y - 2, 190, summaryLines.length * 5 + 6, 2, 2, "F");
+  doc.roundedRect(10, y - 2, 190, summaryLines.length * 5 + 8, 2, 2, "F");
   doc.setFont("helvetica", "italic");
   doc.setFontSize(9);
-  doc.setTextColor(...white);
+  doc.setTextColor(...whiteText);
   doc.text(summaryLines, 14, y + 4);
-  y += summaryLines.length * 5 + 12;
+  y += summaryLines.length * 5 + 14;
 
-  // Skills
+  // Skills — dark label, dark body text on white page
   const allSkills = props.emphasis.length
     ? p.skills
         .filter((s) =>
@@ -170,13 +174,13 @@ async function generatePdf(props: ResumeCardProps) {
   y += 5;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.setTextColor(...white);
+  doc.setTextColor(...bodyText);
   const skillText = (allSkills.length ? allSkills : p.skills[0].items).join("  ·  ");
   const skillLines = doc.splitTextToSize(skillText, 182);
   doc.text(skillLines, 14, y);
   y += skillLines.length * 4 + 8;
 
-  // Experience
+  // Experience — dark header rows, dark body text on white
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...accent);
@@ -189,16 +193,16 @@ async function generatePdf(props: ResumeCardProps) {
       head: [[`${job.role}`, `${job.company}  |  ${job.year}`]],
       body: [[job.description, ""]],
       theme: "plain",
-      styles: { fontSize: 8, cellPadding: 1.5, textColor: white },
-      headStyles: { fillColor: dark, textColor: white, fontStyle: "bold", fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 60, halign: "right", textColor: muted } },
+      styles: { fontSize: 8, cellPadding: 1.5, textColor: bodyText },
+      headStyles: { fillColor: darkBg, textColor: whiteText, fontStyle: "bold", fontSize: 9 },
+      columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 60, halign: "right", textColor: subText } },
       margin: { left: 10, right: 10 },
     });
     const finalY = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y + 14;
     y = finalY + 3;
   }
 
-  // Projects (top 4)
+  // Projects — dark header rows, dark body text
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...accent);
@@ -211,16 +215,16 @@ async function generatePdf(props: ResumeCardProps) {
       head: [[`${proj.name}  [${proj.tag}]`, proj.url]],
       body: [[proj.description, ""]],
       theme: "plain",
-      styles: { fontSize: 8, cellPadding: 1.5, textColor: white },
-      headStyles: { fillColor: dark, textColor: white, fontStyle: "bold", fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 60, halign: "right", textColor: muted } },
+      styles: { fontSize: 8, cellPadding: 1.5, textColor: bodyText },
+      headStyles: { fillColor: darkBg, textColor: whiteText, fontStyle: "bold", fontSize: 9 },
+      columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 60, halign: "right", textColor: subText } },
       margin: { left: 10, right: 10 },
     });
     const finalY = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y + 10;
     y = finalY + 2;
   }
 
-  // Education
+  // Education — dark readable text on white page
   y += 4;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -228,9 +232,9 @@ async function generatePdf(props: ResumeCardProps) {
   doc.text("EDUCATION", 14, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.setTextColor(...white);
+  doc.setTextColor(...bodyText);
   doc.text(`${p.education.degree}  ·  ${p.education.university}  ·  ${p.education.years}`, 14, y + 6);
-  doc.setTextColor(...muted);
+  doc.setTextColor(...subText);
   doc.text(p.education.honors + " · " + p.education.languages, 14, y + 12);
 
   const slug = props.targetRole.toLowerCase().replace(/\s+/g, "-");

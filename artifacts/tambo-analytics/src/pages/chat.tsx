@@ -22,6 +22,7 @@ import { components, tools } from "@/lib/tambo";
 import { TamboProvider, useTamboThreadInput } from "@tambo-ai/react";
 import { TamboMcpProvider } from "@tambo-ai/react/mcp";
 import { buildPortfolioContextText } from "@/services/portfolio-data";
+import type { ListResourceItem } from "@tambo-ai/react";
 
 const PENDING_KEY = "tambo-pending-message";
 
@@ -78,13 +79,15 @@ function FloatingChat() {
         <ThreadContainer
           ref={containerRef}
           disableSidebarSpacing
-          style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}
+          className="!bg-transparent !border-0 !shadow-none"
+          style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "transparent" }}
         >
           <AutoSubmitPendingMessage />
 
-          {/* Scrollable messages — no background, bubbles float over canvas */}
+          {/* Scrollable messages — transparent, bubbles float over canvas */}
           <ScrollableMessageContainer
-            style={{ flex: 1, padding: "8px 4px", overflowY: "auto" }}
+            className="!bg-transparent"
+            style={{ flex: 1, padding: "8px 4px", overflowY: "auto", background: "transparent" }}
           >
             <ThreadContent>
               <ThreadContentMessages />
@@ -176,6 +179,29 @@ const portfolioContextHelpers = {
   getPortfolioContext: () => buildPortfolioContextText(),
 };
 
+const SYSTEM_CONTEXT_URI = "system://portfolio-context";
+
+const systemContextResource: ListResourceItem = {
+  uri: SYSTEM_CONTEXT_URI,
+  name: "Portfolio Context",
+  description:
+    "Ikkyu Khiw's complete portfolio profile, career history, projects, skills, and AI agent persona instructions.",
+  mimeType: "text/plain",
+};
+
+async function listSystemResources() {
+  return [systemContextResource];
+}
+
+async function getSystemResource(uri: string) {
+  if (uri === SYSTEM_CONTEXT_URI) {
+    return {
+      contents: [{ uri, mimeType: "text/plain", text: buildPortfolioContextText() }],
+    };
+  }
+  return { contents: [] };
+}
+
 export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
@@ -190,6 +216,9 @@ export default function ChatPage() {
         tools={tools}
         mcpServers={mcpServers}
         contextHelpers={portfolioContextHelpers}
+        resources={[systemContextResource]}
+        listResources={listSystemResources}
+        getResource={getSystemResource}
       >
         <TamboMcpProvider>
           {/* Hidden Tambo interactables — needed for AI canvas control */}
