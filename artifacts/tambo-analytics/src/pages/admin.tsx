@@ -506,7 +506,19 @@ export default function AdminPage() {
                       <div key={i} style={{ padding: "14px 16px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, marginBottom: 12 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                           <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim }}>SIDE PROJECT {i + 1}</span>
-                          <button onClick={() => setField("sideProjects", profile.sideProjects.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button
+                              onClick={() => { const next = [...profile.sideProjects]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; setField("sideProjects", next); }}
+                              disabled={i === 0}
+                              style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === 0 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}
+                            >↑</button>
+                            <button
+                              onClick={() => { const next = [...profile.sideProjects]; [next[i], next[i + 1]] = [next[i + 1], next[i]]; setField("sideProjects", next); }}
+                              disabled={i === profile.sideProjects.length - 1}
+                              style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === profile.sideProjects.length - 1 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === profile.sideProjects.length - 1 ? "default" : "pointer", opacity: i === profile.sideProjects.length - 1 ? 0.4 : 1 }}
+                            >↓</button>
+                            <button onClick={() => setField("sideProjects", profile.sideProjects.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
+                          </div>
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
                           <TextField label="Name" value={sp.name} onChange={v => { const next = [...profile.sideProjects]; next[i] = { ...sp, name: v }; setField("sideProjects", next); }} />
@@ -600,7 +612,19 @@ export default function AdminPage() {
                     <div key={i} style={{ padding: "14px 16px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, marginBottom: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                         <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim }}>CATEGORY {i + 1}</span>
-                        <button onClick={() => setField("skills", profile.skills.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            onClick={() => { const next = [...profile.skills]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; setField("skills", next); }}
+                            disabled={i === 0}
+                            style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === 0 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}
+                          >↑</button>
+                          <button
+                            onClick={() => { const next = [...profile.skills]; [next[i], next[i + 1]] = [next[i + 1], next[i]]; setField("skills", next); }}
+                            disabled={i === profile.skills.length - 1}
+                            style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === profile.skills.length - 1 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === profile.skills.length - 1 ? "default" : "pointer", opacity: i === profile.skills.length - 1 ? 0.4 : 1 }}
+                          >↓</button>
+                          <button onClick={() => setField("skills", profile.skills.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
+                        </div>
                       </div>
                       <TextField label="Category Name" value={s.category} onChange={v => { const next = [...profile.skills]; next[i] = { ...s, category: v }; setField("skills", next); }} />
                       <ItemsArrayField label="Skills (one per row)" items={s.items} onChange={v => { const next = [...profile.skills]; next[i] = { ...s, items: v }; setField("skills", next); }} placeholder="e.g. TypeScript" />
@@ -618,7 +642,19 @@ export default function AdminPage() {
                     <div key={i} style={{ padding: "14px 16px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, marginBottom: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                         <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim }}>DOMAIN {i + 1}</span>
-                        <button onClick={() => setField("domains", profile.domains.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            onClick={() => { const next = [...profile.domains]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; setField("domains", next); }}
+                            disabled={i === 0}
+                            style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === 0 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}
+                          >↑</button>
+                          <button
+                            onClick={() => { const next = [...profile.domains]; [next[i], next[i + 1]] = [next[i + 1], next[i]]; setField("domains", next); }}
+                            disabled={i === profile.domains.length - 1}
+                            style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === profile.domains.length - 1 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === profile.domains.length - 1 ? "default" : "pointer", opacity: i === profile.domains.length - 1 ? 0.4 : 1 }}
+                          >↓</button>
+                          <button onClick={() => setField("domains", profile.domains.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
+                        </div>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "60px 1fr", gap: "0 16px" }}>
                         <TextField label="Icon" value={d.icon} onChange={v => { const next = [...profile.domains]; next[i] = { ...d, icon: v }; setField("domains", next); }} />
