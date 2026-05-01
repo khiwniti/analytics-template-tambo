@@ -37,3 +37,8 @@ externalPort = 80
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+NOTIFICATION_EMAIL = "kiw.brw@gmail.com"
