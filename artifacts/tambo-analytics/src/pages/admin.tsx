@@ -196,7 +196,7 @@ function ItemsArrayField({
   );
 }
 
-type Tab = "profile" | "career" | "projects" | "skills" | "domains" | "education" | "contact";
+type Tab = "profile" | "career" | "projects" | "skills" | "domains" | "education" | "contact" | "submissions";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -206,7 +206,19 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "domains", label: "Domains" },
   { id: "education", label: "Education" },
   { id: "contact", label: "Contact" },
+  { id: "submissions", label: "Submissions" },
 ];
+
+type ContactSubmission = {
+  id: number;
+  name: string;
+  email: string;
+  company?: string | null;
+  role?: string | null;
+  message: string;
+  ipAddress?: string | null;
+  createdAt: string;
+};
 
 function LoginGate({ onLogin }: { onLogin: (token: string) => void }) {
   const [token, setToken] = useState("");
@@ -297,6 +309,9 @@ export default function AdminPage() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [saveError, setSaveError] = useState("");
   const [dataLoading, setDataLoading] = useState(false);
+  const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [submissionsError, setSubmissionsError] = useState("");
 
   useEffect(() => {
     const stored = sessionStorage.getItem("admin-token");
@@ -324,6 +339,33 @@ export default function AdminPage() {
       .then((data: PortfolioProfile) => { setProfile(data); setDataLoading(false); })
       .catch(() => setDataLoading(false));
   }, [authState, token]);
+
+  useEffect(() => {
+    if (activeTab !== "submissions" || authState !== "authenticated" || !token) return;
+    setSubmissionsLoading(true);
+    setSubmissionsError("");
+    fetch(`${API_BASE}/api/admin/contacts`, {
+      headers: { "x-admin-token": token },
+    })
+      .then(async r => {
+        if (r.status === 401) {
+          setSubmissionsLoading(false);
+          handleLogout();
+          return;
+        }
+        const data = await r.json() as { contacts?: ContactSubmission[]; error?: string };
+        if (!r.ok || !data.contacts) {
+          setSubmissionsError(data.error ?? "Failed to load submissions");
+        } else {
+          setSubmissions(data.contacts);
+        }
+        setSubmissionsLoading(false);
+      })
+      .catch(() => {
+        setSubmissionsError("Network error. Could not load submissions.");
+        setSubmissionsLoading(false);
+      });
+  }, [activeTab, authState, token]);
 
   const handleLogin = useCallback((t: string) => {
     sessionStorage.setItem("admin-token", t);
@@ -613,12 +655,74 @@ export default function AdminPage() {
               )}
 
               {/* Bottom save bar */}
-              <div style={{ marginTop: 32, paddingTop: 20, borderTop: `1px solid ${C.border}`, display: "flex", gap: 12, alignItems: "center" }}>
-                <SaveButton status={saveStatus} onClick={save} size="lg" />
-                {saveStatus === "saved" && <span style={{ fontSize: 12, color: C.accent }}>Changes saved and live immediately.</span>}
-                {saveStatus === "error" && <span style={{ fontSize: 12, color: C.red }}>{saveError}</span>}
-              </div>
+              {activeTab !== "submissions" && (
+                <div style={{ marginTop: 32, paddingTop: 20, borderTop: `1px solid ${C.border}`, display: "flex", gap: 12, alignItems: "center" }}>
+                  <SaveButton status={saveStatus} onClick={save} size="lg" />
+                  {saveStatus === "saved" && <span style={{ fontSize: 12, color: C.accent }}>Changes saved and live immediately.</span>}
+                  {saveStatus === "error" && <span style={{ fontSize: 12, color: C.red }}>{saveError}</span>}
+                </div>
+              )}
             </>
+          )}
+
+          {/* ── Submissions ── rendered independently of portfolio data loading */}
+          {activeTab === "submissions" && authState === "authenticated" && (
+            <div>
+              <SectionHeader>Contact Form Submissions</SectionHeader>
+              {submissionsLoading && (
+                <div style={{ textAlign: "center", color: C.muted, paddingTop: 60 }}>
+                  <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12 }}>Loading submissions...</div>
+                </div>
+              )}
+              {submissionsError && (
+                <div style={{ fontSize: 13, color: C.red, padding: "12px 16px", borderRadius: 8, background: C.redBg, border: `1px solid ${C.redBorder}` }}>{submissionsError}</div>
+              )}
+              {!submissionsLoading && !submissionsError && submissions.length === 0 && (
+                <div style={{ textAlign: "center", color: C.muted, paddingTop: 60 }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12 }}>No submissions yet.</div>
+                </div>
+              )}
+              {!submissionsLoading && submissions.map((s) => (
+                <div key={s.id} style={{ padding: "18px 20px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: C.textBright, marginBottom: 2 }}>{s.name}</div>
+                      <a href={`mailto:${s.email}`} style={{ fontSize: 12, color: C.accent, fontFamily: F.mono, textDecoration: "none" }}>{s.email}</a>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 11, color: C.muted, fontFamily: F.mono }}>
+                        {new Date(s.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                      </div>
+                      <div style={{ fontSize: 10, color: C.faint, fontFamily: F.mono, marginTop: 2 }}>
+                        {new Date(s.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                  </div>
+                  {(s.company || s.role) && (
+                    <div style={{ display: "flex", gap: 16, marginBottom: 10 }}>
+                      {s.company && (
+                        <div>
+                          <span style={{ fontSize: 9, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase" }}>Company </span>
+                          <span style={{ fontSize: 12, color: C.text }}>{s.company}</span>
+                        </div>
+                      )}
+                      {s.role && (
+                        <div>
+                          <span style={{ fontSize: 9, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase" }}>Role </span>
+                          <span style={{ fontSize: 12, color: C.text }}>{s.role}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10, marginTop: 4 }}>
+                    <div style={{ fontSize: 9, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Message</div>
+                    <div style={{ fontSize: 13, color: C.text, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{s.message}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

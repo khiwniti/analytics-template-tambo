@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, contactsTable, insertContactSchema } from "@workspace/db";
+import { desc } from "drizzle-orm";
 import { Resend } from "resend";
 
 const router: IRouter = Router();
@@ -90,6 +91,34 @@ router.post("/contact", async (req, res) => {
     return res
       .status(500)
       .json({ error: "Failed to save your message. Please try again." });
+  }
+});
+
+router.get("/admin/contacts", async (req, res) => {
+  const adminToken = process.env.PORTFOLIO_ADMIN_TOKEN;
+  const providedToken = req.headers["x-admin-token"];
+
+  if (!adminToken || providedToken !== adminToken) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const contacts = await db
+      .select({
+        id: contactsTable.id,
+        name: contactsTable.name,
+        email: contactsTable.email,
+        company: contactsTable.company,
+        role: contactsTable.role,
+        message: contactsTable.message,
+        createdAt: contactsTable.createdAt,
+      })
+      .from(contactsTable)
+      .orderBy(desc(contactsTable.createdAt));
+    return res.json({ contacts });
+  } catch (err) {
+    console.error("Failed to fetch contacts:", err);
+    return res.status(500).json({ error: "Failed to fetch contact submissions" });
   }
 });
 
