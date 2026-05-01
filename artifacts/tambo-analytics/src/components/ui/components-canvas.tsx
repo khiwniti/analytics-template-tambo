@@ -214,6 +214,8 @@ export const ComponentsCanvas: React.FC<
 
     // Pop-in animation state: start collapsed if newly added, skip if pre-existing
     const [visible, setVisible] = React.useState(!isNew);
+    // Exit animation state
+    const [removing, setRemoving] = React.useState(false);
 
     React.useEffect(() => {
       if (!isNew) return;
@@ -232,25 +234,44 @@ export const ComponentsCanvas: React.FC<
     // Extract the necessary props for the delete button
     const { canvasId, componentId, _componentType } = componentProps;
 
+    const removeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+      null,
+    );
+
+    React.useEffect(() => {
+      return () => {
+        if (removeTimerRef.current !== null) {
+          clearTimeout(removeTimerRef.current);
+        }
+      };
+    }, []);
+
+    const handleRemove = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!canvasId || !componentId || removing) return;
+        setRemoving(true);
+        removeTimerRef.current = setTimeout(() => {
+          removeComponent(canvasId, componentId);
+        }, 200);
+      },
+      [canvasId, componentId, removing],
+    );
+
     return (
       <div
         className="relative group"
         style={{
-          opacity: visible ? 1 : 0,
-          scale: visible ? "1" : "0.92",
-          transition: "opacity 250ms ease-out, scale 250ms ease-out",
+          opacity: removing ? 0 : visible ? 1 : 0,
+          scale: removing ? "0.92" : visible ? "1" : "0.92",
+          transition: "opacity 200ms ease-in, scale 200ms ease-in",
         }}
       >
         {/* Delete button outside the sortable area */}
         <div className="absolute -top-2 -right-2 z-50">
           <button
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (canvasId && componentId) {
-                removeComponent(canvasId, componentId);
-              }
-            }}
+            onMouseDown={handleRemove}
             className="bg-background border border-border rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
             title="Remove"
           >
