@@ -321,16 +321,18 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               />
               <RechartsCore.Tooltip
                 cursor={{
-                  fill: "var(--muted-foreground)",
-                  fillOpacity: 0.1,
+                  fill: "rgba(52,211,153,0.05)",
                   radius: 4,
                 }}
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "var(--radius)",
-                  color: "var(--foreground)",
+                  backgroundColor: "#161b22",
+                  border: "1px solid rgba(52,211,153,0.2)",
+                  borderRadius: 8,
+                  color: "#e6edf3",
+                  fontFamily: "JetBrains Mono, monospace",
+                  fontSize: 11,
                 }}
+                labelStyle={{ color: "#34D399" }}
               />
               {showLegend && (
                 <RechartsCore.Legend
@@ -373,16 +375,18 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               />
               <RechartsCore.Tooltip
                 cursor={{
-                  stroke: "var(--muted)",
+                  stroke: "rgba(52,211,153,0.2)",
                   strokeWidth: 2,
-                  strokeOpacity: 0.3,
                 }}
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "var(--radius)",
-                  color: "var(--foreground)",
+                  backgroundColor: "#161b22",
+                  border: "1px solid rgba(52,211,153,0.2)",
+                  borderRadius: 8,
+                  color: "#e6edf3",
+                  fontFamily: "JetBrains Mono, monospace",
+                  fontSize: 11,
                 }}
+                labelStyle={{ color: "#34D399" }}
               />
               {showLegend && (
                 <RechartsCore.Legend
@@ -438,18 +442,15 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               />
               <RechartsCore.Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "var(--radius)",
-                  color: "var(--foreground)",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  backgroundColor: "#161b22",
+                  border: "1px solid rgba(52,211,153,0.2)",
+                  borderRadius: 8,
+                  color: "#e6edf3",
+                  fontFamily: "JetBrains Mono, monospace",
+                  fontSize: 11,
                 }}
-                itemStyle={{
-                  color: "var(--foreground)",
-                }}
-                labelStyle={{
-                  color: "var(--foreground)",
-                }}
+                itemStyle={{ color: "#e6edf3" }}
+                labelStyle={{ color: "#34D399" }}
               />
               {showLegend && (
                 <RechartsCore.Legend
@@ -468,14 +469,76 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
       <GraphErrorBoundary className={className} variant={variant} size={size}>
         <div
           ref={ref}
+          style={{
+            background: "#0d1117",
+            border: "1px solid rgba(52,211,153,0.15)",
+            borderRadius: 16,
+            boxShadow:
+              "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.6)",
+            fontFamily: "Quicksand, sans-serif",
+            color: "#e6edf3",
+            position: "relative",
+            overflow: "hidden",
+          }}
           className={cn(graphVariants({ variant, size }), className)}
           {...props}
         >
-          <div className="p-4 h-full">
+          {/* Gradient top accent line */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 2,
+              background:
+                "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+              borderRadius: "16px 16px 0 0",
+              zIndex: 1,
+            }}
+          />
+          {/* Corner glow */}
+          <div
+            style={{
+              position: "absolute",
+              top: -50,
+              right: -50,
+              width: 180,
+              height: 180,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
+
+          <div className="p-4 h-full" style={{ position: "relative", zIndex: 1 }}>
             {title && (
-              <h3 className="text-lg font-medium mb-4 text-foreground">
-                {title}
-              </h3>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      background: "#34D399",
+                      boxShadow: "0 0 6px rgba(52,211,153,0.55)",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontFamily: "JetBrains Mono, monospace",
+                      color: "rgba(52,211,153,0.55)",
+                      letterSpacing: 2.5,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {title}
+                  </span>
+                </div>
+              </div>
             )}
             <div className="w-full h-[calc(100%-2rem)]">
               <RechartsCore.ResponsiveContainer width="100%" height="100%">

@@ -439,8 +439,22 @@ export const ComponentsCanvas: React.FC<
         )}
       </div>
 
-      {/* Dot-grid background */}
+      {/* Animated dot-grid background */}
+      <style>{`
+        @keyframes dotDrift {
+          0%   { background-position: 0px 0px; }
+          100% { background-position: 28px 28px; }
+        }
+        @keyframes dotPulse {
+          0%, 100% { opacity: 0.55; }
+          50%       { opacity: 0.85; }
+        }
+        .canvas-dot-grid {
+          animation: dotDrift 12s linear infinite, dotPulse 6s ease-in-out infinite;
+        }
+      `}</style>
       <div
+        className="canvas-dot-grid"
         style={{
           position: "absolute",
           inset: 0,
