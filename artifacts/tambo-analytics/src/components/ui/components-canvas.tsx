@@ -13,7 +13,7 @@ import {
 import {
   SortableContext,
   useSortable,
-  verticalListSortingStrategy,
+  rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TamboComponent } from "@tambo-ai/react";
@@ -362,6 +362,7 @@ export const ComponentsCanvas: React.FC<
           opacity: removing ? 0 : visible ? 1 : 0,
           scale: removing ? "0.92" : visible ? "1" : "0.92",
           transition: "opacity 200ms ease-in, scale 200ms ease-in",
+          width: "100%",
         }}
       >
         {/* Delete button outside the sortable area */}
@@ -607,9 +608,16 @@ export const ComponentsCanvas: React.FC<
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             <SortableContext
               items={activeCanvas.components.map((c) => c.componentId)}
-              strategy={verticalListSortingStrategy}
+              strategy={rectSortingStrategy}
             >
-              <div className="grid gap-4">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+                  gap: 16,
+                  alignItems: "start",
+                }}
+              >
                 {activeCanvas.components.map((c) => (
                   <SortableItem
                     key={c.componentId}

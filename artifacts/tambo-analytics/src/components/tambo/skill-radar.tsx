@@ -59,14 +59,28 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
           padding: "24px 28px",
           fontFamily: "Quicksand, sans-serif",
           color: C.text,
-          maxWidth: 480,
+          width: "100%",
           boxShadow:
             "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.6)",
           position: "relative",
           overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
-        {/* Gradient glow */}
+        {/* Gradient top accent line */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            background:
+              "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+            borderRadius: "16px 16px 0 0",
+          }}
+        />
+        {/* Corner glow */}
         <div
           style={{
             position: "absolute",

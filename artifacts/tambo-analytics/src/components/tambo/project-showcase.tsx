@@ -52,7 +52,8 @@ export const ProjectShowcase = React.forwardRef<
         padding: "24px 28px",
         fontFamily: "Quicksand, sans-serif",
         color: C.text,
-        maxWidth: 480,
+        width: "100%",
+        boxSizing: "border-box" as const,
         boxShadow: hovered
           ? "0 12px 48px rgba(52,211,153,0.14), 0 0 0 1px rgba(52,211,153,0.1) inset"
           : "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.06) inset",
