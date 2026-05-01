@@ -1,8 +1,9 @@
 "use client";
 
-import { CanvasComponent, useCanvasStore } from "@/lib/canvas-storage";
+import { CanvasComponent, generateId, useCanvasStore } from "@/lib/canvas-storage";
 import { components } from "@/lib/tambo";
 import { cn } from "@/lib/utils";
+import { getPortfolioProfile } from "@/services/portfolio-data";
 import {
   DndContext,
   DragEndEvent,
@@ -21,6 +22,7 @@ import {
   CheckIcon,
   PencilIcon,
   PlusIcon,
+  SparklesIcon,
   TrashIcon,
   XIcon,
 } from "lucide-react";
@@ -61,6 +63,92 @@ export const ComponentsCanvas: React.FC<
     string | null
   >(null);
   const [editingName, setEditingName] = React.useState("");
+  const [filling, setFilling] = React.useState(false);
+
+  /** Fetch all portfolio data and populate the active canvas with cards. */
+  const handleFillPortfolio = React.useCallback(async () => {
+    if (!activeCanvasId || filling) return;
+    setFilling(true);
+    try {
+      const profile = await getPortfolioProfile();
+
+      // Clear existing components first
+      clearCanvas(activeCanvasId);
+      await new Promise((r) => setTimeout(r, 80));
+
+      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+      // 1 — Stat snapshot
+      addComponent(activeCanvasId, {
+        componentId: generateId(),
+        _componentType: "StatCard",
+        title: "By the Numbers",
+        stats: [
+          { label: "Live Apps", value: String(profile.stats.live) },
+          { label: "Projects Shipped", value: `${profile.stats.projects}+` },
+          { label: "CF Workers", value: String(profile.stats.workers) },
+          { label: "Industries", value: String(profile.stats.industries) },
+        ],
+      } as CanvasComponent);
+      await sleep(120);
+
+      // 2 — Full resume card (has PDF download built in)
+      addComponent(activeCanvasId, {
+        componentId: generateId(),
+        _componentType: "ResumeCard",
+        targetRole: profile.title,
+        requesterType: "general",
+        emphasis: profile.domains.slice(0, 2).map((d) => d.label),
+        summary: profile.summary,
+      } as CanvasComponent);
+      await sleep(120);
+
+      // 3 — Skill radar
+      addComponent(activeCanvasId, {
+        componentId: generateId(),
+        _componentType: "SkillRadar",
+        title: "Skill Profile",
+        categories: profile.skills.slice(0, 6).map((s, i) => ({
+          name: s.category,
+          value: Math.max(60, 98 - i * 7),
+        })),
+      } as CanvasComponent);
+      await sleep(120);
+
+      // 4 — Career timeline
+      addComponent(activeCanvasId, {
+        componentId: generateId(),
+        _componentType: "TimelineCard",
+        title: "Career Journey",
+        entries: profile.career.map((c) => ({
+          date: c.year,
+          title: c.role,
+          subtitle: c.company,
+          description: c.description,
+        })),
+      } as CanvasComponent);
+      await sleep(120);
+
+      // 5–7 — Top 3 projects
+      for (const project of profile.projects.slice(0, 3)) {
+        addComponent(activeCanvasId, {
+          componentId: generateId(),
+          _componentType: "ProjectShowcase",
+          projectName: project.name,
+          tag: project.tag,
+          description: project.description,
+          url: project.url,
+          highlights: [],
+          tech: [],
+        } as CanvasComponent);
+        await sleep(100);
+      }
+    } catch (err) {
+      console.error("[FillPortfolio] failed:", err);
+    } finally {
+      setFilling(false);
+    }
+  }, [activeCanvasId, filling, clearCanvas, addComponent]);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -551,16 +639,58 @@ export const ComponentsCanvas: React.FC<
         </button>
       </div>
 
-      <div className="absolute bottom-4 right-4 z-50 bg-background rounded-md">
+      <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2">
         {activeCanvasId && (
-          <button
-            onClick={() => activeCanvasId && clearCanvas(activeCanvasId)}
-            className="px-3 py-1.5 border border-gray-200 text-primary hover:text-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 rounded-md shadow-sm flex items-center gap-1.5 text-sm cursor-pointer"
-            title="Clear canvas"
-          >
-            <XIcon className="h-4 w-4" />
-            <span>Clear Canvas</span>
-          </button>
+          <>
+            {/* Fill Portfolio — populates canvas with all resume data */}
+            <button
+              onClick={handleFillPortfolio}
+              disabled={filling}
+              style={{
+                background: filling
+                  ? "rgba(52,211,153,0.15)"
+                  : "linear-gradient(135deg, rgba(52,211,153,0.2) 0%, rgba(52,211,153,0.08) 100%)",
+                border: "1px solid rgba(52,211,153,0.4)",
+                color: "#34D399",
+                borderRadius: 8,
+                padding: "6px 12px",
+                fontSize: 13,
+                fontFamily: "Quicksand, sans-serif",
+                fontWeight: 600,
+                cursor: filling ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                backdropFilter: "blur(8px)",
+                transition: "opacity 0.2s, transform 0.15s",
+                opacity: filling ? 0.7 : 1,
+                boxShadow: "0 2px 12px rgba(52,211,153,0.15)",
+              }}
+              onMouseEnter={(e) => { if (!filling) e.currentTarget.style.transform = "scale(1.03)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              title="Auto-fill canvas with full portfolio data"
+            >
+              <SparklesIcon
+                style={{
+                  width: 14,
+                  height: 14,
+                  animation: filling ? "spin 1s linear infinite" : "none",
+                }}
+              />
+              <span>{filling ? "Filling…" : "Fill Portfolio"}</span>
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </button>
+
+            {/* Clear canvas */}
+            <button
+              onClick={() => clearCanvas(activeCanvasId)}
+              className="px-3 py-1.5 border border-gray-200 text-primary hover:text-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 rounded-md shadow-sm flex items-center gap-1.5 text-sm cursor-pointer bg-background"
+              title="Clear canvas"
+            >
+              <XIcon className="h-4 w-4" />
+              <span>Clear Canvas</span>
+            </button>
+          </>
         )}
       </div>
 
@@ -601,8 +731,40 @@ export const ComponentsCanvas: React.FC<
         style={{ position: "relative", zIndex: 1 }}
       >
         {!activeCanvas || activeCanvas.components.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-            Drag components here
+          <div className="h-full flex flex-col items-center justify-center gap-4">
+            <div style={{ color: "rgba(52,211,153,0.35)", fontSize: 40 }}>✦</div>
+            <p style={{ color: "#8b949e", fontSize: 13, fontFamily: "Quicksand, sans-serif" }}>
+              Canvas is empty — fill it or ask the AI
+            </p>
+            <button
+              onClick={handleFillPortfolio}
+              disabled={filling}
+              style={{
+                background: "linear-gradient(135deg, rgba(52,211,153,0.22) 0%, rgba(52,211,153,0.06) 100%)",
+                border: "1px solid rgba(52,211,153,0.45)",
+                color: "#34D399",
+                borderRadius: 10,
+                padding: "10px 22px",
+                fontSize: 14,
+                fontFamily: "Quicksand, sans-serif",
+                fontWeight: 700,
+                cursor: filling ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                boxShadow: "0 4px 20px rgba(52,211,153,0.12)",
+                opacity: filling ? 0.7 : 1,
+                transition: "transform 0.15s, opacity 0.2s",
+              }}
+              onMouseEnter={(e) => { if (!filling) e.currentTarget.style.transform = "scale(1.04)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <SparklesIcon style={{ width: 16, height: 16 }} />
+              {filling ? "Filling…" : "Fill Portfolio"}
+            </button>
+            <p style={{ color: "rgba(139,148,158,0.5)", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}>
+              StatCard · ResumeCard · SkillRadar · TimelineCard · Projects
+            </p>
           </div>
         ) : (
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>

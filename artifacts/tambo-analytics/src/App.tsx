@@ -25,6 +25,15 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
+/** Map a pathname to a stable "page key" so navigating between e.g.
+ *  /chat and /chat/:threadId doesn't trigger a page transition or unmount. */
+function getPageKey(loc: string): string {
+  if (loc === "/" || loc === "") return "home";
+  if (loc.startsWith("/chat")) return "chat";
+  if (loc.startsWith("/admin")) return "admin";
+  return loc;
+}
+
 function AnimatedRoutes() {
   const [location] = useLocation();
   const [renderedLocation, setRenderedLocation] = useState(location);
@@ -32,8 +41,20 @@ function AnimatedRoutes() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useReducedMotion();
 
+  const currentPageKey = getPageKey(location);
+  const renderedPageKey = getPageKey(renderedLocation);
+
   useEffect(() => {
-    if (location === renderedLocation) return;
+    // Only trigger a page transition when the PAGE changes (not when the
+    // thread-id sub-path changes within /chat).
+    if (currentPageKey === renderedPageKey) {
+      // Same page — update the rendered location silently so Switch sees the
+      // latest path, but skip the transition animation.
+      if (location !== renderedLocation) {
+        setRenderedLocation(location);
+      }
+      return;
+    }
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
@@ -57,15 +78,16 @@ function AnimatedRoutes() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [location, reducedMotion]);
+  }, [location, currentPageKey, renderedPageKey, reducedMotion]);
 
   const className =
     phase === "entering" ? "page-entering" : phase === "exiting" ? "page-exiting" : "";
 
   return (
-    <div key={renderedLocation} className={className} style={{ minHeight: "100vh" }}>
+    <div key={renderedPageKey} className={className} style={{ minHeight: "100vh" }}>
       <Switch location={renderedLocation}>
         <Route path="/" component={HomePage} />
+        <Route path="/chat/:threadId" component={ChatPage} />
         <Route path="/chat" component={ChatPage} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
