@@ -829,8 +829,11 @@ const MessageRenderedComponentArea = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const { message, role, isLoading } = useMessageContext();
   const { thread } = useTambo();
-  const { addComponent, activeCanvasId, createCanvas } = useCanvasStore();
+  const { addComponent, updateComponent, removeComponent, activeCanvasId, createCanvas } = useCanvasStore();
   const autoAddedRef = React.useRef(false);
+  const preAddedRef = React.useRef(false);
+  // Remembers which canvas the skeleton was added to so the update targets the same one
+  const skeletonCanvasIdRef = React.useRef<string | null>(null);
 
   const componentBlocks = getComponentBlocks(message);
   const firstComponentBlock = componentBlocks[0];
@@ -843,7 +846,50 @@ const MessageRenderedComponentArea = React.forwardRef<
 
   const isCancelled = thread?.thread?.lastRunCancelled ?? false;
 
-  // Auto-add to canvas once generation is complete
+  // Stable fallback ID for the rare case where message.id is absent; generated once per mount
+  const fallbackIdRef = React.useRef(`fallback-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`);
+  // Stable component ID derived from the message so both effects use the same key
+  const componentId = `auto-${message.id ?? fallbackIdRef.current}-${componentType}`;
+
+  // Pre-add a skeleton placeholder to the canvas as soon as streaming begins
+  React.useEffect(() => {
+    if (preAddedRef.current) return;
+    if (!renderedComponent) return;
+    if (!isLoading) return; // Only run while streaming
+    if (role !== "assistant") return;
+    if (isCancelled) return;
+    if (!isDraggableComponent(componentType)) return;
+
+    preAddedRef.current = true;
+
+    let targetCanvasId = activeCanvasId;
+    if (!targetCanvasId) {
+      const newCanvas = createCanvas();
+      targetCanvasId = newCanvas.id;
+    }
+    if (!targetCanvasId) return;
+
+    skeletonCanvasIdRef.current = targetCanvasId;
+
+    addComponent(targetCanvasId, {
+      componentId,
+      _componentType: componentType,
+      _inCanvas: true,
+      _isStreaming: true,
+    });
+  }, [
+    renderedComponent,
+    isLoading,
+    role,
+    isCancelled,
+    componentType,
+    activeCanvasId,
+    addComponent,
+    createCanvas,
+    componentId,
+  ]);
+
+  // Once streaming finishes, replace the skeleton with the real component props
   React.useEffect(() => {
     if (autoAddedRef.current) return;
     if (!renderedComponent) return;
@@ -854,21 +900,28 @@ const MessageRenderedComponentArea = React.forwardRef<
 
     autoAddedRef.current = true;
 
-    let targetCanvasId = activeCanvasId;
-    if (!targetCanvasId) {
-      const newCanvas = createCanvas();
-      targetCanvasId = newCanvas.id;
-    }
-    if (!targetCanvasId) return;
+    if (preAddedRef.current && skeletonCanvasIdRef.current) {
+      // Skeleton already exists — update it with real props and clear the streaming flag
+      updateComponent(skeletonCanvasIdRef.current, componentId, {
+        ...componentProps,
+        _isStreaming: false,
+      });
+    } else {
+      // No skeleton was pre-added (e.g. very fast response) — add normally
+      let targetCanvasId = activeCanvasId;
+      if (!targetCanvasId) {
+        const newCanvas = createCanvas();
+        targetCanvasId = newCanvas.id;
+      }
+      if (!targetCanvasId) return;
 
-    // Stable ID based on message ID so re-renders never duplicate
-    const componentId = `auto-${message.id ?? Date.now()}-${componentType}`;
-    addComponent(targetCanvasId, {
-      ...componentProps,
-      componentId,
-      _inCanvas: true,
-      _componentType: componentType,
-    });
+      addComponent(targetCanvasId, {
+        ...componentProps,
+        componentId,
+        _inCanvas: true,
+        _componentType: componentType,
+      });
+    }
   }, [
     renderedComponent,
     isLoading,
@@ -878,9 +931,22 @@ const MessageRenderedComponentArea = React.forwardRef<
     componentProps,
     activeCanvasId,
     addComponent,
+    updateComponent,
     createCanvas,
-    message.id,
+    componentId,
   ]);
+
+  // If the stream was cancelled after a skeleton was added, remove it so it doesn't stick
+  React.useEffect(() => {
+    if (!isCancelled) return;
+    if (!preAddedRef.current) return;
+    if (autoAddedRef.current) return; // already resolved normally
+    const canvasId = skeletonCanvasIdRef.current;
+    if (!canvasId) return;
+    removeComponent(canvasId, componentId);
+    preAddedRef.current = false;
+    skeletonCanvasIdRef.current = null;
+  }, [isCancelled, componentId, removeComponent]);
 
   if (!renderedComponent || role !== "assistant" || isCancelled) {
     return null;

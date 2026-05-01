@@ -181,9 +181,91 @@ export const ComponentsCanvas: React.FC<
     [removeCanvas],
   );
 
+  // Shimmer skeleton shown while a component is still being streamed
+  const SkeletonCard: React.FC<{ componentType: string }> = ({ componentType }) => {
+    const isGraph = componentType === "Graph";
+    return (
+      <div
+        className="rounded-lg border border-border/40 overflow-hidden"
+        style={{
+          background: "hsl(var(--card, 0 0% 100%))",
+          minHeight: isGraph ? 220 : 160,
+          position: "relative",
+        }}
+      >
+        {/* Shimmer overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 1.6s ease-in-out infinite",
+          }}
+        />
+        <div className="p-4 flex flex-col gap-3">
+          {/* Header row */}
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1/3 rounded bg-muted animate-pulse" />
+            <div className="h-3 w-1/5 rounded bg-muted/60 animate-pulse" />
+          </div>
+          {isGraph ? (
+            <>
+              {/* Fake chart bars */}
+              <div className="flex items-end gap-2 pt-2" style={{ height: 100 }}>
+                {[55, 75, 45, 90, 65, 80, 50].map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-sm bg-muted animate-pulse"
+                    style={{ height: `${h}%`, animationDelay: `${i * 80}ms` }}
+                  />
+                ))}
+              </div>
+              <div className="h-3 w-2/3 rounded bg-muted/60 animate-pulse" />
+            </>
+          ) : (
+            <>
+              <div className="h-3 w-full rounded bg-muted animate-pulse" />
+              <div className="h-3 w-5/6 rounded bg-muted/60 animate-pulse" />
+              <div className="h-3 w-4/6 rounded bg-muted/40 animate-pulse" />
+              <div className="mt-1 h-3 w-3/4 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-1/2 rounded bg-muted/60 animate-pulse" />
+            </>
+          )}
+        </div>
+        {/* Label */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            right: 12,
+            fontSize: 10,
+            fontFamily: "JetBrains Mono, monospace",
+            color: "rgba(52,211,153,0.5)",
+            letterSpacing: "0.04em",
+          }}
+        >
+          generating…
+        </div>
+        <style>{`
+          @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+        `}</style>
+      </div>
+    );
+  };
+
   // Find component definition from registry
   const renderComponent = (componentProps: CanvasComponentProps) => {
     const componentType = componentProps._componentType;
+
+    // Show skeleton while the AI is still generating this component
+    if (componentProps._isStreaming) {
+      return <SkeletonCard componentType={componentType} />;
+    }
+
     const componentDef = components.find(
       (comp: TamboComponent) => comp.name === componentType,
     );
@@ -199,7 +281,7 @@ export const ComponentsCanvas: React.FC<
     const Component = componentDef.component;
     // Filter out our custom props that shouldn't be passed to the component
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _componentType, componentId, canvasId, _inCanvas, ...cleanProps } =
+    const { _componentType, componentId, canvasId, _inCanvas, _isStreaming, ...cleanProps } =
       componentProps;
 
     return <Component {...cleanProps} />;
@@ -210,12 +292,15 @@ export const ComponentsCanvas: React.FC<
     isNew: boolean;
   }> = ({ componentProps, isNew }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
-      useSortable({ id: componentProps.componentId });
+      useSortable({ id: componentProps.componentId, disabled: !!componentProps._isStreaming });
 
     // Pop-in animation state: start collapsed if newly added, skip if pre-existing
     const [visible, setVisible] = React.useState(!isNew);
     // Exit animation state
     const [removing, setRemoving] = React.useState(false);
+    // Tracks when a skeleton just resolved so we can fade the real content in
+    const prevIsStreamingRef = React.useRef(componentProps._isStreaming);
+    const [contentVisible, setContentVisible] = React.useState(!componentProps._isStreaming);
 
     React.useEffect(() => {
       if (!isNew) return;
@@ -225,6 +310,17 @@ export const ComponentsCanvas: React.FC<
       const rafId = requestAnimationFrame(() => setVisible(true));
       return () => cancelAnimationFrame(rafId);
     }, [isNew, componentProps.componentId]);
+
+    // Fade the real content in when streaming resolves
+    React.useEffect(() => {
+      if (prevIsStreamingRef.current && !componentProps._isStreaming) {
+        // Transition: skeleton → real content
+        const rafId = requestAnimationFrame(() => setContentVisible(true));
+        prevIsStreamingRef.current = false;
+        return () => cancelAnimationFrame(rafId);
+      }
+      prevIsStreamingRef.current = componentProps._isStreaming ?? false;
+    }, [componentProps._isStreaming]);
 
     const style = {
       transform: CSS.Transform.toString(transform),
@@ -282,11 +378,18 @@ export const ComponentsCanvas: React.FC<
         {/* Sortable content - make it draggable to other canvases */}
         <div
           ref={setNodeRef}
-          style={style}
+          style={{
+            ...style,
+            // Fade real content in after streaming resolves
+            opacity: componentProps._isStreaming ? 1 : contentVisible ? 1 : 0,
+            transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
+          }}
           {...attributes}
           {...listeners}
-          draggable={true}
+          draggable={!componentProps._isStreaming}
           onDragStart={(e) => {
+            // Prevent dragging while still generating
+            if (componentProps._isStreaming) { e.preventDefault(); return; }
             // Set drag data for moving between canvases
             const dragData = {
               component: _componentType,

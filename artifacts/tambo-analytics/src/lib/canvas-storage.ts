@@ -11,6 +11,8 @@ export interface CanvasComponent {
   _componentType: string;
   _inCanvas?: boolean;
   canvasId?: string;
+  /** True while the AI is still streaming this component — never persisted */
+  _isStreaming?: boolean;
   [key: string]: unknown;
 }
 
@@ -409,7 +411,11 @@ export const useCanvasStore = create<CanvasState>()(
       name: "tambo-canvas-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        canvases: state.canvases,
+        // Strip skeleton-only entries so a page reload never shows stuck skeletons
+        canvases: state.canvases.map((c) => ({
+          ...c,
+          components: c.components.filter((comp) => !comp._isStreaming),
+        })),
         activeCanvasId: state.activeCanvasId,
       }),
     },
