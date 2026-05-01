@@ -439,6 +439,19 @@ export const ComponentsCanvas: React.FC<
         )}
       </div>
 
+      {/* Dot-grid background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage:
+            "radial-gradient(circle, rgba(52,211,153,0.28) 1.5px, transparent 1.5px)",
+          backgroundSize: "28px 28px",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
       <div
         className={cn(
           "flex-1 overflow-auto p-4",
@@ -446,6 +459,7 @@ export const ComponentsCanvas: React.FC<
           "[&::-webkit-scrollbar-thumb]:bg-gray-300",
           "[&::-webkit-scrollbar:horizontal]:h-[4px]",
         )}
+        style={{ position: "relative", zIndex: 1 }}
       >
         {!activeCanvas || activeCanvas.components.length === 0 ? (
           <div className="h-full flex items-center justify-center text-sm text-muted-foreground">

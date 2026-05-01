@@ -17,6 +17,12 @@ import {
   ContactForm,
   contactFormSchema,
 } from "@/components/tambo/contact-form";
+import { SkillRadar, skillRadarSchema } from "@/components/tambo/skill-radar";
+import {
+  TimelineCard,
+  timelineCardSchema,
+} from "@/components/tambo/timeline-card";
+import { StatCard, statCardSchema } from "@/components/tambo/stat-card";
 import type { TamboComponent, TamboTool } from "@tambo-ai/react";
 import { z } from "zod";
 import {
@@ -98,5 +104,29 @@ export const components: TamboComponent[] = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: ContactForm as any,
     propsSchema: contactFormSchema,
+  },
+  {
+    name: "SkillRadar",
+    description:
+      "Render a radar/spider chart visualizing Ikkyu's skill proficiencies by category. Use this when someone asks about his technical strengths, skill breakdown, or how strong he is in different areas. Provide 4–8 categories with scores 0–100. Example categories: 'AI / Agents', 'Full-Stack', 'DevOps / Cloud', 'Data Engineering', 'Leadership', 'Thai Gov Stack'. Always use this instead of listing skills as text when the question is about skill levels or technical profile.",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: SkillRadar as any,
+    propsSchema: skillRadarSchema,
+  },
+  {
+    name: "TimelineCard",
+    description:
+      "Render a vertical timeline of career or education milestones. Use this when someone asks about Ikkyu's career history, work journey, progression over time, or educational background. Order entries newest-first. Include date ranges, role titles, companies/institutions, and short descriptions. Prefer this over listing career history as plain text.",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: TimelineCard as any,
+    propsSchema: timelineCardSchema,
+  },
+  {
+    name: "StatCard",
+    description:
+      "Render a compact grid of key stats and numbers about Ikkyu. Use this for at-a-glance summaries when someone asks for highlights, quick facts, or a snapshot of his experience. Example stats: years of experience, number of projects shipped, number of AI agents built, government systems deployed. Use 3–6 stats with short labels and bold values.",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: StatCard as any,
+    propsSchema: statCardSchema,
   },
 ];

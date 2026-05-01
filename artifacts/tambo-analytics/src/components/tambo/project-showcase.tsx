@@ -54,8 +54,8 @@ export const ProjectShowcase = React.forwardRef<
         color: C.text,
         maxWidth: 480,
         boxShadow: hovered
-          ? "0 12px 48px rgba(52,211,153,0.12)"
-          : "0 4px 24px rgba(0,0,0,0.5)",
+          ? "0 12px 48px rgba(52,211,153,0.14), 0 0 0 1px rgba(52,211,153,0.1) inset"
+          : "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.06) inset",
         transition: "all 0.25s cubic-bezier(0.22,1,0.36,1)",
         cursor: url ? "pointer" : "default",
         position: "relative",
@@ -67,6 +67,22 @@ export const ProjectShowcase = React.forwardRef<
         if (url) window.open(url, "_blank", "noopener,noreferrer");
       }}
     >
+      {/* Gradient top accent line */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 2,
+          background: hovered
+            ? "linear-gradient(90deg, transparent, rgba(52,211,153,0.9) 30%, rgba(52,211,153,1) 50%, rgba(52,211,153,0.9) 70%, transparent)"
+            : "linear-gradient(90deg, transparent, rgba(52,211,153,0.5) 30%, rgba(52,211,153,0.7) 50%, rgba(52,211,153,0.5) 70%, transparent)",
+          borderRadius: "16px 16px 0 0",
+          transition: "opacity 0.25s",
+        }}
+      />
+
       {/* Subtle accent glow top-left */}
       <div
         style={{
