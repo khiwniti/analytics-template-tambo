@@ -2,8 +2,17 @@ import { Router, type IRouter } from "express";
 import { db, contactsTable, insertContactSchema } from "@workspace/db";
 import { desc } from "drizzle-orm";
 import { Resend } from "resend";
+import rateLimit from "express-rate-limit";
 
 const router: IRouter = Router();
+
+const contactRateLimit = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many submissions. Please wait 10 minutes before trying again." },
+});
 
 function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
@@ -61,7 +70,11 @@ async function sendContactNotification(data: {
   });
 }
 
-router.post("/contact", async (req, res) => {
+router.post("/contact", contactRateLimit, async (req, res) => {
+  if (req.body.website) {
+    return res.status(400).json({ error: "Invalid submission" });
+  }
+
   const parsed = insertContactSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -71,10 +84,7 @@ router.post("/contact", async (req, res) => {
     });
   }
 
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-    req.socket.remoteAddress ||
-    null;
+  const ip = req.ip ?? null;
 
   try {
     await db

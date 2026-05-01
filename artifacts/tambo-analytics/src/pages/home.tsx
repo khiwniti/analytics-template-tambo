@@ -136,6 +136,7 @@ type SubmitStatus = "idle" | "loading" | "success" | "error";
 
 function ContactSection() {
   const [form, setForm] = useState<ContactFormState>({ name: "", email: "", company: "", role: "", message: "" });
+  const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [focused, setFocused] = useState<string | null>(null);
@@ -154,7 +155,7 @@ function ContactSection() {
       const res = await fetch(`${base}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website: honeypot }),
       });
       const data = await res.json() as { success?: boolean; error?: string };
       if (res.ok && data.success) {
@@ -194,6 +195,9 @@ function ContactSection() {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden" }} aria-hidden="true">
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" value={honeypot} onChange={e => setHoneypot(e.target.value)} />
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
           <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Name <span style={{ color: C.accent }}>*</span></div>
