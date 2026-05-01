@@ -45,6 +45,15 @@ export const ComponentsCanvas: React.FC<
     moveComponent,
   } = useCanvasStore();
 
+  // Track component IDs that have already animated (starts with all IDs present at
+  // page load). Adding to this set after the first animation prevents the pop-in
+  // from replaying when SortableItem remounts due to parent re-renders.
+  const seenComponentIds = React.useRef<Set<string>>(
+    new Set(
+      canvases.flatMap((c) => c.components.map((comp) => comp.componentId)),
+    ),
+  );
+
   const [editingCanvasId, setEditingCanvasId] = React.useState<string | null>(
     null,
   );
@@ -196,11 +205,24 @@ export const ComponentsCanvas: React.FC<
     return <Component {...cleanProps} />;
   };
 
-  const SortableItem: React.FC<{ componentProps: CanvasComponentProps }> = ({
-    componentProps,
-  }) => {
+  const SortableItem: React.FC<{
+    componentProps: CanvasComponentProps;
+    isNew: boolean;
+  }> = ({ componentProps, isNew }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id: componentProps.componentId });
+
+    // Pop-in animation state: start collapsed if newly added, skip if pre-existing
+    const [visible, setVisible] = React.useState(!isNew);
+
+    React.useEffect(() => {
+      if (!isNew) return;
+      // Mark as seen immediately so any future remount of this item skips animation
+      seenComponentIds.current.add(componentProps.componentId);
+      // Defer to next frame so the initial hidden state is painted first
+      const rafId = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(rafId);
+    }, [isNew, componentProps.componentId]);
 
     const style = {
       transform: CSS.Transform.toString(transform),
@@ -211,7 +233,14 @@ export const ComponentsCanvas: React.FC<
     const { canvasId, componentId, _componentType } = componentProps;
 
     return (
-      <div className="relative group">
+      <div
+        className="relative group"
+        style={{
+          opacity: visible ? 1 : 0,
+          scale: visible ? "1" : "0.92",
+          transition: "opacity 250ms ease-out, scale 250ms ease-out",
+        }}
+      >
         {/* Delete button outside the sortable area */}
         <div className="absolute -top-2 -right-2 z-50">
           <button
@@ -430,7 +459,11 @@ export const ComponentsCanvas: React.FC<
             >
               <div className="grid gap-4">
                 {activeCanvas.components.map((c) => (
-                  <SortableItem key={c.componentId} componentProps={c} />
+                  <SortableItem
+                    key={c.componentId}
+                    componentProps={c}
+                    isNew={!seenComponentIds.current.has(c.componentId)}
+                  />
                 ))}
               </div>
             </SortableContext>
