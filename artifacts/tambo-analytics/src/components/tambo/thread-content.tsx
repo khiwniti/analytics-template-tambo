@@ -15,6 +15,59 @@ import { type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 /**
+ * Animated three-dot typing indicator shown while the AI is preparing its response.
+ * Accepts a `visible` prop that drives a CSS opacity/translate transition so the
+ * indicator fades out smoothly instead of vanishing instantly.
+ */
+function TypingIndicator({ visible }: { visible: boolean }) {
+  return (
+    <div
+      className="flex justify-start w-full"
+      data-slot="typing-indicator"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(-4px)",
+        transition: "opacity 200ms ease, transform 200ms ease",
+      }}
+    >
+      <div className="relative block rounded-3xl px-4 py-3 text-[15px] leading-relaxed font-medium">
+        <div className="flex items-center gap-1">
+          <span
+            className="w-2 h-2 rounded-full bg-current opacity-60 animate-bounce"
+            style={{ animationDelay: "0ms", animationDuration: "1s" }}
+          />
+          <span
+            className="w-2 h-2 rounded-full bg-current opacity-60 animate-bounce"
+            style={{ animationDelay: "160ms", animationDuration: "1s" }}
+          />
+          <span
+            className="w-2 h-2 rounded-full bg-current opacity-60 animate-bounce"
+            style={{ animationDelay: "320ms", animationDuration: "1s" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Keeps `value` as `true` for `delayMs` after it transitions to `false`.
+ * This allows the TypingIndicator to play its fade-out animation before unmounting.
+ */
+function useDelayedFalse(value: boolean, delayMs: number): boolean {
+  const [delayed, setDelayed] = React.useState(value);
+  React.useEffect(() => {
+    if (value) {
+      setDelayed(true);
+    } else {
+      const timer = setTimeout(() => setDelayed(false), delayMs);
+      return () => clearTimeout(timer);
+    }
+  }, [value, delayMs]);
+  return delayed;
+}
+
+/**
  * @typedef ThreadContentContextValue
  * @property {Array} messages - Array of message objects in the thread
  * @property {boolean} isGenerating - Whether a response is being generated
@@ -124,6 +177,8 @@ const ThreadContentMessages = React.forwardRef<
   ThreadContentMessagesProps
 >(({ className, ...props }, ref) => {
   const { messages, isGenerating, variant } = useThreadContentContext();
+  const { isWaiting } = useTambo();
+  const showIndicator = useDelayedFalse(isWaiting, 220);
 
   const filteredMessages = messages.filter((message) => {
     if (message.role === "system") return false;
@@ -187,6 +242,7 @@ const ThreadContentMessages = React.forwardRef<
           </div>
         );
       })}
+      {showIndicator && <TypingIndicator visible={isWaiting} />}
     </div>
   );
 });
