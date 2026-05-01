@@ -1,7 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useTamboComponentState, useTamboStreamStatus } from "@tambo-ai/react";
+import {
+  useTamboComponentState,
+  useTamboStreamStatus,
+  useTamboThreadInput,
+} from "@tambo-ai/react";
 import * as React from "react";
 import { z } from "zod";
 
@@ -38,24 +42,60 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
       "selections",
       {},
     );
+    const [submitted, setSubmitted] = useTamboComponentState<boolean>(
+      "submitted",
+      false,
+    );
+    const { setValue, submit } = useTamboThreadInput();
 
     const isSingleSelect = mode === "single";
 
-    const toggle = (label: string, option: string) => {
+    const buildMessage = (sels: Selections): string => {
+      const parts: string[] = [];
+      for (const group of groups) {
+        const chosen = sels[group.label] ?? [];
+        if (chosen.length > 0) {
+          parts.push(chosen.join(", "));
+        }
+      }
+      return parts.join("; ");
+    };
+
+    const sendSelection = React.useCallback(
+      async (sels: Selections) => {
+        const msg = buildMessage(sels);
+        if (!msg) return;
+        setSubmitted(true);
+        setValue(msg);
+        await new Promise((r) => setTimeout(r, 60));
+        await submit();
+      },
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [groups, setValue, submit],
+    );
+
+    const toggle = async (label: string, option: string) => {
+      if (submitted) return;
+      let newSels: Selections;
       if (isSingleSelect) {
-        // For single-select, only keep the selected option
-        setSelections({ ...selections, [label]: [option] });
+        newSels = { ...selections, [label]: [option] };
       } else {
-        // For multi-select, toggle the option
-        setSelections({
+        newSels = {
           ...selections,
           [label]: toggleInArray(selections?.[label] ?? [], option),
-        });
+        };
+      }
+      setSelections(newSels);
+
+      if (isSingleSelect) {
+        await sendSelection(newSels);
       }
     };
 
-    const clear = (label?: string) =>
+    const clear = (label?: string) => {
+      if (submitted) return;
       setSelections(label ? { ...selections, [label]: [] } : {});
+    };
 
     const displayGroups = groups.map((g) => ({
       ...g,
@@ -65,6 +105,7 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
 
     const isStreaming = streamStatus.isStreaming;
     const hasSelections = displayGroups.some((g) => g.selected.length > 0);
+    const hasAnyOption = displayGroups.some((g) => g.options.length > 0);
 
     if (streamStatus.isPending) {
       return (
@@ -84,7 +125,7 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
         ref={ref}
         className="w-full rounded-lg border border-border bg-card p-4 space-y-4"
       >
-        {(title || hasSelections) && (
+        {(title || (hasSelections && !submitted)) && (
           <div className="flex items-center justify-between">
             {title && (
               <h3
@@ -96,7 +137,7 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
                 {title}
               </h3>
             )}
-            {hasSelections && !isStreaming && (
+            {hasSelections && !isStreaming && !submitted && !isSingleSelect && (
               <button
                 onClick={() => clear()}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -127,14 +168,17 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
                 >
                   {group.label}
                 </span>
-                {group.selected.length > 0 && !isStreaming && (
-                  <button
-                    onClick={() => clear(group.label)}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
+                {group.selected.length > 0 &&
+                  !isStreaming &&
+                  !submitted &&
+                  !isSingleSelect && (
+                    <button
+                      onClick={() => clear(group.label)}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Clear
+                    </button>
+                  )}
               </div>
               <div className="flex flex-wrap gap-2">
                 {group.options.map((option) => {
@@ -144,14 +188,18 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
                     <button
                       key={option}
                       onClick={() => toggle(group.label, option)}
-                      disabled={isStreaming}
+                      disabled={isStreaming || submitted}
                       className={cn(
                         "px-3 py-1.5 rounded-md text-sm border transition-all cursor-pointer",
                         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
-                        "disabled:opacity-50 disabled:cursor-not-allowed",
-                        selected
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background text-foreground border-border hover:bg-accent hover:border-accent",
+                        "disabled:cursor-not-allowed",
+                        submitted && selected
+                          ? "opacity-60 bg-primary text-primary-foreground border-primary"
+                          : submitted
+                            ? "opacity-30 bg-background text-foreground border-border"
+                            : selected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background text-foreground border-border hover:bg-accent hover:border-accent",
                       )}
                     >
                       {option}
@@ -167,6 +215,27 @@ export const SelectForm = React.forwardRef<HTMLDivElement, SelectFormProps>(
             </div>
           );
         })}
+
+        {/* Multi-select confirm button */}
+        {!isSingleSelect &&
+          !isStreaming &&
+          hasAnyOption &&
+          !submitted &&
+          hasSelections && (
+            <button
+              onClick={() => sendSelection(selections ?? {})}
+              className="w-full mt-1 py-2 px-4 rounded-md text-sm font-medium bg-primary text-primary-foreground border border-primary hover:opacity-90 transition-opacity"
+            >
+              Confirm selection →
+            </button>
+          )}
+
+        {/* Submitted state feedback */}
+        {submitted && (
+          <div className="text-xs text-muted-foreground pt-1">
+            ✓ Selection sent
+          </div>
+        )}
 
         {streamStatus.isError && streamStatus.streamError && (
           <div className="pt-3 text-xs text-destructive">
