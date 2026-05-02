@@ -834,6 +834,10 @@ const MessageRenderedComponentArea = React.forwardRef<
   const preAddedRef = React.useRef(false);
   // Remembers which canvas the skeleton was added to so the update targets the same one
   const skeletonCanvasIdRef = React.useRef<string | null>(null);
+  // True only if isLoading was observed as true during this session — distinguishes
+  // freshly-streamed messages from historical ones reloaded from thread state.
+  // Historical messages must NOT re-add themselves to the canvas on remount.
+  const wasLoadingRef = React.useRef(false);
 
   const componentBlocks = getComponentBlocks(message);
   const firstComponentBlock = componentBlocks[0];
@@ -850,6 +854,12 @@ const MessageRenderedComponentArea = React.forwardRef<
   const fallbackIdRef = React.useRef(`fallback-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`);
   // Stable component ID derived from the message so both effects use the same key
   const componentId = `auto-${message.id ?? fallbackIdRef.current}-${componentType}`;
+
+  // Track whether this message was actively streaming in the current session.
+  // Must be declared before the pre-add / auto-add effects so React runs it first.
+  React.useEffect(() => {
+    if (isLoading) wasLoadingRef.current = true;
+  }, [isLoading]);
 
   // Pre-add a skeleton placeholder to the canvas as soon as streaming begins
   React.useEffect(() => {
@@ -907,7 +917,13 @@ const MessageRenderedComponentArea = React.forwardRef<
         _isStreaming: false,
       });
     } else {
-      // No skeleton was pre-added (e.g. very fast response) — add normally
+      // No skeleton was pre-added — only proceed if we actually saw this message
+      // streaming in the current session. This prevents historical messages from
+      // re-dumping themselves onto the canvas every time they remount (page reload,
+      // thread switch, etc.).
+      if (!wasLoadingRef.current) return;
+
+      // Fast response (no skeleton shown) — add normally
       let targetCanvasId = activeCanvasId;
       if (!targetCanvasId) {
         const newCanvas = createCanvas();
