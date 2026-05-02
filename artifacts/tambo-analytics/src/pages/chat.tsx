@@ -19,12 +19,43 @@ import { InteractableCanvasDetails } from "@/components/ui/interactable-canvas-d
 import { InteractableTabs } from "@/components/ui/interactable-tabs";
 import { useAnonymousUserKey } from "@/lib/use-anonymous-user-key";
 import { components, tools } from "@/lib/tambo";
-import { TamboProvider, useTamboThreadInput } from "@tambo-ai/react";
+import { TamboProvider, useTambo, useTamboThreadInput } from "@tambo-ai/react";
 import { TamboMcpProvider } from "@tambo-ai/react/mcp";
 import { buildPortfolioContextText } from "@/services/portfolio-data";
 import type { ListResourceItem } from "@tambo-ai/react";
+import { useParams } from "wouter";
 
 const PENDING_KEY = "tambo-pending-message";
+const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+
+/**
+ * Reads the URL param threadId on mount and switches to that thread.
+ * Then watches currentThreadId and reflects it back into the URL
+ * using replaceState (no router re-render / no page transition).
+ */
+function ThreadUrlSync({ initialThreadId }: { initialThreadId?: string }) {
+  const { switchThread, currentThreadId } = useTambo();
+  const switched = useRef(false);
+
+  // Switch to the thread specified in the URL on first render
+  useEffect(() => {
+    if (switched.current || !initialThreadId) return;
+    switched.current = true;
+    switchThread(initialThreadId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync currentThreadId → URL without triggering a route transition
+  useEffect(() => {
+    if (!currentThreadId) return;
+    const desired = `${BASE}/chat/${currentThreadId}`;
+    if (window.location.pathname !== desired) {
+      window.history.replaceState(null, "", desired);
+    }
+  }, [currentThreadId]);
+
+  return null;
+}
 
 function AutoSubmitPendingMessage() {
   const { setValue, submit } = useTamboThreadInput();
@@ -205,6 +236,7 @@ async function getSystemResource(uri: string) {
 export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
+  const { threadId } = useParams<{ threadId?: string }>();
 
   return (
     <div className="h-screen w-screen overflow-hidden relative">
@@ -221,6 +253,9 @@ export default function ChatPage() {
         getResource={getSystemResource}
       >
         <TamboMcpProvider>
+          {/* Sync thread ↔ URL */}
+          <ThreadUrlSync initialThreadId={threadId} />
+
           {/* Hidden Tambo interactables — needed for AI canvas control */}
           <div style={{ display: "none" }}>
             <InteractableTabs interactableId="Tabs" />
