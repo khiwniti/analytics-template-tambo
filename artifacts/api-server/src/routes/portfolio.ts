@@ -82,7 +82,9 @@ portfolioRouter.put("/portfolio", (req, res) => {
 
   try {
     const current = readPortfolio();
-    const updated = { ...current, ...req.body };
+    // Auto-stamp updatedAt on every successful PUT (YYYY-MM-DD UTC)
+    const today = new Date().toISOString().slice(0, 10);
+    const updated = { ...current, ...req.body, updatedAt: today };
     writePortfolio(updated);
     res.json({ success: true, data: updated });
   } catch (err) {

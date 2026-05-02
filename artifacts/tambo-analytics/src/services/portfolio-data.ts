@@ -69,6 +69,8 @@ export type PortfolioProfile = {
   education: { degree: string; university: string; years: string; honors: string; languages: string };
   sideProjects: Array<{ name: string; url: string; description: string }>;
   contact: { email: string; github: string; linkedin: string; resume: string };
+  /** ISO date (YYYY-MM-DD) of the last portfolio edit. Auto-stamped by API on PUT. */
+  updatedAt?: string;
 };
 
 export const getPortfolioProfile = async (): Promise<PortfolioProfile> => {

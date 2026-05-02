@@ -775,7 +775,8 @@ export const ComponentsCanvas: React.FC<
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+                  // Single column on narrow viewports (mobile), auto-fill grid otherwise
+                  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
                   gap: 16,
                   alignItems: "start",
                 }}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { getPortfolioProfile, type PortfolioProfile } from "../services/portfolio-data";
 
 const C = {
@@ -559,18 +559,71 @@ export default function HomePage() {
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer style={{ padding: "20px 24px 32px", textAlign: "center", borderTop: `1px solid ${C.border}` }}>
-        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 6 }}>
-          {[{ l: "GitHub", u: "https://github.com/getintheQ" }, { l: "LinkedIn", u: "https://linkedin.com/in/getintheq" }, { l: "Email", u: "mailto:kiw.brw@gmail.com" }, { l: "Resume", u: "https://www.khiw.dev/api/resume" }].map((s, i) => (
-            <a key={i} href={s.u} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 12, color: C.muted, textDecoration: "none", transition: "color 0.2s" }}
-              onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
-              onMouseLeave={e => (e.currentTarget.style.color = C.muted)}>{s.l}</a>
-          ))}
+      <footer style={{ padding: "32px 24px 40px", textAlign: "center", borderTop: `1px solid ${C.border}` }}>
+        {/* Sitemap row */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
+          {[
+            { l: "Home", u: "/", internal: true },
+            { l: "Chat", u: "/chat", internal: true },
+            { l: "Resume", u: "https://www.khiw.dev/api/resume" },
+            { l: "GitHub", u: "https://github.com/getintheQ" },
+            { l: "LinkedIn", u: "https://linkedin.com/in/getintheq" },
+            { l: "Email", u: "mailto:kiw.brw@gmail.com" },
+          ].map((s, i) => {
+            const linkStyle: React.CSSProperties = {
+              fontFamily: F.mono,
+              fontSize: 11,
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
+              color: C.muted,
+              textDecoration: "none",
+              transition: "color 0.2s",
+            };
+            const handlers = {
+              onMouseEnter: (e: React.MouseEvent<HTMLAnchorElement>) =>
+                (e.currentTarget.style.color = C.accent),
+              onMouseLeave: (e: React.MouseEvent<HTMLAnchorElement>) =>
+                (e.currentTarget.style.color = C.muted),
+            };
+            // Internal routes use wouter's <Link> so the BASE_URL prefix is
+            // respected (e.g. /__app/chat) and we get SPA navigation.
+            if (s.internal) {
+              return (
+                <Link key={i} href={s.u} style={linkStyle} {...handlers}>
+                  {s.l}
+                </Link>
+              );
+            }
+            return (
+              <a
+                key={i}
+                href={s.u}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={linkStyle}
+                {...handlers}
+              >
+                {s.l}
+              </a>
+            );
+          })}
         </div>
-        <p style={{ fontSize: 11, color: C.faint }}>
+        <p style={{ fontSize: 11, color: C.faint, marginBottom: 4 }}>
           © 2026 · {profile ? profile.stats.projects : 50} Vercel Projects · {profile ? profile.stats.workers : 47} Cloudflare Workers · {profile ? profile.stats.industries : 9} Industries
         </p>
+        {profile?.updatedAt && (
+          <p
+            style={{
+              fontSize: 10,
+              fontFamily: F.mono,
+              color: C.faint,
+              letterSpacing: 1.5,
+              opacity: 0.7,
+            }}
+          >
+            Last updated · {profile.updatedAt}
+          </p>
+        )}
       </footer>
     </div>
   );
