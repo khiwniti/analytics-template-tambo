@@ -2,6 +2,19 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, Link } from "wouter";
 import { getPortfolioProfile, type PortfolioProfile } from "../services/portfolio-data";
 
+/** Format an ISO date (YYYY-MM-DD) as `DD MMM YYYY` (e.g. "02 May 2026"). */
+function formatUpdatedAt(iso: string): string {
+  // Parse as UTC midnight so timezones can't shift the day
+  const d = new Date(`${iso}T00:00:00Z`);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 const C = {
   primary: "#0a0e17", surface: "rgba(255,255,255,0.03)", surfaceHover: "rgba(255,255,255,0.06)",
   border: "rgba(255,255,255,0.08)", borderHover: "rgba(52,211,153,0.2)",
@@ -564,11 +577,12 @@ export default function HomePage() {
         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
           {[
             { l: "Home", u: "/", internal: true },
-            { l: "Chat", u: "/chat", internal: true },
-            { l: "Resume", u: "https://www.khiw.dev/api/resume" },
-            { l: "GitHub", u: "https://github.com/getintheQ" },
-            { l: "LinkedIn", u: "https://linkedin.com/in/getintheq" },
-            { l: "Email", u: "mailto:kiw.brw@gmail.com" },
+            { l: "About", u: "/#about", internal: true },
+            { l: "Projects", u: "/#projects", internal: true },
+            { l: "Skills", u: "/#skills", internal: true },
+            { l: "Contact", u: "/#contact", internal: true },
+            { l: "AI Chat", u: "/chat", internal: true },
+            { l: "Admin", u: "/admin", internal: true },
           ].map((s, i) => {
             const linkStyle: React.CSSProperties = {
               fontFamily: F.mono,
@@ -618,10 +632,27 @@ export default function HomePage() {
               fontFamily: F.mono,
               color: C.faint,
               letterSpacing: 1.5,
-              opacity: 0.7,
+              opacity: 0.85,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
             }}
           >
-            Last updated · {profile.updatedAt}
+            <span>Last updated · {formatUpdatedAt(profile.updatedAt)}</span>
+            <span
+              style={{
+                padding: "1px 6px",
+                borderRadius: 4,
+                border: `1px solid ${C.border}`,
+                background: "rgba(255,255,255,0.03)",
+                color: C.muted,
+                fontSize: 9,
+                letterSpacing: 1.5,
+              }}
+            >
+              EN
+            </span>
           </p>
         )}
       </footer>

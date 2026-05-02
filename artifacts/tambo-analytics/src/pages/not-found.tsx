@@ -145,6 +145,17 @@ export default function NotFound() {
           </Link>
           <Link
             href="/chat"
+            onClick={() => {
+              // Pre-seed the chat with a question relevant to landing on a 404
+              try {
+                sessionStorage.setItem(
+                  "tambo-pending-message",
+                  "What pages does this site have?"
+                );
+              } catch {
+                // sessionStorage may be unavailable (private mode); ignore
+              }
+            }}
             style={{
               padding: "11px 22px",
               borderRadius: 10,

@@ -53,6 +53,16 @@ function useIsMobile(): boolean {
   return isMobile;
 }
 
+/** True when the current Tambo thread has no messages yet. */
+function useIsEmptyThread(): boolean {
+  const tambo = useTambo() as unknown as {
+    thread?: { messages?: unknown[] };
+    messages?: unknown[];
+  };
+  const messages = tambo.thread?.messages ?? tambo.messages ?? [];
+  return messages.length === 0;
+}
+
 /**
  * Reads the URL param threadId on mount and switches to that thread.
  * Then watches currentThreadId and reflects it back into the URL
@@ -82,7 +92,7 @@ function ThreadUrlSync({ initialThreadId }: { initialThreadId?: string }) {
   return null;
 }
 
-function AutoSubmitPendingMessage() {
+function AutoSubmitPendingMessage({ onAutoSubmit }: { onAutoSubmit?: () => void }) {
   const { setValue, submit } = useTamboThreadInput();
   const submitted = useRef(false);
 
@@ -92,6 +102,7 @@ function AutoSubmitPendingMessage() {
     if (!pending) return;
     sessionStorage.removeItem(PENDING_KEY);
     submitted.current = true;
+    onAutoSubmit?.();
 
     const timer = setTimeout(async () => {
       try {
@@ -104,115 +115,139 @@ function AutoSubmitPendingMessage() {
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [setValue, submit]);
+  }, [setValue, submit, onAutoSubmit]);
 
   return null;
 }
 
 /**
- * Renders a welcome card with starter chips when the chat is open
- * but the thread has no messages yet. Clicking a chip submits it.
+ * Page-level welcome overlay shown over the canvas when the thread has no
+ * messages. Visible BEFORE the user opens the floating chat panel — clicking
+ * a starter chip both opens the panel and submits the message.
  */
-function EmptyChatHint() {
-  const tambo = useTambo() as unknown as { thread?: { messages?: unknown[] }; messages?: unknown[] };
-  const messages = tambo.thread?.messages ?? tambo.messages ?? [];
-  const { setValue, submit } = useTamboThreadInput();
-  const [submitting, setSubmitting] = useState(false);
-
-  if (messages.length > 0) return null;
-
-  const handleChip = async (text: string) => {
-    if (submitting) return;
-    setSubmitting(true);
-    try {
-      setValue(text);
-      await new Promise((r) => setTimeout(r, 50));
-      await submit();
-    } catch {
-      // silent
-    } finally {
-      setSubmitting(false);
-    }
-  };
+function CanvasWelcomeOverlay({
+  onChipClick,
+  isMobile,
+}: {
+  onChipClick: (text: string) => void;
+  isMobile: boolean;
+}) {
+  const isEmpty = useIsEmptyThread();
+  if (!isEmpty) return null;
 
   return (
     <div
       style={{
-        padding: "10px 12px",
-        margin: "auto 4px 8px",
-        background: "rgba(13,17,23,0.7)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: "1px solid rgba(52,211,153,0.18)",
-        borderRadius: 14,
-        boxShadow: "0 4px 18px rgba(0,0,0,0.35)",
+        position: "fixed",
+        // Center horizontally; sit just above the FAB so it never overlaps the toggle
+        left: "50%",
+        transform: "translateX(-50%)",
+        bottom: isMobile
+          ? "calc(96px + env(safe-area-inset-bottom, 0px))"
+          : 168,
+        width: "min(560px, calc(100vw - 32px))",
+        zIndex: 40,
+        padding: "20px 22px",
+        background: "rgba(13,17,23,0.78)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        border: "1px solid rgba(52,211,153,0.22)",
+        borderRadius: 18,
+        boxShadow:
+          "0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.06)",
+        pointerEvents: "auto",
       }}
     >
       <div
         style={{
           fontFamily: "JetBrains Mono, monospace",
-          fontSize: 9,
-          color: "rgba(52,211,153,0.6)",
-          letterSpacing: 2.5,
+          fontSize: 10,
+          color: "rgba(52,211,153,0.65)",
+          letterSpacing: 3,
           textTransform: "uppercase",
-          marginBottom: 6,
+          marginBottom: 8,
         }}
       >
         ask me anything
       </div>
       <p
         style={{
-          fontSize: 12,
-          color: "#cbd5e1",
-          lineHeight: 1.5,
+          fontSize: 14,
+          color: "#e2e8f0",
+          lineHeight: 1.55,
           margin: 0,
-          marginBottom: 10,
+          marginBottom: 14,
           fontFamily: "Quicksand, sans-serif",
         }}
       >
         Hey 👋 I'm <strong style={{ color: "#34D399" }}>Ikkyu's portfolio AI</strong>.
-        I render visual components on the canvas behind me — tap a starter or just type.
+        Pick a starter below — I'll render visual cards on this canvas as I answer.
       </p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {STARTER_CHIPS.map((chip) => (
           <button
             key={chip}
-            onClick={() => handleChip(chip)}
-            disabled={submitting}
+            onClick={() => onChipClick(chip)}
             style={{
-              padding: "5px 10px",
+              padding: "6px 12px",
               borderRadius: 999,
-              border: "1px solid rgba(52,211,153,0.25)",
-              background: "rgba(52,211,153,0.06)",
+              border: "1px solid rgba(52,211,153,0.28)",
+              background: "rgba(52,211,153,0.07)",
               color: "#34D399",
               fontFamily: "Quicksand, sans-serif",
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 500,
-              cursor: submitting ? "not-allowed" : "pointer",
+              cursor: "pointer",
               transition: "background 0.15s, transform 0.1s",
-              opacity: submitting ? 0.5 : 1,
               whiteSpace: "nowrap",
             }}
             onMouseEnter={(e) => {
-              if (!submitting) e.currentTarget.style.background = "rgba(52,211,153,0.14)";
+              e.currentTarget.style.background = "rgba(52,211,153,0.16)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(52,211,153,0.06)";
+              e.currentTarget.style.background = "rgba(52,211,153,0.07)";
             }}
           >
             {chip}
           </button>
         ))}
       </div>
+      <p
+        style={{
+          marginTop: 12,
+          marginBottom: 0,
+          fontSize: 10,
+          fontFamily: "JetBrains Mono, monospace",
+          color: "rgba(148,163,184,0.55)",
+          letterSpacing: 1.5,
+        }}
+      >
+        Or press <span style={{ color: "#34D399" }}>/</span> or{" "}
+        <span style={{ color: "#34D399" }}>⌘K</span> to type your own
+      </p>
     </div>
   );
 }
 
-function FloatingChat() {
+function ChatWidget() {
+  const { containerRef } = useThreadContainerContext();
+  const { setValue, submit } = useTamboThreadInput();
+  const isMobile = useIsMobile();
   // Lazy initializer — open immediately if there's a pending message
   const [open, setOpen] = useState(() => !!sessionStorage.getItem(PENDING_KEY));
-  const { containerRef } = useThreadContainerContext();
-  const isMobile = useIsMobile();
+
+  // Open the chat, set the chip text, and submit
+  const handleChipSubmit = async (text: string) => {
+    setOpen(true);
+    try {
+      setValue(text);
+      // Wait a frame for the panel to mount before submit
+      await new Promise((r) => setTimeout(r, 80));
+      await submit();
+    } catch {
+      // silent — user can retype if needed
+    }
+  };
 
   // Global keyboard shortcut: Cmd/Ctrl+K or "/" focuses the chat input
   useEffect(() => {
@@ -252,12 +287,23 @@ function FloatingChat() {
   const panelHeight = isMobile ? "min(72vh, 520px)" : 420;
   const panelRight = isMobile ? 8 : 16;
   const closedBottom = isMobile ? "-100vh" : -700;
-  const openBottom = isMobile ? 80 : 148;
+  const openBottom = isMobile
+    ? "calc(80px + env(safe-area-inset-bottom, 0px))"
+    : 148;
+  const fabBottom = isMobile
+    ? "calc(16px + env(safe-area-inset-bottom, 0px))"
+    : 84;
 
   return (
     <>
+      {/* Page-level welcome overlay (only when thread is empty) */}
+      <CanvasWelcomeOverlay onChipClick={handleChipSubmit} isMobile={isMobile} />
+
       {/* ── Headless transparent chat panel ── */}
       <div
+        role="dialog"
+        aria-label="Chat with Ikkyu's portfolio AI"
+        aria-hidden={!open}
         style={{
           position: "fixed",
           bottom: open ? openBottom : closedBottom,
@@ -279,14 +325,13 @@ function FloatingChat() {
           className="!bg-transparent !border-0 !shadow-none"
           style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "transparent" }}
         >
-          <AutoSubmitPendingMessage />
+          <AutoSubmitPendingMessage onAutoSubmit={() => setOpen(true)} />
 
           {/* Scrollable messages — transparent, bubbles float over canvas */}
           <ScrollableMessageContainer
             className="!bg-transparent"
-            style={{ flex: 1, padding: "8px 4px", overflowY: "auto", background: "transparent", display: "flex", flexDirection: "column" }}
+            style={{ flex: 1, padding: "8px 4px", overflowY: "auto", background: "transparent" }}
           >
-            <EmptyChatHint />
             <ThreadContent>
               <ThreadContentMessages />
             </ThreadContent>
@@ -338,7 +383,7 @@ function FloatingChat() {
         onClick={() => setOpen((o) => !o)}
         style={{
           position: "fixed",
-          bottom: isMobile ? 16 : 84,
+          bottom: fabBottom,
           right: isMobile ? 12 : 16,
           zIndex: 53,
           width: 52,
@@ -436,8 +481,8 @@ export default function ChatPage() {
             <ComponentsCanvas className="w-full h-full" />
           </div>
 
-          {/* Floating chat widget */}
-          <FloatingChat />
+          {/* Floating chat widget + page-level welcome overlay */}
+          <ChatWidget />
         </TamboMcpProvider>
       </TamboProvider>
     </div>
