@@ -87,7 +87,6 @@ function AnimatedRoutes() {
     <div key={renderedPageKey} className={className} style={{ minHeight: "100vh" }}>
       <Switch location={renderedLocation}>
         <Route path="/" component={HomePage} />
-        <Route path="/chat/:threadId" component={ChatPage} />
         <Route path="/chat" component={ChatPage} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
