@@ -46,17 +46,14 @@ export const ProjectShowcase = React.forwardRef<
     <div
       ref={ref}
       style={{
-        background: C.bg,
-        border: `1px solid ${hovered ? C.borderHover : C.border}`,
+        background: hovered ? "rgba(52,211,153,0.05)" : "rgba(13,17,23,0.35)",
+        border: `1px solid ${hovered ? "rgba(52,211,153,0.22)" : "rgba(52,211,153,0.10)"}`,
         borderRadius: 16,
         padding: "24px 28px",
         fontFamily: "Quicksand, sans-serif",
         color: C.text,
         width: "100%",
         boxSizing: "border-box" as const,
-        boxShadow: hovered
-          ? "0 12px 48px rgba(52,211,153,0.14), 0 0 0 1px rgba(52,211,153,0.1) inset"
-          : "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.06) inset",
         transition: "all 0.25s cubic-bezier(0.22,1,0.36,1)",
         cursor: url ? "pointer" : "default",
         position: "relative",

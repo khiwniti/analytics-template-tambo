@@ -470,11 +470,9 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
         <div
           ref={ref}
           style={{
-            background: "#0d1117",
-            border: "1px solid rgba(52,211,153,0.15)",
+            background: "rgba(13,17,23,0.35)",
+            border: "1px solid rgba(52,211,153,0.10)",
             borderRadius: 16,
-            boxShadow:
-              "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.6)",
             fontFamily: "Quicksand, sans-serif",
             color: "#e6edf3",
             position: "relative",
