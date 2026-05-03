@@ -134,10 +134,12 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
           style={{
             margin: 0,
             marginBottom: 14,
-            fontSize: 18,
-            fontWeight: 700,
+            fontSize: 20,
+            fontWeight: 600,
             color: C.text,
-            lineHeight: 1.3,
+            lineHeight: 1.25,
+            fontFamily: "'Fraunces', Georgia, serif",
+            letterSpacing: -0.3,
           }}
         >
           {heading}

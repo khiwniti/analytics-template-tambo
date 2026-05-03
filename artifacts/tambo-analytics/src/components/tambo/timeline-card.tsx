@@ -163,7 +163,7 @@ export const TimelineCard = React.forwardRef<HTMLDivElement, TimelineCardProps>(
               </div>
 
               {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, fontFamily: i === 0 ? "'Fraunces', Georgia, serif" : undefined }}>
                 {/* Date badge */}
                 <div
                   style={{

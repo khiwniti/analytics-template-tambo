@@ -363,7 +363,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.text, lineHeight: 1.2 }}>
+              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600, color: C.text, lineHeight: 1.2, fontFamily: "'Fraunces', Georgia, serif", letterSpacing: -0.4 }}>
                 {p.name}
               </h2>
               <div style={{ fontSize: 12, color: C.accent, fontWeight: 600, marginTop: 4 }}>

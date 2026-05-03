@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useMcpServers } from "@/components/tambo/mcp-config-modal";
 import {
   MessageInput,
@@ -514,10 +515,15 @@ function FollowUpChips({ onChipClick }: { onChipClick: (text: string) => void })
         msOverflowStyle: "none",
       }}
     >
-      {chips.map((chip) => (
-        <button
+      {chips.map((chip, idx) => (
+        <motion.button
           key={chip}
           onClick={() => onChipClick(chip)}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 220, damping: 22, delay: idx * 0.04 }}
+          whileHover={{ y: -2, backgroundColor: "rgba(176,89,58,0.14)", boxShadow: "0 4px 12px rgba(176,89,58,0.18)" }}
+          whileTap={{ scale: 0.95 }}
           style={{
             flexShrink: 0,
             padding: "4px 10px",
@@ -530,19 +536,10 @@ function FollowUpChips({ onChipClick }: { onChipClick: (text: string) => void })
             fontWeight: 500,
             cursor: "pointer",
             whiteSpace: "nowrap",
-            transition: "background 0.15s",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(176,89,58,0.14)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(176,89,58,0.06)";
           }}
         >
           {chip}
-        </button>
+        </motion.button>
       ))}
     </div>
   );
@@ -601,8 +598,11 @@ function BookCTA({
           animation: "tambo-fadein 2s ease-in-out infinite",
         }}
       />
-      <button
+      <motion.button
         onClick={onActivate}
+        whileHover={{ y: -1, scale: 1.04 }}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: "spring", stiffness: 320, damping: 18 }}
         style={{
           background: "none",
           border: "none",
@@ -616,7 +616,7 @@ function BookCTA({
         }}
       >
         Book Ikkyu
-      </button>
+      </motion.button>
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -914,9 +914,14 @@ function ChatWidget() {
                     fontFamily: "Quicksand, sans-serif",
                   }}
                 />
-                <MessageInputSubmitButton
-                  style={{ flexShrink: 0, alignSelf: "flex-end" }}
-                />
+                <motion.div
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.92 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 18 }}
+                  style={{ flexShrink: 0, alignSelf: "flex-end", display: "flex" }}
+                >
+                  <MessageInputSubmitButton />
+                </motion.div>
               </div>
             </MessageInput>
           </div>
@@ -924,9 +929,18 @@ function ChatWidget() {
       </div>
 
       {/* ── Toggle FAB — sits above the ComponentsCanvas "Clear Canvas" button ── */}
-      <button
+      <motion.button
         ref={fabRef}
         onClick={() => setOpen((o) => !o)}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        whileHover={{
+          scale: 1.1,
+          y: -2,
+          boxShadow: "0 10px 32px hsl(var(--primary) / 0.45)",
+        }}
+        whileTap={{ scale: 0.92 }}
         style={{
           position: "fixed",
           bottom: fabBottom,
@@ -943,21 +957,12 @@ function ChatWidget() {
           alignItems: "center",
           justifyContent: "center",
           fontSize: open ? 22 : 18,
-          boxShadow: "0 4px 20px hsl(var(--primary) / 0.5)",
-          transition: "transform 0.2s, box-shadow 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow = "0 6px 28px hsl(var(--primary) / 0.7)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 20px hsl(var(--primary) / 0.5)";
+          boxShadow: "0 4px 20px hsl(var(--primary) / 0.32)",
         }}
         title={open ? "Close chat (Esc)" : "Chat with Ikkyu's AI (press / or ⌘K)"}
       >
         {open ? "✕" : "💬"}
-      </button>
+      </motion.button>
     </>
   );
 }

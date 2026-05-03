@@ -112,10 +112,12 @@ export const ProjectShowcase = React.forwardRef<
           <h3
             style={{
               margin: 0,
-              fontSize: 18,
-              fontWeight: 800,
+              fontSize: 20,
+              fontWeight: 600,
               color: C.text,
               lineHeight: 1.2,
+              fontFamily: "'Fraunces', Georgia, serif",
+              letterSpacing: -0.3,
             }}
           >
             {projectName}
