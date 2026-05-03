@@ -539,6 +539,11 @@ export const ComponentsCanvas: React.FC<
             // Fade real content in after streaming resolves
             opacity: componentProps._isStreaming ? 1 : contentVisible ? 1 : 0,
             transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
+            // ── Shared canvas card surface — all card components inherit this chrome ──
+            background: "rgba(13,17,23,0.35)",
+            border: "1px solid rgba(52,211,153,0.10)",
+            borderRadius: 16,
+            overflow: "hidden",
           }}
           {...(activeIsReadOnly ? {} : attributes)}
           {...(activeIsReadOnly ? {} : listeners)}

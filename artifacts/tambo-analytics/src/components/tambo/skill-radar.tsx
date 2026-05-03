@@ -53,15 +53,11 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
       <div
         ref={ref}
         style={{
-          background: "rgba(13,17,23,0.35)",
-          border: "1px solid rgba(52,211,153,0.10)",
-          borderRadius: 16,
           padding: "24px 28px",
           fontFamily: "Quicksand, sans-serif",
           color: C.text,
           width: "100%",
           position: "relative",
-          overflow: "hidden",
           boxSizing: "border-box",
         }}
       >

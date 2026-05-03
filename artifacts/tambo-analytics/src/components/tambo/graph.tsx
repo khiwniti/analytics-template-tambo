@@ -470,13 +470,9 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
         <div
           ref={ref}
           style={{
-            background: "rgba(13,17,23,0.35)",
-            border: "1px solid rgba(52,211,153,0.10)",
-            borderRadius: 16,
             fontFamily: "Quicksand, sans-serif",
             color: "#e6edf3",
             position: "relative",
-            overflow: "hidden",
           }}
           className={cn(graphVariants({ variant, size }), className)}
           {...props}

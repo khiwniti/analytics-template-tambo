@@ -60,16 +60,12 @@ export const TestimonialCard = React.forwardRef<
     <div
       ref={ref}
       style={{
-        background: "rgba(13,17,23,0.35)",
-        border: "1px solid rgba(52,211,153,0.10)",
-        borderRadius: 16,
         padding: "22px 26px",
         fontFamily: "Quicksand, sans-serif",
         color: C.text,
         width: "100%",
         boxSizing: "border-box",
         position: "relative",
-        overflow: "hidden",
       }}
     >
       <div

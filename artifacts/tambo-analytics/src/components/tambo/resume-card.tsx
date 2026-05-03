@@ -306,9 +306,6 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
         <div
           ref={ref}
           style={{
-            background: "rgba(13,17,23,0.35)",
-            border: "1px solid rgba(52,211,153,0.10)",
-            borderRadius: 16,
             padding: "24px 28px",
             color: C.muted,
             width: "100%",
@@ -327,16 +324,12 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
       <div
         ref={ref}
         style={{
-          background: "rgba(13,17,23,0.35)",
-          border: "1px solid rgba(52,211,153,0.10)",
-          borderRadius: 16,
           padding: "24px 28px",
           fontFamily: "Quicksand, sans-serif",
           color: C.text,
           width: "100%",
           boxSizing: "border-box" as const,
           position: "relative",
-          overflow: "hidden",
         }}
       >
         {/* Gradient top accent line */}

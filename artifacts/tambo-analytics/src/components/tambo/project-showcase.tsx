@@ -46,18 +46,15 @@ export const ProjectShowcase = React.forwardRef<
     <div
       ref={ref}
       style={{
-        background: hovered ? "rgba(52,211,153,0.05)" : "rgba(13,17,23,0.35)",
-        border: `1px solid ${hovered ? "rgba(52,211,153,0.22)" : "rgba(52,211,153,0.10)"}`,
-        borderRadius: 16,
+        background: hovered ? "rgba(52,211,153,0.05)" : "transparent",
         padding: "24px 28px",
         fontFamily: "Quicksand, sans-serif",
         color: C.text,
         width: "100%",
         boxSizing: "border-box" as const,
-        transition: "all 0.25s cubic-bezier(0.22,1,0.36,1)",
+        transition: "background 0.25s cubic-bezier(0.22,1,0.36,1)",
         cursor: url ? "pointer" : "default",
         position: "relative",
-        overflow: "hidden",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
