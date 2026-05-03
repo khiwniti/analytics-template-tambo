@@ -371,31 +371,52 @@ function useHiringSignal(): boolean {
       .map((m) => getTextFromContent(m.content))
       .join(" ")
       .toLowerCase();
-    return /hire|recrui|role|position|job|contact|reach|connect|interview/.test(text);
+    return /hire|recrui|talent|opportunit|role|position|job|contact|reach|connect|interview|team|join|avail|work with|looking for/.test(
+      text,
+    );
   }, [messages]);
 }
 
-// ─── Thread title auto-save ───────────────────────────────────────────────────
+// ─── Thread title auto-save (AI-generated via backend) ───────────────────────
 function ThreadTitleAutoSave() {
   const { messages, currentThreadId } = useTambo();
   const saved = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!currentThreadId || saved.current.has(currentThreadId)) return;
-    if (messages.length < 2) return;
+    const hasAssistant = messages.some((m) => m.role === "assistant");
+    if (!hasAssistant || messages.length < 2) return;
+
     const firstUser = messages.find((m) => m.role === "user");
     if (!firstUser) return;
-    const text = getTextFromContent(firstUser.content);
-    const title = deriveTitle(text);
-    if (title) {
+
+    saved.current.add(currentThreadId);
+
+    const fallback = deriveTitle(getTextFromContent(firstUser.content));
+
+    const persist = (title: string) => {
+      if (!title) return;
       setThreadTitle(currentThreadId, title);
-      saved.current.add(currentThreadId);
       window.dispatchEvent(
         new CustomEvent(THREAD_TITLE_EVENT, {
           detail: { threadId: currentThreadId, title },
         }),
       );
-    }
+    };
+
+    const msgList = messages.slice(0, 6).map((m) => ({
+      role: m.role as string,
+      content: getTextFromContent(m.content).slice(0, 300),
+    }));
+
+    fetch(`${BASE}/api/thread-title`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: msgList }),
+    })
+      .then((r) => (r.ok ? (r.json() as Promise<{ title?: string }>) : null))
+      .then((data) => persist((data?.title ?? fallback) || fallback))
+      .catch(() => persist(fallback));
   }, [messages, currentThreadId]);
 
   return null;
@@ -507,7 +528,13 @@ function BookCTA({
 }) {
   const show = useHiringSignal();
   const [dismissed, setDismissed] = useState(false);
-  if (!show || dismissed) return null;
+
+  const contactFormOnCanvas = useCanvasStore((s) => {
+    const active = s.canvases.find((c) => c.id === s.activeCanvasId);
+    return active?.components.some((c) => c._componentType === "ContactForm") ?? false;
+  });
+
+  if (!show || dismissed || contactFormOnCanvas) return null;
 
   const bottom = isMobile
     ? "calc(76px + env(safe-area-inset-bottom, 0px))"
@@ -796,9 +823,11 @@ function ChatWidget() {
             <ThreadContent>
               <ThreadContentMessages />
             </ThreadContent>
+            {/* Follow-up chips render in-stream, below the last AI reply */}
+            <FollowUpChips onChipClick={handleChipSubmit} />
           </ScrollableMessageContainer>
 
-          {/* Status strip + follow-up chips + input pill */}
+          {/* Status strip + input pill */}
           <div style={{ flexShrink: 0, paddingTop: 4, paddingBottom: 4 }}>
             <div
               style={{
@@ -809,7 +838,6 @@ function ChatWidget() {
               }}
             >
               <AIStatusStrip />
-              <FollowUpChips onChipClick={handleChipSubmit} />
             </div>
             <MessageInput>
               <div
