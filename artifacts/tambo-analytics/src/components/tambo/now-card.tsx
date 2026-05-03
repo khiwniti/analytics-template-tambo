@@ -22,12 +22,13 @@ export const nowCardSchema = z.object({
 export type NowCardProps = z.infer<typeof nowCardSchema>;
 
 const C = {
-  bg: "#0d1117",
-  border: "rgba(52,211,153,0.15)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.55)",
-  text: "#e6edf3",
-  muted: "#8b949e",
+  bg: "#FAFAF7",
+  surface: "#FFFFFF",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  text: "#1F2937",
+  muted: "#6B7280",
 };
 
 function formatDate(iso?: string): string | null {
@@ -66,7 +67,7 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
             right: 0,
             height: 2,
             background:
-              "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+              "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
             borderRadius: "16px 16px 0 0",
           }}
         />
@@ -79,7 +80,7 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
             height: 180,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(176,89,58,0.06) 0%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -100,7 +101,6 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
                 height: 7,
                 borderRadius: "50%",
                 background: C.accent,
-                boxShadow: `0 0 8px ${C.accentDim}`,
                 animation: "nowPulse 2s ease-in-out infinite",
                 display: "inline-block",
               }}
@@ -173,7 +173,6 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
                   height: 5,
                   borderRadius: "50%",
                   background: C.accent,
-                  boxShadow: `0 0 6px ${C.accentDim}`,
                 }}
               />
               <span>{it}</span>

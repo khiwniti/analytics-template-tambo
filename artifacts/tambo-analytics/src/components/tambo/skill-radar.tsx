@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { z } from "zod";
 import {
   Radar,
@@ -36,22 +37,26 @@ export const skillRadarSchema = z.object({
 export type SkillRadarProps = z.infer<typeof skillRadarSchema>;
 
 const C = {
-  bg: "#0d1117",
-  surface: "#161b22",
-  border: "rgba(52,211,153,0.15)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.55)",
-  accentFill: "rgba(52,211,153,0.15)",
-  text: "#e6edf3",
-  muted: "#8b949e",
-  grid: "rgba(52,211,153,0.12)",
+  bg: "#FAFAF7",
+  surface: "#FFFFFF",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  accentFill: "rgba(176,89,58,0.18)",
+  accentBg: "rgba(176,89,58,0.06)",
+  text: "#1F2937",
+  muted: "#6B7280",
+  grid: "rgba(15,23,42,0.10)",
 };
 
 export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
   ({ categories, title }, ref) => {
     return (
-      <div
+      <motion.div
         ref={ref}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           padding: "24px 28px",
           fontFamily: "Quicksand, sans-serif",
@@ -61,34 +66,6 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
           boxSizing: "border-box",
         }}
       >
-        {/* Gradient top accent line */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 2,
-            background:
-              "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
-            borderRadius: "16px 16px 0 0",
-          }}
-        />
-        {/* Corner glow */}
-        <div
-          style={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 200,
-            height: 200,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(52,211,153,0.07) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-
         {title && (
           <div style={{ marginBottom: 16 }}>
             <div
@@ -100,11 +77,10 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
             >
               <div
                 style={{
-                  width: 5,
-                  height: 5,
+                  width: 6,
+                  height: 6,
                   borderRadius: "50%",
                   background: C.accent,
-                  boxShadow: `0 0 6px ${C.accentDim}`,
                   flexShrink: 0,
                 }}
               />
@@ -123,7 +99,12 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
           </div>
         )}
 
-        <div style={{ width: "100%", height: 260 }}>
+        <motion.div
+          style={{ width: "100%", height: 260, transformOrigin: "center" }}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={categories} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
               <PolarGrid
@@ -152,6 +133,10 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
                 strokeWidth={1.5}
                 fill={C.accentFill}
                 dot={{ r: 3, fill: C.accent, strokeWidth: 0 }}
+                isAnimationActive
+                animationBegin={150}
+                animationDuration={1100}
+                animationEasing="ease-out"
               />
               <Tooltip
                 contentStyle={{
@@ -167,10 +152,13 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
               />
             </RadarChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
 
         {/* Legend row */}
-        <div
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04, delayChildren: 0.5 } } }}
           style={{
             display: "flex",
             flexWrap: "wrap",
@@ -179,15 +167,19 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
           }}
         >
           {categories.map((c) => (
-            <div
+            <motion.div
               key={c.name}
+              variants={{
+                hidden: { opacity: 0, y: 6 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 22 } },
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
                 padding: "2px 8px",
                 borderRadius: 20,
-                background: "rgba(52,211,153,0.08)",
+                background: C.accentBg,
                 border: `1px solid ${C.border}`,
               }}
             >
@@ -210,10 +202,10 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
               >
                 {c.value}%
               </span>
-            </div>
+            </motion.div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   },
 );

@@ -10,17 +10,17 @@ import {
 } from "../services/portfolio-data";
 
 const C = {
-  primary: "#0a0e17",
-  surface: "rgba(255,255,255,0.03)",
-  surfaceHover: "rgba(255,255,255,0.06)",
-  border: "rgba(255,255,255,0.08)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.5)",
-  accentBg: "rgba(52,211,153,0.08)",
-  textBright: "#e2e8f0",
-  text: "#94a3b8",
-  muted: "#64748b",
-  faint: "#475569",
+  primary: "#FAFAF7",
+  surface: "#FFFFFF",
+  surfaceHover: "#F5F2EC",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  accentBg: "rgba(176,89,58,0.08)",
+  textBright: "#1F2937",
+  text: "#374151",
+  muted: "#6B7280",
+  faint: "#9CA3AF",
 };
 const F = {
   sans: "'Quicksand',system-ui,sans-serif",
@@ -32,7 +32,7 @@ const BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 function Label({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-      <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, boxShadow: `0 0 10px ${C.accentDim}` }} />
+      <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
       <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase" }}>{children}</span>
     </div>
   );
@@ -48,7 +48,7 @@ function Pill({ children }: { children: React.ReactNode }) {
         fontSize: 10,
         fontFamily: F.mono,
         background: C.accentBg,
-        border: "1px solid rgba(52,211,153,0.25)",
+        border: "1px solid rgba(176,89,58,0.25)",
         color: C.accent,
       }}
     >
@@ -206,7 +206,7 @@ export default function ProjectDetailPage() {
           <p style={{ color: C.muted, marginBottom: 28 }}>
             No project with the slug <code style={{ color: C.accent, fontFamily: F.mono }}>{slug}</code>.
           </p>
-          <Link href="/#projects" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 8, background: C.accentBg, border: "1px solid rgba(52,211,153,0.3)", color: C.accent, fontFamily: F.mono, fontSize: 12, textDecoration: "none", letterSpacing: 1 }}>
+          <Link href="/#projects" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 8, background: C.accentBg, border: "1px solid rgba(176,89,58,0.3)", color: C.accent, fontFamily: F.mono, fontSize: 12, textDecoration: "none", letterSpacing: 1 }}>
             ← Back to projects
           </Link>
         </div>
@@ -303,7 +303,7 @@ export default function ProjectDetailPage() {
                 padding: "10px 20px",
                 borderRadius: 10,
                 background: "transparent",
-                border: "1px solid rgba(52,211,153,0.4)",
+                border: "1px solid rgba(176,89,58,0.4)",
                 color: C.accent,
                 fontFamily: F.mono,
                 fontSize: 12,
@@ -370,7 +370,7 @@ export default function ProjectDetailPage() {
                 margin: 0,
                 padding: "16px 18px",
                 borderRadius: 10,
-                background: "rgba(0,0,0,0.35)",
+                background: "#F5F2EC",
                 border: `1px solid ${C.border}`,
                 color: C.textBright,
                 fontFamily: F.mono,
@@ -437,7 +437,7 @@ export default function ProjectDetailPage() {
             padding: "24px 28px",
             borderRadius: 14,
             background: C.accentBg,
-            border: "1px solid rgba(52,211,153,0.25)",
+            border: "1px solid rgba(176,89,58,0.25)",
             textAlign: "center",
           }}
         >

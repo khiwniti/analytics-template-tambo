@@ -187,13 +187,13 @@ function CanvasWelcomeOverlay({
         width: "min(560px, calc(100vw - 32px))",
         zIndex: 40,
         padding: "20px 22px",
-        background: "rgba(13,17,23,0.78)",
+        background: "rgba(255,255,255,0.96)",
         backdropFilter: "blur(18px)",
         WebkitBackdropFilter: "blur(18px)",
-        border: "1px solid rgba(52,211,153,0.22)",
+        border: "1px solid rgba(15,23,42,0.08)",
         borderRadius: 18,
         boxShadow:
-          "0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.06)",
+          "0 1px 2px rgba(15,23,42,0.04), 0 18px 48px rgba(15,23,42,0.10)",
         pointerEvents: "auto",
       }}
     >
@@ -201,7 +201,7 @@ function CanvasWelcomeOverlay({
         style={{
           fontFamily: "JetBrains Mono, monospace",
           fontSize: 10,
-          color: "rgba(52,211,153,0.65)",
+          color: "rgba(176,89,58,0.65)",
           letterSpacing: 3,
           textTransform: "uppercase",
           marginBottom: 8,
@@ -212,14 +212,14 @@ function CanvasWelcomeOverlay({
       <p
         style={{
           fontSize: 14,
-          color: "#e2e8f0",
+          color: "#1F2937",
           lineHeight: 1.55,
           margin: 0,
           marginBottom: 14,
           fontFamily: "Quicksand, sans-serif",
         }}
       >
-        Hey 👋 I'm <strong style={{ color: "#34D399" }}>Ikkyu's portfolio AI</strong>.
+        Hey 👋 I'm <strong style={{ color: "#B0593A" }}>Ikkyu's portfolio AI</strong>.
         Pick a starter below — I'll render visual cards on this canvas as I answer.
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -230,9 +230,9 @@ function CanvasWelcomeOverlay({
             style={{
               padding: "6px 12px",
               borderRadius: 999,
-              border: "1px solid rgba(52,211,153,0.28)",
-              background: "rgba(52,211,153,0.07)",
-              color: "#34D399",
+              border: "1px solid rgba(176,89,58,0.28)",
+              background: "rgba(176,89,58,0.07)",
+              color: "#B0593A",
               fontFamily: "Quicksand, sans-serif",
               fontSize: 12,
               fontWeight: 500,
@@ -241,10 +241,10 @@ function CanvasWelcomeOverlay({
               whiteSpace: "nowrap",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(52,211,153,0.16)";
+              e.currentTarget.style.background = "rgba(176,89,58,0.16)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(52,211,153,0.07)";
+              e.currentTarget.style.background = "rgba(176,89,58,0.07)";
             }}
           >
             {chip}
@@ -261,8 +261,8 @@ function CanvasWelcomeOverlay({
           letterSpacing: 1.5,
         }}
       >
-        Or press <span style={{ color: "#34D399" }}>/</span> or{" "}
-        <span style={{ color: "#34D399" }}>⌘K</span> to type your own
+        Or press <span style={{ color: "#B0593A" }}>/</span> or{" "}
+        <span style={{ color: "#B0593A" }}>⌘K</span> to type your own
       </p>
     </div>
   );
@@ -464,10 +464,10 @@ function AIStatusStrip() {
         gap: 6,
         padding: "4px 10px",
         marginBottom: 4,
-        background: "rgba(13,17,23,0.72)",
+        background: "rgba(255,255,255,0.94)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
-        border: "1px solid rgba(52,211,153,0.22)",
+        border: "1px solid rgba(176,89,58,0.22)",
         borderRadius: 999,
         alignSelf: "flex-start",
       }}
@@ -477,7 +477,7 @@ function AIStatusStrip() {
           width: 6,
           height: 6,
           borderRadius: "50%",
-          background: "#34D399",
+          background: "#B0593A",
           flexShrink: 0,
           animation: "tambo-pulse 1.2s ease-in-out infinite",
         }}
@@ -486,7 +486,7 @@ function AIStatusStrip() {
         style={{
           fontSize: 11,
           fontFamily: "JetBrains Mono, monospace",
-          color: "rgba(52,211,153,0.9)",
+          color: "rgba(176,89,58,0.9)",
           letterSpacing: "0.03em",
           whiteSpace: "nowrap",
         }}
@@ -522,9 +522,9 @@ function FollowUpChips({ onChipClick }: { onChipClick: (text: string) => void })
             flexShrink: 0,
             padding: "4px 10px",
             borderRadius: 999,
-            border: "1px solid rgba(52,211,153,0.22)",
-            background: "rgba(52,211,153,0.06)",
-            color: "rgba(52,211,153,0.88)",
+            border: "1px solid rgba(176,89,58,0.22)",
+            background: "rgba(176,89,58,0.06)",
+            color: "rgba(176,89,58,0.88)",
             fontFamily: "Quicksand, sans-serif",
             fontSize: 11,
             fontWeight: 500,
@@ -534,11 +534,11 @@ function FollowUpChips({ onChipClick }: { onChipClick: (text: string) => void })
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(52,211,153,0.14)";
+              "rgba(176,89,58,0.14)";
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(52,211,153,0.06)";
+              "rgba(176,89,58,0.06)";
           }}
         >
           {chip}
@@ -581,13 +581,13 @@ function BookCTA({
         alignItems: "center",
         gap: 6,
         padding: "6px 10px 6px 8px",
-        background: "rgba(13,17,23,0.9)",
+        background: "rgba(255,255,255,0.96)",
         backdropFilter: "blur(16px)",
         WebkitBackdropFilter: "blur(16px)",
-        border: "1px solid rgba(52,211,153,0.38)",
+        border: "1px solid rgba(176,89,58,0.38)",
         borderRadius: 999,
         boxShadow:
-          "0 4px 18px rgba(0,0,0,0.45), 0 0 0 1px rgba(52,211,153,0.07)",
+          "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.08)",
         animation: "tambo-fadein 0.4s ease",
       }}
     >
@@ -596,7 +596,7 @@ function BookCTA({
           width: 7,
           height: 7,
           borderRadius: "50%",
-          background: "#34D399",
+          background: "#B0593A",
           flexShrink: 0,
           animation: "tambo-pulse 2s ease-in-out infinite",
         }}
@@ -606,7 +606,7 @@ function BookCTA({
         style={{
           background: "none",
           border: "none",
-          color: "#34D399",
+          color: "#B0593A",
           fontFamily: "Quicksand, sans-serif",
           fontSize: 12,
           fontWeight: 600,
@@ -893,14 +893,14 @@ function ChatWidget() {
                   display: "flex",
                   alignItems: "flex-end",
                   gap: 8,
-                  background: "rgba(13,17,23,0.85)",
+                  background: "rgba(255,255,255,0.98)",
                   backdropFilter: "blur(16px)",
                   WebkitBackdropFilter: "blur(16px)",
-                  border: "1px solid rgba(52,211,153,0.25)",
+                  border: "1px solid rgba(15,23,42,0.10)",
                   borderRadius: 24,
                   padding: "8px 10px 8px 16px",
                   boxShadow:
-                    "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.08)",
+                    "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.08)",
                 }}
               >
                 <MessageInputTextarea
@@ -913,7 +913,7 @@ function ChatWidget() {
                     background: "transparent",
                     border: "none",
                     outline: "none",
-                    color: "#e6edf3",
+                    color: "#1F2937",
                     fontSize: 13,
                     fontFamily: "Quicksand, sans-serif",
                   }}
@@ -1229,22 +1229,22 @@ function SharedSnapshotBanner() {
         transform: "translateX(-50%)",
         zIndex: 60,
         padding: "8px 14px",
-        background: "rgba(13,17,23,0.85)",
+        background: "rgba(255,255,255,0.96)",
         backdropFilter: "blur(14px)",
         WebkitBackdropFilter: "blur(14px)",
-        border: "1px solid rgba(52,211,153,0.3)",
+        border: "1px solid rgba(176,89,58,0.30)",
         borderRadius: 999,
-        color: "#e2e8f0",
+        color: "#1F2937",
         fontSize: 12,
         fontFamily: "Quicksand, sans-serif",
         display: "flex",
         alignItems: "center",
         gap: 10,
-        boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+        boxShadow: "0 1px 2px rgba(15,23,42,0.04), 0 12px 30px rgba(15,23,42,0.10)",
       }}
     >
-      <span style={{ color: "#34D399", fontWeight: 600 }}>Shared snapshot</span>
-      <span style={{ color: "#94a3b8" }}>— read-only view of someone else's board.</span>
+      <span style={{ color: "#B0593A", fontWeight: 600 }}>Shared snapshot</span>
+      <span style={{ color: "#6B7280" }}>— read-only view of someone else's board.</span>
       <button
         onClick={handleClear}
         aria-label="Clear snapshot and start a fresh canvas"
@@ -1252,9 +1252,9 @@ function SharedSnapshotBanner() {
           marginLeft: 4,
           padding: "3px 10px",
           borderRadius: 999,
-          background: "rgba(52,211,153,0.15)",
-          border: "1px solid rgba(52,211,153,0.45)",
-          color: "#34D399",
+          background: "rgba(176,89,58,0.15)",
+          border: "1px solid rgba(176,89,58,0.45)",
+          color: "#B0593A",
           fontFamily: "JetBrains Mono, monospace",
           fontSize: 10,
           letterSpacing: 1,

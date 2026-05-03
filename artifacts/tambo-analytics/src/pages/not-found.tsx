@@ -1,15 +1,15 @@
 import { Link } from "wouter";
 
 const C = {
-  primary: "#0a0e17",
-  surface: "rgba(255,255,255,0.03)",
-  border: "rgba(255,255,255,0.08)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.5)",
-  textBright: "#e2e8f0",
-  text: "#94a3b8",
-  muted: "#64748b",
-  faint: "#475569",
+  primary: "#FAFAF7",
+  surface: "#FFFFFF",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  textBright: "#1F2937",
+  text: "#374151",
+  muted: "#6B7280",
+  faint: "#9CA3AF",
 };
 const F = {
   sans: "'Quicksand',system-ui,sans-serif",
@@ -38,7 +38,7 @@ export default function NotFound() {
           position: "absolute",
           inset: 0,
           backgroundImage:
-            "radial-gradient(circle, rgba(52,211,153,0.18) 1.5px, transparent 1.5px)",
+            "radial-gradient(circle, rgba(176,89,58,0.18) 1.5px, transparent 1.5px)",
           backgroundSize: "28px 28px",
           opacity: 0.5,
           pointerEvents: "none",
@@ -62,11 +62,11 @@ export default function NotFound() {
             fontWeight: 600,
             lineHeight: 1,
             letterSpacing: "-0.04em",
-            background: `linear-gradient(135deg, ${C.accent} 0%, rgba(52,211,153,0.4) 100%)`,
+            background: `linear-gradient(135deg, ${C.accent} 0%, rgba(176,89,58,0.4) 100%)`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             marginBottom: 16,
-            textShadow: `0 0 60px ${C.accentDim}`,
+            textShadow: "none",
           }}
         >
           404
@@ -126,7 +126,7 @@ export default function NotFound() {
             style={{
               padding: "11px 22px",
               borderRadius: 10,
-              background: `linear-gradient(135deg, rgba(52,211,153,0.22) 0%, rgba(52,211,153,0.06) 100%)`,
+              background: `linear-gradient(135deg, rgba(176,89,58,0.22) 0%, rgba(176,89,58,0.06) 100%)`,
               border: `1px solid ${C.accentDim}`,
               color: C.accent,
               fontFamily: F.sans,
@@ -134,7 +134,7 @@ export default function NotFound() {
               fontWeight: 600,
               textDecoration: "none",
               cursor: "pointer",
-              boxShadow: `0 4px 20px rgba(52,211,153,0.12)`,
+              boxShadow: `0 4px 20px rgba(176,89,58,0.12)`,
               transition: "transform 0.15s",
               display: "inline-block",
             }}

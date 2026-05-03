@@ -321,18 +321,18 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               />
               <RechartsCore.Tooltip
                 cursor={{
-                  fill: "rgba(52,211,153,0.05)",
+                  fill: "rgba(176,89,58,0.05)",
                   radius: 4,
                 }}
                 contentStyle={{
-                  backgroundColor: "#161b22",
-                  border: "1px solid rgba(52,211,153,0.2)",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid rgba(176,89,58,0.2)",
                   borderRadius: 8,
-                  color: "#e6edf3",
+                  color: "#1F2937",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
                 }}
-                labelStyle={{ color: "#34D399" }}
+                labelStyle={{ color: "#B0593A" }}
               />
               {showLegend && (
                 <RechartsCore.Legend
@@ -375,18 +375,18 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               />
               <RechartsCore.Tooltip
                 cursor={{
-                  stroke: "rgba(52,211,153,0.2)",
+                  stroke: "rgba(176,89,58,0.2)",
                   strokeWidth: 2,
                 }}
                 contentStyle={{
-                  backgroundColor: "#161b22",
-                  border: "1px solid rgba(52,211,153,0.2)",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid rgba(176,89,58,0.2)",
                   borderRadius: 8,
-                  color: "#e6edf3",
+                  color: "#1F2937",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
                 }}
-                labelStyle={{ color: "#34D399" }}
+                labelStyle={{ color: "#B0593A" }}
               />
               {showLegend && (
                 <RechartsCore.Legend
@@ -442,15 +442,15 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               />
               <RechartsCore.Tooltip
                 contentStyle={{
-                  backgroundColor: "#161b22",
-                  border: "1px solid rgba(52,211,153,0.2)",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid rgba(176,89,58,0.2)",
                   borderRadius: 8,
-                  color: "#e6edf3",
+                  color: "#1F2937",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
                 }}
-                itemStyle={{ color: "#e6edf3" }}
-                labelStyle={{ color: "#34D399" }}
+                itemStyle={{ color: "#1F2937" }}
+                labelStyle={{ color: "#B0593A" }}
               />
               {showLegend && (
                 <RechartsCore.Legend
@@ -471,7 +471,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
           ref={ref}
           style={{
             fontFamily: "Quicksand, sans-serif",
-            color: "#e6edf3",
+            color: "#1F2937",
             position: "relative",
           }}
           className={cn(graphVariants({ variant, size }), className)}
@@ -486,7 +486,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               right: 0,
               height: 2,
               background:
-                "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+                "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
               borderRadius: "16px 16px 0 0",
               zIndex: 1,
             }}
@@ -501,7 +501,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
               height: 180,
               borderRadius: "50%",
               background:
-                "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
+                "radial-gradient(circle, rgba(176,89,58,0.06) 0%, transparent 70%)",
               pointerEvents: "none",
             }}
           />
@@ -515,8 +515,8 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
                       width: 5,
                       height: 5,
                       borderRadius: "50%",
-                      background: "#34D399",
-                      boxShadow: "0 0 6px rgba(52,211,153,0.55)",
+                      background: "#B0593A",
+                      boxShadow: "none",
                       flexShrink: 0,
                     }}
                   />
@@ -524,7 +524,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
                     style={{
                       fontSize: 9,
                       fontFamily: "JetBrains Mono, monospace",
-                      color: "rgba(52,211,153,0.55)",
+                      color: "rgba(176,89,58,0.55)",
                       letterSpacing: 2.5,
                       textTransform: "uppercase",
                     }}

@@ -24,15 +24,16 @@ export const projectShowcaseSchema = z.object({
 export type ProjectShowcaseProps = z.infer<typeof projectShowcaseSchema>;
 
 const C = {
-  bg: "#0d1117",
-  surface: "#161b22",
-  border: "rgba(52,211,153,0.15)",
-  borderHover: "rgba(52,211,153,0.35)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.6)",
-  text: "#e6edf3",
-  muted: "#8b949e",
-  tag: "rgba(52,211,153,0.12)",
+  bg: "#FAFAF7",
+  surface: "#FFFFFF",
+  surfaceHover: "#F5F2EC",
+  border: "rgba(15,23,42,0.08)",
+  borderHover: "rgba(176,89,58,0.45)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  text: "#1F2937",
+  muted: "#6B7280",
+  tag: "rgba(176,89,58,0.12)",
 };
 
 export const ProjectShowcase = React.forwardRef<
@@ -46,7 +47,7 @@ export const ProjectShowcase = React.forwardRef<
     <div
       ref={ref}
       style={{
-        background: hovered ? "rgba(52,211,153,0.05)" : "transparent",
+        background: hovered ? "rgba(176,89,58,0.05)" : "transparent",
         padding: "24px 28px",
         fontFamily: "Quicksand, sans-serif",
         color: C.text,
@@ -71,8 +72,8 @@ export const ProjectShowcase = React.forwardRef<
           right: 0,
           height: 2,
           background: hovered
-            ? "linear-gradient(90deg, transparent, rgba(52,211,153,0.9) 30%, rgba(52,211,153,1) 50%, rgba(52,211,153,0.9) 70%, transparent)"
-            : "linear-gradient(90deg, transparent, rgba(52,211,153,0.5) 30%, rgba(52,211,153,0.7) 50%, rgba(52,211,153,0.5) 70%, transparent)",
+            ? "linear-gradient(90deg, transparent, rgba(176,89,58,0.9) 30%, rgba(176,89,58,1) 50%, rgba(176,89,58,0.9) 70%, transparent)"
+            : "linear-gradient(90deg, transparent, rgba(176,89,58,0.5) 30%, rgba(176,89,58,0.7) 50%, rgba(176,89,58,0.5) 70%, transparent)",
           borderRadius: "16px 16px 0 0",
           transition: "opacity 0.25s",
         }}
@@ -87,7 +88,7 @@ export const ProjectShowcase = React.forwardRef<
           width: 160,
           height: 160,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(52,211,153,0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(176,89,58,0.08) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -143,7 +144,7 @@ export const ProjectShowcase = React.forwardRef<
               fontSize: 14,
               flexShrink: 0,
               transition: "background 0.2s",
-              background: hovered ? "rgba(52,211,153,0.15)" : C.surface,
+              background: hovered ? "rgba(176,89,58,0.15)" : C.surface,
             }}
             title={url}
           >

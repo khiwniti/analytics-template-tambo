@@ -40,17 +40,17 @@ type FormState = {
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
 const C = {
-  primary: "#0a0e17",
-  surface: "rgba(255,255,255,0.03)",
-  surfaceHover: "rgba(255,255,255,0.06)",
-  border: "rgba(255,255,255,0.08)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.5)",
-  accentBg: "rgba(52,211,153,0.05)",
-  textBright: "#e2e8f0",
-  text: "#94a3b8",
-  muted: "#64748b",
-  faint: "#475569",
+  primary: "#FAFAF7",
+  surface: "#FFFFFF",
+  surfaceHover: "#F5F2EC",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  accentBg: "rgba(176,89,58,0.08)",
+  textBright: "#1F2937",
+  text: "#374151",
+  muted: "#6B7280",
+  faint: "#9CA3AF",
 };
 
 const F = {
@@ -89,7 +89,7 @@ function Field({
 }
 
 const inputStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.04)",
+  background: "#FAFAF7",
   border: `1px solid ${C.border}`,
   borderRadius: 8,
   padding: "10px 14px",
@@ -171,7 +171,7 @@ export const ContactForm = React.forwardRef<HTMLDivElement, ContactFormProps>(
           ref={ref}
           style={{
             background: C.surface,
-            border: `1px solid rgba(52,211,153,0.2)`,
+            border: `1px solid rgba(176,89,58,0.2)`,
             borderRadius: 16,
             padding: "40px 32px",
             textAlign: "center",
@@ -199,7 +199,7 @@ export const ContactForm = React.forwardRef<HTMLDivElement, ContactFormProps>(
               padding: "8px 20px",
               borderRadius: 8,
               background: C.accentBg,
-              border: `1px solid rgba(52,211,153,0.2)`,
+              border: `1px solid rgba(176,89,58,0.2)`,
               color: C.accent,
               fontFamily: F.mono,
               fontSize: 11,
@@ -346,11 +346,11 @@ export const ContactForm = React.forwardRef<HTMLDivElement, ContactFormProps>(
               background:
                 formState?.name && formState?.email && formState?.message
                   ? C.accent
-                  : "rgba(255,255,255,0.05)",
+                  : "#F5F2EC",
               border: "none",
               color:
                 formState?.name && formState?.email && formState?.message
-                  ? C.primary
+                  ? "#FFFFFF"
                   : C.faint,
               fontFamily: F.mono,
               fontSize: 12,

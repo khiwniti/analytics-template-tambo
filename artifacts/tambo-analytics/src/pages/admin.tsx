@@ -2,21 +2,21 @@ import { useState, useEffect, useCallback } from "react";
 import { type PortfolioProfile, clearPortfolioCache } from "../services/portfolio-data";
 
 const C = {
-  primary: "#0a0e17",
-  surface: "rgba(255,255,255,0.03)",
-  surface2: "rgba(255,255,255,0.06)",
-  border: "rgba(255,255,255,0.08)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.5)",
-  accentBg: "rgba(52,211,153,0.05)",
-  accentBorder: "1px solid rgba(52,211,153,0.3)",
+  primary: "#FAFAF7",
+  surface: "#FFFFFF",
+  surface2: "#F5F2EC",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  accentBg: "rgba(176,89,58,0.08)",
+  accentBorder: "1px solid rgba(176,89,58,0.35)",
   red: "#f87171",
   redBg: "rgba(248,113,113,0.08)",
   redBorder: "rgba(248,113,113,0.2)",
-  textBright: "#e2e8f0",
-  text: "#94a3b8",
-  muted: "#64748b",
-  faint: "#475569",
+  textBright: "#1F2937",
+  text: "#374151",
+  muted: "#6B7280",
+  faint: "#9CA3AF",
 };
 const F = {
   sans: "'Quicksand',system-ui,sans-serif",
@@ -41,7 +41,7 @@ async function checkToken(token: string): Promise<boolean> {
 
 function inputStyle(focused: boolean): React.CSSProperties {
   return {
-    background: "rgba(255,255,255,0.04)",
+    background: "#FAFAF7",
     border: `1px solid ${focused ? C.accent : C.border}`,
     borderRadius: 8,
     padding: "8px 12px",
@@ -66,7 +66,7 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, paddingBottom: 10, borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, boxShadow: `0 0 10px ${C.accentDim}` }} />
+      <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
       <span style={{ fontFamily: F.mono, fontSize: 11, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase" }}>{children}</span>
     </div>
   );
@@ -247,7 +247,7 @@ function LoginGate({ onLogin }: { onLogin: (token: string) => void }) {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');*{box-sizing:border-box}`}</style>
       <div style={{ width: "100%", maxWidth: 380, padding: "0 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: C.accentBg, border: `1px solid rgba(52,211,153,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 20 }}>🔒</div>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: C.accentBg, border: `1px solid rgba(176,89,58,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 20 }}>🔒</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: C.textBright, marginBottom: 6 }}>Admin Access</div>
           <div style={{ fontSize: 13, color: C.muted }}>Enter your admin token to edit your portfolio</div>
         </div>
@@ -271,7 +271,7 @@ function LoginGate({ onLogin }: { onLogin: (token: string) => void }) {
           <button
             type="submit"
             disabled={!token.trim() || loading}
-            style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: token.trim() ? C.accent : "rgba(255,255,255,0.05)", color: token.trim() ? C.primary : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: token.trim() ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}
+            style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: token.trim() ? C.accent : "#F5F2EC", color: token.trim() ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: token.trim() ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}
           >{loading ? "Verifying..." : "Unlock →"}</button>
         </form>
       </div>
@@ -438,7 +438,7 @@ export default function AdminPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 16 }}>⚙️</span>
           <span style={{ fontFamily: F.mono, fontSize: 13, color: C.textBright, fontWeight: 700 }}>Portfolio Admin</span>
-          <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim, background: C.accentBg, padding: "2px 8px", borderRadius: 20, border: `1px solid rgba(52,211,153,0.2)` }}>LIVE EDIT</span>
+          <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim, background: C.accentBg, padding: "2px 8px", borderRadius: 20, border: `1px solid rgba(176,89,58,0.2)` }}>LIVE EDIT</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {saveStatus === "error" && saveError && (
@@ -555,7 +555,7 @@ export default function AdminPage() {
                           >↓</button>
                           <button
                             onClick={() => { const next = [...profile.career]; next[i] = { ...c, highlight: !c.highlight }; setField("career", next); }}
-                            style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${c.highlight ? "rgba(52,211,153,0.3)" : C.border}`, background: c.highlight ? C.accentBg : "transparent", color: c.highlight ? C.accent : C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
+                            style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${c.highlight ? "rgba(176,89,58,0.3)" : C.border}`, background: c.highlight ? C.accentBg : "transparent", color: c.highlight ? C.accent : C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
                           >{c.highlight ? "★ Featured" : "☆ Feature"}</button>
                           <button onClick={() => setField("career", profile.career.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>Remove</button>
                         </div>

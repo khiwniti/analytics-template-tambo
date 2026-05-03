@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -6,16 +6,17 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Portfolio theme palette (khiw.dev / Ikkyu):
-  bg:          #0a0e17  → hsl(222 39% 7%)
-  surface:     rgba(255,255,255,0.03) → hsl(222 28% 9%)
-  surface-2:   rgba(255,255,255,0.06) → hsl(222 25% 12%)
-  border:      rgba(255,255,255,0.08) → hsl(222 15% 14%)
-  accent-green:#34D399  → hsl(160 61% 51%)
-  text-bright: #e2e8f0  → hsl(214 32% 91%)
-  text:        #94a3b8  → hsl(215 25% 65%)
-  muted:       #64748b  → hsl(215 28% 47%)
-  faint:       #475569  → hsl(215 28% 37%)
+  Soft Editorial light theme (khiw.dev / Ikkyu):
+  bg:          #FAFAF7  → hsl(48 23% 97%)   warm off-white
+  surface:     #FFFFFF  → hsl(0 0% 100%)    paper card
+  surface-2:   #F5F2EC  → hsl(40 20% 94%)   subtle warm beige
+  border:      #E5E1D8  → hsl(40 18% 87%)   hairline
+  accent:      #B0593A  → hsl(15 49% 46%)   warm terracotta
+  secondary:   #475569  → hsl(215 25% 35%)  slate blue
+  text-bright: #1F2937  → hsl(220 26% 16%)  charcoal headlines
+  text:        #374151  → hsl(220 19% 27%)  body
+  muted:       #6B7280  → hsl(220 9% 46%)
+  faint:       #9CA3AF  → hsl(220 9% 65%)
 */
 
 @theme inline {
@@ -23,6 +24,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--app-font-serif);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -58,52 +60,52 @@
 
 @layer base {
   :root {
-    /* ── Background & Foreground ── */
-    --background: 222 39% 7%;
-    --foreground: 215 25% 65%;
+    /* ── Background & Foreground (warm off-white + charcoal) ── */
+    --background: 48 23% 97%;
+    --foreground: 220 19% 27%;
 
-    /* ── Cards & Popovers ── */
-    --card: 222 28% 9%;
-    --card-foreground: 214 32% 91%;
-    --popover: 222 28% 10%;
-    --popover-foreground: 214 32% 91%;
+    /* ── Cards & Popovers (paper white) ── */
+    --card: 0 0% 100%;
+    --card-foreground: 220 26% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 26% 16%;
 
-    /* ── Primary = portfolio green accent ── */
-    --primary: 160 61% 51%;
-    --primary-foreground: 222 39% 7%;
+    /* ── Primary = warm terracotta ── */
+    --primary: 15 49% 46%;
+    --primary-foreground: 0 0% 100%;
 
-    /* ── Secondary = slightly lighter surface ── */
-    --secondary: 222 25% 12%;
-    --secondary-foreground: 215 25% 65%;
+    /* ── Secondary = slate blue ── */
+    --secondary: 215 25% 35%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* ── Muted ── */
-    --muted: 222 20% 12%;
-    --muted-foreground: 215 25% 65%;
+    /* ── Muted (warm beige surface) ── */
+    --muted: 40 20% 94%;
+    --muted-foreground: 220 9% 46%;
 
-    /* ── Accent = green (same as primary for consistency) ── */
-    --accent: 160 61% 51%;
-    --accent-foreground: 222 39% 7%;
+    /* ── Accent = same terracotta family ── */
+    --accent: 15 49% 46%;
+    --accent-foreground: 0 0% 100%;
 
     /* ── Destructive ── */
-    --destructive: 0 62.8% 40%;
-    --destructive-foreground: 214 32% 91%;
+    --destructive: 0 65% 51%;
+    --destructive-foreground: 0 0% 100%;
 
     /* ── Border, Input, Ring ── */
-    --border: 222 15% 14%;
+    --border: 40 18% 87%;
     --border-dimension-50: linear-gradient(
       180deg,
-      hsl(222 15% 17%) 0%,
-      hsl(222 15% 14%) 50%,
-      hsl(222 15% 11%) 100%
+      hsl(40 18% 90%) 0%,
+      hsl(40 18% 87%) 50%,
+      hsl(40 18% 82%) 100%
     );
     --border-dimension-100: linear-gradient(
       180deg,
-      hsl(222 15% 20%) 0%,
-      hsl(222 15% 14%) 50%,
-      hsl(222 15% 10%) 100%
+      hsl(40 18% 92%) 0%,
+      hsl(40 18% 87%) 50%,
+      hsl(40 18% 80%) 100%
     );
-    --input: 222 20% 12%;
-    --ring: 160 61% 51%;
+    --input: 40 20% 94%;
+    --ring: 15 49% 46%;
 
     /* ── Radius & Layout ── */
     --radius: 0.625rem;
@@ -111,49 +113,50 @@
     --panel-right-width: 500px;
     --sidebar-width: 16rem;
 
-    /* ── Charts (portfolio-tinted palette) ── */
-    --chart-1: 160 61% 51%;
-    --chart-2: 193 80% 55%;
-    --chart-3: 270 60% 60%;
-    --chart-4: 38 90% 55%;
-    --chart-5: 0 70% 55%;
+    /* ── Charts (editorial palette: terracotta + slate + warm earth) ── */
+    --chart-1: 15 49% 46%;
+    --chart-2: 215 25% 35%;
+    --chart-3: 28 60% 55%;
+    --chart-4: 195 35% 45%;
+    --chart-5: 35 30% 40%;
 
     /* ── Container & Backdrop ── */
-    --container: 222 25% 10%;
-    --backdrop: 222 39% 4% / 0.5;
-    --muted-backdrop: 222 39% 4% / 0.2;
+    --container: 40 20% 94%;
+    --backdrop: 220 26% 10% / 0.35;
+    --muted-backdrop: 220 26% 10% / 0.12;
 
-    /* ── Fonts: Quicksand + JetBrains Mono ── */
+    /* ── Fonts: Quicksand sans + Fraunces serif headlines + JetBrains Mono ── */
     --font-geist-sans: 'Quicksand', ui-sans-serif, system-ui, -apple-system, sans-serif;
     --font-geist-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
     --app-font-sans: var(--font-geist-sans);
     --app-font-mono: var(--font-geist-mono);
+    --app-font-serif: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
   }
 
-  /* Keep .dark identical — the theme is already dark by default */
+  /* .dark unused — single light theme. Mirror :root so any stray .dark wrapper renders identically. */
   .dark {
-    --background: 222 39% 7%;
-    --foreground: 215 25% 65%;
-    --card: 222 28% 9%;
-    --card-foreground: 214 32% 91%;
-    --popover: 222 28% 10%;
-    --popover-foreground: 214 32% 91%;
-    --primary: 160 61% 51%;
-    --primary-foreground: 222 39% 7%;
-    --secondary: 222 25% 12%;
-    --secondary-foreground: 215 25% 65%;
-    --muted: 222 20% 12%;
-    --muted-foreground: 215 25% 65%;
-    --accent: 160 61% 51%;
-    --accent-foreground: 222 39% 7%;
-    --destructive: 0 62.8% 40%;
-    --destructive-foreground: 214 32% 91%;
-    --border: 222 15% 14%;
-    --input: 222 20% 12%;
-    --ring: 160 61% 51%;
-    --container: 222 25% 10%;
-    --backdrop: 222 39% 4% / 0.5;
-    --muted-backdrop: 222 39% 4% / 0.2;
+    --background: 48 23% 97%;
+    --foreground: 220 19% 27%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 26% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 26% 16%;
+    --primary: 15 49% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 25% 35%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 15 49% 46%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 18% 87%;
+    --input: 40 20% 94%;
+    --ring: 15 49% 46%;
+    --container: 40 20% 94%;
+    --backdrop: 220 26% 10% / 0.35;
+    --muted-backdrop: 220 26% 10% / 0.12;
     --radius: 0.625rem;
     --panel-left-width: 500px;
     --panel-right-width: 500px;
@@ -166,13 +169,15 @@
 
   html {
     background-color: hsl(var(--background));
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: var(--font-geist-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -181,19 +186,19 @@
   content: attr(data-placeholder);
   float: left;
   color: hsl(var(--muted-foreground));
-  opacity: 0.5;
+  opacity: 0.6;
   pointer-events: none;
   height: 0;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: hsl(var(--background)); }
-::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+/* Scrollbar — light, warm */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(40 18% 80%); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(40 18% 70%); }
 
-/* Selection */
-::selection { background: hsl(160 61% 51% / 0.25); color: hsl(214 32% 91%); }
+/* Selection — warm terracotta tint */
+::selection { background: hsl(15 49% 46% / 0.18); color: hsl(220 26% 16%); }
 
 @layer utilities {
   /* Background Utilities */
@@ -246,6 +251,9 @@
   .hover\:bg-backdrop:hover { background-color: hsl(var(--muted-backdrop)); }
   .hover\:bg-container:hover { background-color: hsl(var(--container)); }
   .hover\:text-secondary:hover { color: hsl(var(--secondary)); }
+
+  /* Editorial display headline utility */
+  .font-serif { font-family: var(--app-font-serif); }
 
   /* Hide ugly search cancel button in Chrome */
   input[type="search"]::-webkit-search-cancel-button { display: none; }

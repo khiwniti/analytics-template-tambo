@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { z } from "zod";
 
 export const statCardSchema = z.object({
@@ -27,15 +28,38 @@ export const statCardSchema = z.object({
 export type StatCardProps = z.infer<typeof statCardSchema>;
 
 const C = {
-  bg: "#0d1117",
-  surface: "#161b22",
-  border: "rgba(52,211,153,0.15)",
-  borderHover: "rgba(52,211,153,0.30)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.55)",
-  text: "#e6edf3",
-  muted: "#8b949e",
+  bg: "#FAFAF7",
+  surface: "#FFFFFF",
+  surfaceHover: "#F5F2EC",
+  border: "rgba(15,23,42,0.08)",
+  borderHover: "rgba(176,89,58,0.45)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  text: "#1F2937",
+  muted: "#6B7280",
 };
+
+/** Animated count-up — parses leading digits, animates with spring, preserves suffix like "+", "%". */
+function AnimatedNumber({ value }: { value: string }) {
+  const match = value.match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+  const target = match ? parseFloat(match[1]) : NaN;
+  const suffix = match ? match[2] : "";
+  const isInt = match ? !match[1].includes(".") : true;
+  const mv = useMotionValue(0);
+  const display = useTransform(mv, (v) =>
+    isNaN(target) ? value : (isInt ? Math.round(v) : v.toFixed(1)) + suffix,
+  );
+  React.useEffect(() => {
+    if (isNaN(target)) return;
+    const controls = animate(mv, target, {
+      duration: 1.2,
+      ease: [0.22, 1, 0.36, 1],
+    });
+    return controls.stop;
+  }, [mv, target]);
+  if (isNaN(target)) return <>{value}</>;
+  return <motion.span>{display}</motion.span>;
+}
 
 function StatItem({
   label,
@@ -49,51 +73,36 @@ function StatItem({
   const [hovered, setHovered] = React.useState(false);
 
   return (
-    <div
+    <motion.div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      whileHover={{ y: -2 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
       style={{
-        background: hovered
-          ? "rgba(52,211,153,0.06)"
-          : C.surface,
+        background: hovered ? C.surfaceHover : C.surface,
         border: `1px solid ${hovered ? C.borderHover : C.border}`,
-        borderRadius: 12,
-        padding: "16px 14px",
+        borderRadius: 14,
+        padding: "18px 14px",
         textAlign: "center",
-        transition: "all 0.2s ease",
+        transition: "background 0.2s ease, border-color 0.2s ease",
         position: "relative",
         overflow: "hidden",
+        boxShadow: hovered
+          ? "0 1px 2px rgba(15,23,42,0.04), 0 12px 28px rgba(15,23,42,0.08)"
+          : "0 1px 2px rgba(15,23,42,0.04), 0 6px 18px rgba(15,23,42,0.05)",
       }}
     >
-      {/* Glow blob */}
       <div
         style={{
-          position: "absolute",
-          bottom: -20,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 60,
-          height: 60,
-          borderRadius: "50%",
-          background: hovered
-            ? "radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 70%)"
-            : "none",
-          transition: "all 0.3s",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          fontSize: 28,
-          fontWeight: 800,
+          fontSize: 30,
+          fontWeight: 700,
           color: C.accent,
           lineHeight: 1,
-          fontFamily: "Quicksand, sans-serif",
+          fontFamily: "'Fraunces', Georgia, serif",
           letterSpacing: -1,
         }}
       >
-        {value}
+        <AnimatedNumber value={value} />
         {unit && (
           <span
             style={{
@@ -121,7 +130,7 @@ function StatItem({
       >
         {label}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -130,8 +139,11 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
     const cols = stats.length <= 2 ? 2 : stats.length === 4 ? 2 : 3;
 
     return (
-      <div
+      <motion.div
         ref={ref}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           padding: "24px 28px",
           fontFamily: "Quicksand, sans-serif",
@@ -141,44 +153,15 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
           boxSizing: "border-box",
         }}
       >
-        {/* Gradient top accent line */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 2,
-            background:
-              "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
-            borderRadius: "16px 16px 0 0",
-          }}
-        />
-        {/* Top-left glow */}
-        <div
-          style={{
-            position: "absolute",
-            top: -50,
-            left: -50,
-            width: 180,
-            height: 180,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-
         {title && (
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div
                 style={{
-                  width: 5,
-                  height: 5,
+                  width: 6,
+                  height: 6,
                   borderRadius: "50%",
                   background: C.accent,
-                  boxShadow: `0 0 6px ${C.accentDim}`,
                 }}
               />
               <span
@@ -196,18 +179,32 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
           </div>
         )}
 
-        <div
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+          }}
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gap: 8,
+            gap: 10,
           }}
         >
           {stats.map((stat, i) => (
-            <StatItem key={i} {...stat} />
+            <motion.div
+              key={i}
+              variants={{
+                hidden: { opacity: 0, y: 14 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 22 } },
+              }}
+            >
+              <StatItem {...stat} />
+            </motion.div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   },
 );

@@ -30,14 +30,14 @@ export const resumeCardSchema = z.object({
 export type ResumeCardProps = z.infer<typeof resumeCardSchema>;
 
 const C = {
-  bg: "#0d1117",
-  surface: "#161b22",
-  border: "rgba(52,211,153,0.15)",
-  accent: "#34D399",
-  accentDim: "rgba(52,211,153,0.6)",
-  text: "#e6edf3",
-  muted: "#8b949e",
-  tag: "rgba(52,211,153,0.12)",
+  bg: "#FAFAF7",
+  surface: "#FFFFFF",
+  border: "rgba(15,23,42,0.08)",
+  accent: "#B0593A",
+  accentDim: "rgba(176,89,58,0.65)",
+  text: "#1F2937",
+  muted: "#6B7280",
+  tag: "rgba(176,89,58,0.10)",
 };
 
 function Section({
@@ -65,7 +65,6 @@ function Section({
             height: 5,
             borderRadius: "50%",
             background: C.accent,
-            boxShadow: `0 0 6px ${C.accentDim}`,
             flexShrink: 0,
           }}
         />
@@ -341,7 +340,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
             right: 0,
             height: 2,
             background:
-              "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+              "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
             borderRadius: "16px 16px 0 0",
           }}
         />
@@ -355,7 +354,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
             height: 200,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(176,89,58,0.06) 0%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -381,7 +380,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
               onClick={handleDownload}
               disabled={downloading}
               style={{
-                background: "rgba(52,211,153,0.15)",
+                background: "rgba(176,89,58,0.15)",
                 border: `1px solid ${C.border}`,
                 borderRadius: 8,
                 padding: "8px 14px",
@@ -395,8 +394,8 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
                 whiteSpace: "nowrap",
                 opacity: downloading ? 0.6 : 1,
               }}
-              onMouseEnter={(e) => { if (!downloading) e.currentTarget.style.background = "rgba(52,211,153,0.25)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(52,211,153,0.15)"; }}
+              onMouseEnter={(e) => { if (!downloading) e.currentTarget.style.background = "rgba(176,89,58,0.25)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(176,89,58,0.15)"; }}
             >
               {downloading ? "Generating..." : "⬇ Download PDF"}
             </button>
@@ -456,7 +455,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
                   display: "block",
                   transition: "border-color 0.2s",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(52,211,153,0.35)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(176,89,58,0.35)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; }}
               >
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 2 }}>{proj.name}</div>

@@ -351,7 +351,7 @@ export const ComponentsCanvas: React.FC<
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
+            background: "linear-gradient(90deg, transparent 0%, rgba(15,23,42,0.05) 50%, transparent 100%)",
             backgroundSize: "200% 100%",
             animation: "shimmer 1.6s ease-in-out infinite",
           }}
@@ -394,7 +394,7 @@ export const ComponentsCanvas: React.FC<
             right: 12,
             fontSize: 10,
             fontFamily: "JetBrains Mono, monospace",
-            color: "rgba(52,211,153,0.5)",
+            color: "rgba(176,89,58,0.5)",
             letterSpacing: "0.04em",
           }}
         >
@@ -540,8 +540,8 @@ export const ComponentsCanvas: React.FC<
             opacity: componentProps._isStreaming ? 1 : contentVisible ? 1 : 0,
             transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
             // ── Shared canvas card surface — all card components inherit this chrome ──
-            background: "rgba(13,17,23,0.35)",
-            border: "1px solid rgba(52,211,153,0.10)",
+            background: "#FFFFFF",
+            border: "1px solid rgba(176,89,58,0.10)",
             borderRadius: 16,
             overflow: "hidden",
           }}
@@ -726,10 +726,10 @@ export const ComponentsCanvas: React.FC<
               disabled={filling}
               style={{
                 background: filling
-                  ? "rgba(52,211,153,0.15)"
-                  : "linear-gradient(135deg, rgba(52,211,153,0.2) 0%, rgba(52,211,153,0.08) 100%)",
-                border: "1px solid rgba(52,211,153,0.4)",
-                color: "#34D399",
+                  ? "rgba(176,89,58,0.15)"
+                  : "linear-gradient(135deg, rgba(176,89,58,0.2) 0%, rgba(176,89,58,0.08) 100%)",
+                border: "1px solid rgba(176,89,58,0.4)",
+                color: "#B0593A",
                 borderRadius: 8,
                 padding: "6px 12px",
                 fontSize: 13,
@@ -742,7 +742,7 @@ export const ComponentsCanvas: React.FC<
                 backdropFilter: "blur(8px)",
                 transition: "opacity 0.2s, transform 0.15s",
                 opacity: filling ? 0.7 : 1,
-                boxShadow: "0 2px 12px rgba(52,211,153,0.15)",
+                boxShadow: "0 2px 12px rgba(176,89,58,0.15)",
               }}
               onMouseEnter={(e) => { if (!filling) e.currentTarget.style.transform = "scale(1.03)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
@@ -765,8 +765,8 @@ export const ComponentsCanvas: React.FC<
               className="px-3 py-1.5 border border-gray-200 text-primary hover:text-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 rounded-md shadow-sm flex items-center gap-1.5 text-sm cursor-pointer bg-background"
               title={shareStatus === "copied" ? "Link copied to clipboard" : shareStatus === "error" ? "Canvas is empty" : "Copy a shareable link to this canvas"}
               style={{
-                color: shareStatus === "copied" ? "#34D399" : shareStatus === "error" ? "#f87171" : undefined,
-                borderColor: shareStatus === "copied" ? "rgba(52,211,153,0.5)" : shareStatus === "error" ? "rgba(248,113,113,0.5)" : undefined,
+                color: shareStatus === "copied" ? "#B0593A" : shareStatus === "error" ? "#f87171" : undefined,
+                borderColor: shareStatus === "copied" ? "rgba(176,89,58,0.5)" : shareStatus === "error" ? "rgba(248,113,113,0.5)" : undefined,
               }}
             >
               <Share2Icon className="h-4 w-4" />
@@ -808,7 +808,7 @@ export const ComponentsCanvas: React.FC<
           position: "absolute",
           inset: 0,
           backgroundImage:
-            "radial-gradient(circle, rgba(52,211,153,0.28) 1.5px, transparent 1.5px)",
+            "radial-gradient(circle, rgba(15,23,42,0.10) 1.2px, transparent 1.2px)",
           backgroundSize: "28px 28px",
           pointerEvents: "none",
           zIndex: 0,
@@ -826,17 +826,17 @@ export const ComponentsCanvas: React.FC<
       >
         {!activeCanvas || activeCanvas.components.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center gap-4">
-            <div style={{ color: "rgba(52,211,153,0.35)", fontSize: 40 }}>✦</div>
-            <p style={{ color: "#8b949e", fontSize: 13, fontFamily: "Quicksand, sans-serif" }}>
+            <div style={{ color: "rgba(176,89,58,0.35)", fontSize: 40 }}>✦</div>
+            <p style={{ color: "#6B7280", fontSize: 13, fontFamily: "Quicksand, sans-serif" }}>
               Canvas is empty — fill it or ask the AI
             </p>
             <button
               onClick={handleFillPortfolio}
               disabled={filling}
               style={{
-                background: "linear-gradient(135deg, rgba(52,211,153,0.22) 0%, rgba(52,211,153,0.06) 100%)",
-                border: "1px solid rgba(52,211,153,0.45)",
-                color: "#34D399",
+                background: "linear-gradient(135deg, rgba(176,89,58,0.22) 0%, rgba(176,89,58,0.06) 100%)",
+                border: "1px solid rgba(176,89,58,0.45)",
+                color: "#B0593A",
                 borderRadius: 10,
                 padding: "10px 22px",
                 fontSize: 14,
@@ -846,7 +846,7 @@ export const ComponentsCanvas: React.FC<
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                boxShadow: "0 4px 20px rgba(52,211,153,0.12)",
+                boxShadow: "0 4px 20px rgba(176,89,58,0.12)",
                 opacity: filling ? 0.7 : 1,
                 transition: "transform 0.15s, opacity 0.2s",
               }}

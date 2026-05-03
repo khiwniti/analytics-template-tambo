@@ -17,11 +17,13 @@ function formatUpdatedAt(iso: string): string {
 }
 
 const C = {
-  primary: "#0a0e17", surface: "rgba(255,255,255,0.03)", surfaceHover: "rgba(255,255,255,0.06)",
-  border: "rgba(255,255,255,0.08)", borderHover: "rgba(52,211,153,0.2)",
-  accent: "#34D399", accentDim: "rgba(52,211,153,0.5)", accentBg: "rgba(52,211,153,0.05)",
-  textBright: "#e2e8f0", text: "#94a3b8", muted: "#64748b", faint: "#475569", ghost: "rgba(255,255,255,0.15)",
-  skelBase: "rgba(255,255,255,0.05)", skelShine: "rgba(255,255,255,0.10)",
+  primary: "#FAFAF7", surface: "#FFFFFF", surfaceHover: "#F5F2EC",
+  border: "rgba(15,23,42,0.08)", borderHover: "rgba(176,89,58,0.45)",
+  accent: "#B0593A", accentDim: "rgba(176,89,58,0.65)", accentBg: "rgba(176,89,58,0.08)",
+  secondary: "#475569",
+  textBright: "#1F2937", text: "#374151", muted: "#6B7280", faint: "#9CA3AF", ghost: "#6B7280",
+  skelBase: "rgba(15,23,42,0.06)", skelShine: "rgba(15,23,42,0.10)",
+  paperShadow: "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06)",
 };
 const F = { sans: "'Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','Geist Mono',monospace", thai: "'Sarabun','Noto Sans Thai',sans-serif" };
 
@@ -46,7 +48,7 @@ function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 function Label({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-      <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, boxShadow: `0 0 10px ${C.accentDim}` }} />
+      <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
       <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase" }}>{children}</span>
     </div>
   );
@@ -54,7 +56,7 @@ function Label({ children }: { children: React.ReactNode }) {
 
 function Pill({ children, on }: { children: React.ReactNode; on?: boolean }) {
   return (
-    <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 9, fontFamily: F.mono, background: on ? C.accentBg : C.surface, border: `1px solid ${on ? "rgba(52,211,153,0.2)" : C.border}`, color: on ? C.accent : C.ghost, cursor: "default" }}>
+    <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 9, fontFamily: F.mono, background: on ? C.accentBg : C.surface, border: `1px solid ${on ? "rgba(176,89,58,0.2)" : C.border}`, color: on ? C.accent : C.ghost, cursor: "default" }}>
       {children}
     </span>
   );
@@ -264,7 +266,7 @@ function BuildingInPublicSection() {
                       letterSpacing: 1,
                       background: C.accentBg,
                       color: C.accent,
-                      border: `1px solid rgba(52,211,153,0.2)`,
+                      border: `1px solid rgba(176,89,58,0.2)`,
                       alignSelf: "flex-start",
                       marginTop: 2,
                     }}
@@ -345,7 +347,7 @@ function ContactSection() {
   };
 
   const inp = (field: keyof ContactFormState): React.CSSProperties => ({
-    background: "rgba(255,255,255,0.04)", border: `1px solid ${focused === field ? C.accent : C.border}`,
+    background: "#FAFAF7", border: `1px solid ${focused === field ? C.accent : C.border}`,
     borderRadius: 8, padding: "10px 14px", color: C.textBright, fontFamily: F.sans, fontSize: 13,
     outline: "none", width: "100%", boxSizing: "border-box", transition: "border-color 0.2s",
   });
@@ -355,7 +357,7 @@ function ContactSection() {
 
   if (status === "success") {
     return (
-      <div style={{ padding: "40px 32px", borderRadius: 16, background: C.accentBg, border: "1px solid rgba(52,211,153,0.2)", textAlign: "center" }}>
+      <div style={{ padding: "40px 32px", borderRadius: 16, background: C.accentBg, border: "1px solid rgba(176,89,58,0.2)", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.textBright, marginBottom: 6 }}>Message Sent!</div>
         <div style={{ fontSize: 13, color: C.muted }}>Thanks for reaching out. Ikkyu will get back to you soon.</div>
@@ -400,7 +402,7 @@ function ContactSection() {
         <div style={{ fontSize: 12, color: "#f87171", padding: "8px 12px", borderRadius: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>{errorMsg}</div>
       )}
       <button type="submit" disabled={status === "loading" || !form.name || !form.email || !form.message}
-        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "rgba(255,255,255,0.05)", color: form.name && form.email && form.message ? C.primary : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
+        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "#F5F2EC", color: form.name && form.email && form.message ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
         {status === "loading" ? "Sending..." : "Send Message →"}
       </button>
     </form>
@@ -488,28 +490,27 @@ export default function HomePage() {
   return (
     <div style={{ background: C.primary, color: C.text, fontFamily: F.sans, minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box}
-        ::selection{background:rgba(52,211,153,0.3);color:#e2e8f0}
-        ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:${C.primary}} ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}
+        ::selection{background:rgba(176,89,58,0.18);color:#1F2937}
+        ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(15,23,42,0.18);border-radius:3px}
         a{color:${C.accent};text-decoration:none}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
         @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
       `}</style>
 
       {/* ══ HERO ══ */}
       <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "0 24px" }}>
-        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 300, background: "rgba(52,211,153,0.02)", borderRadius: "50%", filter: "blur(120px)", pointerEvents: "none" }} />
-        <Reveal><div style={{ fontSize: "clamp(32px,6vw,56px)", fontWeight: 700, color: C.textBright, textAlign: "center", lineHeight: 1.1 }}>Hey 👋 I'm Ikkyu</div></Reveal>
+        <Reveal><div style={{ fontSize: "clamp(36px,6.5vw,64px)", fontWeight: 600, color: C.textBright, textAlign: "center", lineHeight: 1.05, fontFamily: "'Fraunces', Georgia, serif", letterSpacing: -1 }}>Hey 👋 I'm Ikkyu</div></Reveal>
         <Reveal delay={0.1}><div style={{ marginTop: 24, textAlign: "center" }}>
-          <span style={{ background: C.accent, color: C.primary, padding: "4px 8px", borderRadius: 6, fontWeight: 700, fontSize: 15 }}>AI-Augmented</span>
+          <span style={{ background: C.accent, color: "#FFFFFF", padding: "4px 10px", borderRadius: 6, fontWeight: 700, fontSize: 15 }}>AI-Augmented</span>
           <span style={{ color: C.text, fontSize: 17, marginLeft: 8, fontWeight: 500 }}>Full-Stack Developer</span>
         </div></Reveal>
         <Reveal delay={0.15}><p style={{ marginTop: 12, fontSize: 14, color: C.muted }}>AI Agent Architect<span style={{ color: C.accentDim, marginLeft: 2, animation: "pulse 2s infinite" }}>|</span></p></Reveal>
         <Reveal delay={0.2}><div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 24, fontSize: 12, color: C.muted }}>
           <span>📍 Bangkok, Thailand 🇹🇭</span><span style={{ color: C.border }}>·</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: C.surface, border: `1px solid ${C.border}` }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34d399", animation: "pulse 2s infinite" }} />Available</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: C.surface, border: `1px solid ${C.border}`, boxShadow: C.paperShadow }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, animation: "pulse 2s infinite" }} />Available</span>
         </div></Reveal>
         <Reveal delay={0.25}><div style={{ display: "flex", gap: 24, marginTop: 28 }}>
           {loading
@@ -606,7 +607,7 @@ export default function HomePage() {
             </div>
           </Reveal>
         ))}
-        <Reveal delay={0.3}><div style={{ marginTop: 24, padding: "16px 20px", borderRadius: 10, background: C.accentBg, border: "1px solid rgba(52,211,153,0.1)" }}>
+        <Reveal delay={0.3}><div style={{ marginTop: 24, padding: "16px 20px", borderRadius: 10, background: C.accentBg, border: "1px solid rgba(176,89,58,0.1)" }}>
           <div style={{ fontSize: 13, color: C.accent, fontWeight: 700 }}>Education</div>
           <div style={{ fontSize: 13, color: C.text, marginTop: 4 }}>
             {edu ? `${edu.degree} — ${edu.university} (${edu.years})` : "B.Eng Mechanical Engineering — Naresuan University (2015–2019)"}
@@ -677,7 +678,7 @@ export default function HomePage() {
                         color: C.muted, cursor: "pointer", textTransform: "uppercase",
                         transition: "color 0.15s, border-color 0.15s",
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = "rgba(52,211,153,0.4)"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = "rgba(176,89,58,0.4)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}
                       aria-label={`Open ${p.n} in a new tab`}
                     >
@@ -697,12 +698,12 @@ export default function HomePage() {
                       style={{
                         padding: "2px 8px", borderRadius: 6,
                         fontSize: 10, fontFamily: F.mono, fontWeight: 700, letterSpacing: 1,
-                        background: "transparent", border: `1px solid ${p.hasCase ? "rgba(52,211,153,0.4)" : C.border}`,
+                        background: "transparent", border: `1px solid ${p.hasCase ? "rgba(176,89,58,0.4)" : C.border}`,
                         color: p.hasCase ? C.accent : C.muted,
                         cursor: "pointer", textTransform: "uppercase",
                         transition: "color 0.15s, border-color 0.15s, background 0.15s",
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(52,211,153,0.08)"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(176,89,58,0.08)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                       aria-label={p.hasCase ? `Read ${p.n} case study` : `View ${p.n} project page`}
                     >
@@ -763,8 +764,9 @@ export default function HomePage() {
                 padding: "22px 26px",
                 borderRadius: 14,
                 background: C.surface,
-                border: `1px solid ${C.accent}`,
-                boxShadow: "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.4)",
+                border: `1px solid ${C.border}`,
+                borderLeft: `3px solid ${C.accent}`,
+                boxShadow: C.paperShadow,
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -776,7 +778,7 @@ export default function HomePage() {
                   left: 0,
                   right: 0,
                   height: 2,
-                  background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+                  background: "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
                 }}
               />
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -799,7 +801,6 @@ export default function HomePage() {
                         height: 6,
                         borderRadius: "50%",
                         background: C.accent,
-                        boxShadow: `0 0 8px ${C.accentDim}`,
                       }}
                     />
                     <span>{item}</span>
@@ -902,7 +903,7 @@ export default function HomePage() {
                         borderRadius: "50%",
                         background: isSafeHttpUrl(t.avatarUrl)
                           ? `url("${encodeURI(t.avatarUrl!)}") center/cover`
-                          : "rgba(52,211,153,0.12)",
+                          : "rgba(176,89,58,0.12)",
                         border: `1px solid ${C.border}`,
                         display: "flex",
                         alignItems: "center",
@@ -1137,7 +1138,7 @@ export default function HomePage() {
                 padding: "1px 6px",
                 borderRadius: 4,
                 border: `1px solid ${C.border}`,
-                background: "rgba(255,255,255,0.03)",
+                background: "#FFFFFF",
                 color: C.muted,
                 fontSize: 9,
                 letterSpacing: 1.5,
