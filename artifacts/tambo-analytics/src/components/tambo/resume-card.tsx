@@ -112,16 +112,16 @@ async function generatePdf(props: ResumeCardProps, p: PortfolioProfile) {
   const autoTable = autoTableModule.default;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  // Colors: header = dark bg with white/green text; body = white bg with dark text
-  const accent: [number, number, number] = [16, 120, 80];     // dark green, readable on white
-  const accentHeader: [number, number, number] = [52, 211, 153]; // bright green for dark bg
-  const dark: [number, number, number] = [10, 14, 23];
-  const darkBg: [number, number, number] = [22, 27, 34];
-  const whiteText: [number, number, number] = [230, 237, 243];  // for dark backgrounds only
-  const bodyText: [number, number, number] = [30, 30, 40];      // dark, readable on white page
-  const subText: [number, number, number] = [80, 90, 100];      // muted dark, readable on white
+  // Soft editorial palette — warm cream header, charcoal text, terracotta accent
+  const accent: [number, number, number] = [176, 89, 58];       // terracotta
+  const accentHeader: [number, number, number] = [176, 89, 58]; // terracotta on cream header
+  const dark: [number, number, number] = [245, 242, 236];       // warm cream header bg
+  const darkBg: [number, number, number] = [250, 250, 247];     // off-white surface bg
+  const whiteText: [number, number, number] = [31, 41, 55];     // charcoal text on cream
+  const bodyText: [number, number, number] = [55, 65, 81];      // body charcoal
+  const subText: [number, number, number] = [107, 114, 128];    // muted gray
 
-  // Header bar — dark bg, white/green text
+  // Header bar — warm cream bg, charcoal/terracotta text
   doc.setFillColor(...dark);
   doc.rect(0, 0, 210, 40, "F");
 
@@ -137,7 +137,7 @@ async function generatePdf(props: ResumeCardProps, p: PortfolioProfile) {
   doc.text(headLine, 14, 27);
 
   doc.setFontSize(8);
-  doc.setTextColor(...whiteText);
+  doc.setTextColor(...subText);
   doc.text([p.email, p.website, p.location].join("   ·   "), 14, 35);
 
   // --- Relevance scoring helpers ---

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, animate } from "framer-motion";
 import { z } from "zod";
 
 export const statCardSchema = z.object({
@@ -45,20 +45,22 @@ function AnimatedNumber({ value }: { value: string }) {
   const target = match ? parseFloat(match[1]) : NaN;
   const suffix = match ? match[2] : "";
   const isInt = match ? !match[1].includes(".") : true;
-  const mv = useMotionValue(0);
-  const display = useTransform(mv, (v) =>
-    isNaN(target) ? value : (isInt ? Math.round(v) : v.toFixed(1)) + suffix,
+  const [text, setText] = React.useState<string>(
+    isNaN(target) ? value : (isInt ? "0" : "0.0") + suffix,
   );
   React.useEffect(() => {
-    if (isNaN(target)) return;
-    const controls = animate(mv, target, {
+    if (isNaN(target)) {
+      setText(value);
+      return;
+    }
+    const controls = animate(0, target, {
       duration: 1.2,
       ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => setText((isInt ? Math.round(v) : v.toFixed(1)) + suffix),
     });
-    return controls.stop;
-  }, [mv, target]);
-  if (isNaN(target)) return <>{value}</>;
-  return <motion.span>{display}</motion.span>;
+    return () => controls.stop();
+  }, [target, value, isInt, suffix]);
+  return <span>{text}</span>;
 }
 
 function StatItem({

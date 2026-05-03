@@ -29,6 +29,7 @@ import {
   XIcon,
 } from "lucide-react";
 import * as React from "react";
+import { motion } from "framer-motion";
 
 // Define a generic component props interface that includes our canvas-specific props
 type CanvasComponentProps = CanvasComponent;
@@ -443,7 +444,8 @@ export const ComponentsCanvas: React.FC<
   const SortableItem: React.FC<{
     componentProps: CanvasComponentProps;
     isNew: boolean;
-  }> = ({ componentProps, isNew }) => {
+    index: number;
+  }> = ({ componentProps, isNew, index }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id: componentProps.componentId, disabled: !!componentProps._isStreaming });
 
@@ -509,14 +511,21 @@ export const ComponentsCanvas: React.FC<
     );
 
     return (
-      <div
+      <motion.div
         className="relative group"
-        style={{
-          opacity: removing ? 0 : visible ? 1 : 0,
-          scale: removing ? "0.92" : visible ? "1" : "0.92",
-          transition: "opacity 200ms ease-in, scale 200ms ease-in",
-          width: "100%",
-        }}
+        initial={isNew ? { opacity: 0, y: 14 } : false}
+        animate={
+          removing
+            ? { opacity: 0, scale: 0.92 }
+            : { opacity: 1, y: 0, scale: 1 }
+        }
+        transition={
+          removing
+            ? { duration: 0.2, ease: "easeIn" }
+            : { type: "spring", stiffness: 110, damping: 18, mass: 0.7, delay: isNew ? 0.06 * index : 0 }
+        }
+        whileHover={{ y: -2 }}
+        style={{ width: "100%" }}
       >
         {/* Delete button outside the sortable area — hidden in read-only snapshots */}
         {!activeIsReadOnly && (
@@ -541,9 +550,10 @@ export const ComponentsCanvas: React.FC<
             transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
             // ── Shared canvas card surface — all card components inherit this chrome ──
             background: "#FFFFFF",
-            border: "1px solid rgba(176,89,58,0.10)",
+            border: "1px solid rgba(15,23,42,0.08)",
             borderRadius: 16,
             overflow: "hidden",
+            boxShadow: "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06)",
           }}
           {...(activeIsReadOnly ? {} : attributes)}
           {...(activeIsReadOnly ? {} : listeners)}
@@ -571,7 +581,7 @@ export const ComponentsCanvas: React.FC<
         >
           {renderComponent(componentProps)}
         </div>
-      </div>
+      </motion.div>
     );
   };
 
@@ -875,11 +885,12 @@ export const ComponentsCanvas: React.FC<
                   alignItems: "start",
                 }}
               >
-                {activeCanvas.components.map((c) => (
+                {activeCanvas.components.map((c, i) => (
                   <SortableItem
                     key={c.componentId}
                     componentProps={c}
                     isNew={!seenComponentIds.current.has(c.componentId)}
+                    index={i}
                   />
                 ))}
               </div>
