@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, Link } from "wouter";
 import { getPortfolioProfile, type PortfolioProfile } from "../services/portfolio-data";
+import { SUGGESTIONS } from "../lib/suggestions";
 
 /** Format an ISO date (YYYY-MM-DD) as `DD MMM YYYY` (e.g. "02 May 2026"). */
 function formatUpdatedAt(iso: string): string {
@@ -24,14 +25,6 @@ const C = {
 };
 const F = { sans: "'Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','Geist Mono',monospace", thai: "'Sarabun','Noto Sans Thai',sans-serif" };
 
-const SUGGESTIONS = [
-  "What's your most impressive AI project?",
-  "Walk me through your full-stack skills",
-  "How do you approach AI agent architecture?",
-  "What industries have you worked in?",
-  "Tell me about your government AI work",
-  "What makes you unique as a developer?",
-];
 
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const [v, setV] = useState(false);

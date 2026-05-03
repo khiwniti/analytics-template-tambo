@@ -22,21 +22,15 @@ import { components, tools } from "@/lib/tambo";
 import { TamboProvider, useTambo, useTamboThreadInput } from "@tambo-ai/react";
 import { TamboMcpProvider } from "@tambo-ai/react/mcp";
 import { buildPortfolioContextText } from "@/services/portfolio-data";
+import { SUGGESTIONS } from "@/lib/suggestions";
 import type { ListResourceItem } from "@tambo-ai/react";
 import { useParams } from "wouter";
 
 const PENDING_KEY = "tambo-pending-message";
 const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
-// Same content as home.tsx SUGGESTIONS so both surfaces feel coherent
-const STARTER_CHIPS = [
-  "What's your most impressive AI project?",
-  "Walk me through your full-stack skills",
-  "How do you approach AI agent architecture?",
-  "What industries have you worked in?",
-  "Tell me about your government AI work",
-  "What makes you unique as a developer?",
-];
+// Imported from shared lib so home page and /chat stay in sync
+const STARTER_CHIPS = SUGGESTIONS;
 
 /** Tracks viewport ≤ 640px so the chat panel can render as a full-width sheet. */
 function useIsMobile(): boolean {
@@ -56,11 +50,7 @@ function useIsMobile(): boolean {
 
 /** True when the current Tambo thread has no messages yet. */
 function useIsEmptyThread(): boolean {
-  const tambo = useTambo() as unknown as {
-    thread?: { messages?: unknown[] };
-    messages?: unknown[];
-  };
-  const messages = tambo.thread?.messages ?? tambo.messages ?? [];
+  const { messages } = useTambo();
   return messages.length === 0;
 }
 
