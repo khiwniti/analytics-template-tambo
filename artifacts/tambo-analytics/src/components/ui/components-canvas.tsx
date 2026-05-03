@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/hooks/use-toast";
 import { CanvasComponent, generateId, useCanvasStore } from "@/lib/canvas-storage";
 import { components } from "@/lib/tambo";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,8 @@ export const ComponentsCanvas: React.FC<
     addComponent,
     moveComponent,
   } = useCanvasStore();
+
+  const { toast } = useToast();
 
   // Whether the active canvas was hydrated from a shared `?canvas=` snapshot.
   // When true, the toolbar hides destructive/share/fill actions and per-card
@@ -173,6 +176,7 @@ export const ComponentsCanvas: React.FC<
     if (!canvas || canvas.components.length === 0) {
       setShareStatus("error");
       setTimeout(() => setShareStatus("idle"), 2200);
+      toast({ title: "Canvas is empty", description: "Add a component before sharing.", variant: "destructive" });
       return;
     }
     try {
@@ -202,12 +206,14 @@ export const ComponentsCanvas: React.FC<
       await navigator.clipboard.writeText(url.toString());
       setShareStatus("copied");
       setTimeout(() => setShareStatus("idle"), 2200);
+      toast({ title: "Link copied", description: "Anyone with this URL can view your canvas snapshot." });
     } catch (err) {
       console.error("[ShareCanvas] failed:", err);
       setShareStatus("error");
       setTimeout(() => setShareStatus("idle"), 2200);
+      toast({ title: "Couldn't copy link", description: "Clipboard access was blocked.", variant: "destructive" });
     }
-  }, [activeCanvasId, canvases]);
+  }, [activeCanvasId, canvases, toast]);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
