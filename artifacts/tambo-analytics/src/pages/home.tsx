@@ -517,8 +517,30 @@ export default function HomePage() {
                       Live ↗
                     </button>
                   </div>
-                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, fontSize: 10, fontFamily: F.mono, color: p.hasCase ? C.accent : C.muted, letterSpacing: 1, display: "flex", alignItems: "center", gap: 4 }}>
-                    {p.hasCase ? "Read case study →" : "View project →"}
+                  {/* Distinct second action: "Read case study" / "View project"
+                      lives in its own footer button so the card has a literal
+                      two-action footer (Live ↗ above + Read case study below). */}
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/projects/${p.slug}`);
+                      }}
+                      style={{
+                        padding: "2px 8px", borderRadius: 6,
+                        fontSize: 10, fontFamily: F.mono, fontWeight: 700, letterSpacing: 1,
+                        background: "transparent", border: `1px solid ${p.hasCase ? "rgba(52,211,153,0.4)" : C.border}`,
+                        color: p.hasCase ? C.accent : C.muted,
+                        cursor: "pointer", textTransform: "uppercase",
+                        transition: "color 0.15s, border-color 0.15s, background 0.15s",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(52,211,153,0.08)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      aria-label={p.hasCase ? `Read ${p.n} case study` : `View ${p.n} project page`}
+                    >
+                      {p.hasCase ? "Read case study →" : "View project →"}
+                    </button>
                   </div>
                 </>
               );
