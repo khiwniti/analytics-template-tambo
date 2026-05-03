@@ -811,49 +811,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ══ DOMAINS ══ */}
-      <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Expertise</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Industry Domains</h2></Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {DOMAINS.map((d, i) => (
-            <Reveal key={i} delay={0.05 * i}>
-              <div style={{ padding: "14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, transition: "all 0.25s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = C.surfaceHover; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, color: C.accent }}>{d.i}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: C.textBright }}>{d.l}</span>
-                </div>
-                <div style={{ fontSize: 10, color: C.muted, lineHeight: 1.6, fontFamily: F.mono }}>{d.d}</div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* ══ SKILLS ══ */}
-      <section id="skills" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Skills</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Tech Stack</h2></Reveal>
-        {loading
-          ? [0,1,2,3,4].map(i => (
-              <div key={i} style={{ marginBottom: 18 }}>
-                <Skel w={80} h={10} radius={3} style={{ marginBottom: 10 }} />
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {[52,68,44,72,56,60].map((w, j) => <Skel key={j} w={w} h={22} radius={11} />)}
-                </div>
-              </div>
-            ))
-          : SKILLS.map((s, i) => (
-              <Reveal key={i} delay={0.05 * i}><div style={{ marginBottom: 18 }}>
-                <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.c}</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{s.s.map((t, j) => <Pill key={j}>{t}</Pill>)}</div>
-              </div></Reveal>
-            ))
-        }
-      </section>
-
       {/* ══ RECOMMENDATIONS ══ */}
       {profile?.testimonials && profile.testimonials.length > 0 && (
         <section style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 80px" }}>
@@ -1005,6 +962,50 @@ export default function HomePage() {
           </Reveal>
         </section>
       )}
+
+      {/* ══ DOMAINS ══ */}
+      <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
+        <Reveal><Label>Expertise</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Industry Domains</h2></Reveal>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {DOMAINS.map((d, i) => (
+            <Reveal key={i} delay={0.05 * i}>
+              <div style={{ padding: "14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, transition: "all 0.25s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = C.surfaceHover; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: C.accent }}>{d.i}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.textBright }}>{d.l}</span>
+                </div>
+                <div style={{ fontSize: 10, color: C.muted, lineHeight: 1.6, fontFamily: F.mono }}>{d.d}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ SKILLS ══ */}
+      <section id="skills" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
+        <Reveal><Label>Skills</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Tech Stack</h2></Reveal>
+        {loading
+          ? [0,1,2,3,4].map(i => (
+              <div key={i} style={{ marginBottom: 18 }}>
+                <Skel w={80} h={10} radius={3} style={{ marginBottom: 10 }} />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {[52,68,44,72,56,60].map((w, j) => <Skel key={j} w={w} h={22} radius={11} />)}
+                </div>
+              </div>
+            ))
+          : SKILLS.map((s, i) => (
+              <Reveal key={i} delay={0.05 * i}><div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.c}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{s.s.map((t, j) => <Pill key={j}>{t}</Pill>)}</div>
+              </div></Reveal>
+            ))
+        }
+      </section>
+
 
       {/* ══ BUILDING IN PUBLIC (live GitHub feed) ══ */}
       <BuildingInPublicSection />

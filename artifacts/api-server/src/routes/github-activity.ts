@@ -166,7 +166,7 @@ async function fetchActivity(prevUpstreamEtag?: string): Promise<CachePayload> {
       logger.warn({ status: res.status }, "GitHub API non-OK response");
       return {
         items: [],
-        rateLimited: false,
+        rateLimited: true,
         fetchedAt: Date.now(),
         etag: `"err-${Date.now()}"`,
       };
@@ -185,7 +185,7 @@ async function fetchActivity(prevUpstreamEtag?: string): Promise<CachePayload> {
     logger.error({ err }, "Failed to fetch GitHub activity");
     return {
       items: [],
-      rateLimited: false,
+      rateLimited: true,
       fetchedAt: Date.now(),
       etag: `"err-${Date.now()}"`,
     };
