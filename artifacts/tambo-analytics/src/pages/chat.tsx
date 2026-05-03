@@ -716,7 +716,10 @@ function SharedSnapshotBanner({
   snapshotCanvasId: string | null;
   onCleared: () => void;
 }) {
-  if (!snapshotCanvasId) return null;
+  // Only show the banner while the imported snapshot canvas is the *active*
+  // tab, so the read-only messaging matches what the user is actually viewing.
+  const activeCanvasId = useCanvasStore((s) => s.activeCanvasId);
+  if (!snapshotCanvasId || activeCanvasId !== snapshotCanvasId) return null;
   const handleClear = () => {
     const store = useCanvasStore.getState();
     // Replace the snapshot with a fresh writable canvas so the visitor

@@ -88,6 +88,7 @@ function useDocumentMeta(opts: {
   title: string;
   description: string;
   url: string;
+  image?: string;
 }) {
   useEffect(() => {
     const previousTitle = document.title;
@@ -103,15 +104,25 @@ function useDocumentMeta(opts: {
       return el;
     };
 
+    // Resolve to absolute URL so social crawlers don't try to fetch a
+    // relative path against their own host. Falls back to the site's
+    // /opengraph.jpg asset when the project has no dedicated image.
+    const rawImage = opts.image && opts.image.trim() ? opts.image : "/opengraph.jpg";
+    const absoluteImage = /^https?:\/\//i.test(rawImage)
+      ? rawImage
+      : new URL(rawImage, window.location.origin).toString();
+
     const tags = [
       upsert('meta[name="description"]', { name: "description", content: opts.description }),
       upsert('meta[property="og:title"]', { property: "og:title", content: opts.title }),
       upsert('meta[property="og:description"]', { property: "og:description", content: opts.description }),
       upsert('meta[property="og:type"]', { property: "og:type", content: "article" }),
       upsert('meta[property="og:url"]', { property: "og:url", content: opts.url }),
+      upsert('meta[property="og:image"]', { property: "og:image", content: absoluteImage }),
       upsert('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" }),
       upsert('meta[name="twitter:title"]', { name: "twitter:title", content: opts.title }),
       upsert('meta[name="twitter:description"]', { name: "twitter:description", content: opts.description }),
+      upsert('meta[name="twitter:image"]', { name: "twitter:image", content: absoluteImage }),
     ];
 
     return () => {
@@ -120,7 +131,7 @@ function useDocumentMeta(opts: {
       // avoids flicker. (Removing them would briefly clear OG state.)
       void tags;
     };
-  }, [opts.title, opts.description, opts.url]);
+  }, [opts.title, opts.description, opts.url, opts.image]);
 }
 
 /**
@@ -171,6 +182,9 @@ export default function ProjectDetailPage() {
     title: project ? `${project.name} — Case Study · Ikkyu Khiw` : "Project · Ikkyu Khiw",
     description: project?.description ?? "Project case study by Ikkyu Khiw.",
     url: typeof window !== "undefined" ? window.location.href : "",
+    // Prefer the first case-study image as the social preview; falls back to
+    // the site-wide /opengraph.jpg inside useDocumentMeta when absent.
+    image: project?.caseStudy?.images?.[0]?.src,
   });
 
   if (loading) {
