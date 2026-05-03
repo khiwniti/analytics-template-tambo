@@ -872,6 +872,7 @@ export default function HomePage() {
           </div>
           <Reveal delay={0.1}>
             <div
+              className="recommendations-scroll"
               style={{
                 display: "flex",
                 gap: 12,
@@ -885,6 +886,7 @@ export default function HomePage() {
               {profile.testimonials.map((t, i) => (
                 <div
                   key={i}
+                  className="recommendation-card"
                   style={{
                     padding: "18px 20px",
                     borderRadius: 12,

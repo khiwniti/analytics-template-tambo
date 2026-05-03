@@ -280,3 +280,10 @@
     animation-duration: 0.001ms !important;
   }
 }
+
+@media (max-width: 640px) {
+  .recommendations-scroll > .recommendation-card {
+    flex: 0 0 calc(100% - 4px) !important;
+    min-width: 0 !important;
+  }
+}

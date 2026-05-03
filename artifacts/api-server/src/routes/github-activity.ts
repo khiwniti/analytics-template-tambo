@@ -18,6 +18,7 @@ type CachePayload = {
   rateLimited: boolean;
   fetchedAt: number;
   etag: string;
+  upstreamEtag?: string;
 };
 
 const GITHUB_USER = "getintheQ";
@@ -133,7 +134,7 @@ async function fetchPinnedFallback(headers: Record<string, string>): Promise<Act
   }
 }
 
-async function fetchActivity(): Promise<CachePayload> {
+async function fetchActivity(prevUpstreamEtag?: string): Promise<CachePayload> {
   const url = `https://api.github.com/users/${GITHUB_USER}/events/public?per_page=30`;
   const headers: Record<string, string> = {
     "User-Agent": "khiw.dev-portfolio",
@@ -142,8 +143,16 @@ async function fetchActivity(): Promise<CachePayload> {
   if (process.env["GITHUB_TOKEN"]) {
     headers["Authorization"] = `Bearer ${process.env["GITHUB_TOKEN"]}`;
   }
+  if (prevUpstreamEtag) {
+    headers["If-None-Match"] = prevUpstreamEtag;
+  }
   try {
     const res = await fetch(url, { headers });
+    // 304 from upstream: nothing changed — keep existing cached items, just refresh fetchedAt.
+    if (res.status === 304 && cache) {
+      logger.info("GitHub events unchanged (upstream 304); reusing cache");
+      return { ...cache, fetchedAt: Date.now() };
+    }
     if (res.status === 403 || res.status === 429) {
       logger.warn({ status: res.status }, "GitHub API rate limited");
       return {
@@ -162,6 +171,7 @@ async function fetchActivity(): Promise<CachePayload> {
         etag: `"err-${Date.now()}"`,
       };
     }
+    const upstreamEtag = res.headers.get("etag") ?? undefined;
     const events = (await res.json()) as GhEvent[];
     let items = normalize(events);
     if (items.length === 0) {
@@ -170,7 +180,7 @@ async function fetchActivity(): Promise<CachePayload> {
     }
     const hash = createHash("sha1").update(JSON.stringify(items)).digest("hex").slice(0, 16);
     const etag = `"gh-${items.length}-${hash}"`;
-    return { items, rateLimited: false, fetchedAt: Date.now(), etag };
+    return { items, rateLimited: false, fetchedAt: Date.now(), etag, upstreamEtag };
   } catch (err) {
     logger.error({ err }, "Failed to fetch GitHub activity");
     return {
@@ -185,7 +195,7 @@ async function fetchActivity(): Promise<CachePayload> {
 githubActivityRouter.get("/github-activity", async (req, res) => {
   const now = Date.now();
   if (!cache || now - cache.fetchedAt > CACHE_TTL_MS) {
-    cache = await fetchActivity();
+    cache = await fetchActivity(cache?.upstreamEtag);
   }
   const ifNoneMatch = req.headers["if-none-match"];
   res.setHeader("ETag", cache.etag);
