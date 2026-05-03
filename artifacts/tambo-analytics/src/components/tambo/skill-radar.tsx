@@ -59,7 +59,7 @@ export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           padding: "24px 28px",
-          fontFamily: "Quicksand, sans-serif",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           color: C.text,
           width: "100%",
           position: "relative",

@@ -324,7 +324,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
         ref={ref}
         style={{
           padding: "24px 28px",
-          fontFamily: "Quicksand, sans-serif",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           color: C.text,
           width: "100%",
           boxSizing: "border-box" as const,

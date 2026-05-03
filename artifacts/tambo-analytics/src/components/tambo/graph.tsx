@@ -470,7 +470,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
         <div
           ref={ref}
           style={{
-            fontFamily: "Quicksand, sans-serif",
+            fontFamily: "Inter, Quicksand, system-ui, sans-serif",
             color: "#111827",
             position: "relative",
           }}

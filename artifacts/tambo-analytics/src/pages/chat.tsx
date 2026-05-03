@@ -200,7 +200,7 @@ function CanvasWelcomeOverlay({
     >
       <div
         style={{
-          fontFamily: "JetBrains Mono, monospace",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           fontSize: 10,
           color: "rgba(124,58,237,0.65)",
           letterSpacing: 3,
@@ -257,7 +257,7 @@ function CanvasWelcomeOverlay({
           marginTop: 12,
           marginBottom: 0,
           fontSize: 10,
-          fontFamily: "JetBrains Mono, monospace",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           color: "rgba(148,163,184,0.55)",
           letterSpacing: 1.5,
         }}
@@ -486,7 +486,7 @@ function AIStatusStrip() {
       <span
         style={{
           fontSize: 11,
-          fontFamily: "JetBrains Mono, monospace",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           color: "rgba(124,58,237,0.9)",
           letterSpacing: "0.03em",
           whiteSpace: "nowrap",
@@ -1256,7 +1256,7 @@ function SharedSnapshotBanner() {
           background: "rgba(124,58,237,0.15)",
           border: "1px solid rgba(124,58,237,0.45)",
           color: "#7C3AED",
-          fontFamily: "JetBrains Mono, monospace",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           fontSize: 10,
           letterSpacing: 1,
           textTransform: "uppercase",

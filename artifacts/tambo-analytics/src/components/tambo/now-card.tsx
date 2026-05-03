@@ -52,7 +52,7 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
         ref={ref}
         style={{
           padding: "22px 26px",
-          fontFamily: "Quicksand, sans-serif",
+          fontFamily: "Inter, Quicksand, system-ui, sans-serif",
           color: C.text,
           width: "100%",
           boxSizing: "border-box",

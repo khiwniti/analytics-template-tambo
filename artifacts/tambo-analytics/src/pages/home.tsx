@@ -27,7 +27,7 @@ const C = {
   paperShadow: "0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(124,58,237,0.08)",
   gradientText: "linear-gradient(135deg, #7C3AED, #EC4899)",
 };
-const F = { sans: "'Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','Geist Mono',monospace", thai: "'Sarabun','Noto Sans Thai',sans-serif" };
+const F = { sans: "'Inter','Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','Geist Mono',monospace", thai: "'Sarabun','Noto Sans Thai',sans-serif" };
 
 
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -47,14 +47,14 @@ function Label({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
       <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
-      <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase" }}>{children}</span>
+      <span style={{ fontFamily: F.sans, fontSize: 10, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase" }}>{children}</span>
     </div>
   );
 }
 
 function Pill({ children, on }: { children: React.ReactNode; on?: boolean }) {
   return (
-    <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 9, fontFamily: F.mono, background: on ? C.accentBg : C.surface, border: `1px solid ${on ? "rgba(176,89,58,0.2)" : C.border}`, color: on ? C.accent : C.ghost, cursor: "default" }}>
+    <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 9, fontFamily: F.sans, background: on ? C.accentBg : C.surface, border: `1px solid ${on ? "rgba(176,89,58,0.2)" : C.border}`, color: on ? C.accent : C.ghost, cursor: "default" }}>
       {children}
     </span>
   );
@@ -80,7 +80,7 @@ function ChatStarter() {
 
   return (
     <div style={{ width: "100%", maxWidth: 520, marginTop: 36 }}>
-      <div style={{ marginBottom: 10, fontFamily: F.mono, fontSize: 9, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase", textAlign: "center" }}>
+      <div style={{ marginBottom: 10, fontFamily: F.sans, fontSize: 9, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase", textAlign: "center" }}>
         Ask me anything · Powered by AI
       </div>
 
@@ -107,7 +107,7 @@ function ChatStarter() {
             background: input.trim() ? C.accent : "transparent",
             border: `1px solid ${input.trim() ? C.accent : C.border}`,
             color: input.trim() ? C.primary : C.faint,
-            fontFamily: F.mono, fontSize: 11, fontWeight: 700,
+            fontFamily: F.sans, fontSize: 11, fontWeight: 700,
             cursor: input.trim() ? "pointer" : "default", transition: "all 0.2s",
           }}
         >
@@ -122,7 +122,7 @@ function ChatStarter() {
             key={i}
             onClick={() => goToChat(s)}
             style={{
-              padding: "5px 12px", borderRadius: 20, fontSize: 10, fontFamily: F.mono,
+              padding: "5px 12px", borderRadius: 20, fontSize: 10, fontFamily: F.sans,
               background: C.surface, border: `1px solid ${C.border}`,
               color: C.ghost, cursor: "pointer", transition: "all 0.2s",
             }}
@@ -232,7 +232,7 @@ function BuildingInPublicSection() {
               ))
             : data!.items.length === 0
               ? (
-                <div style={{ padding: "20px 16px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, color: C.muted, fontSize: 12, fontFamily: F.mono, textAlign: "center" }}>
+                <div style={{ padding: "20px 16px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, color: C.muted, fontSize: 12, fontFamily: F.sans, textAlign: "center" }}>
                   No public activity right now — check back soon, or visit{" "}
                   <a href="https://github.com/getintheQ" target="_blank" rel="noopener noreferrer" style={{ color: C.accent }}>@getintheQ</a> on GitHub.
                 </div>
@@ -260,7 +260,7 @@ function BuildingInPublicSection() {
                       borderRadius: 4,
                       fontSize: 9,
                       fontWeight: 700,
-                      fontFamily: F.mono,
+                      fontFamily: F.sans,
                       letterSpacing: 1,
                       background: C.accentBg,
                       color: C.accent,
@@ -280,7 +280,7 @@ function BuildingInPublicSection() {
                     >
                       {it.message}
                     </a>
-                    <div style={{ fontSize: 10, fontFamily: F.mono, color: C.muted, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <div style={{ fontSize: 10, fontFamily: F.sans, color: C.muted, display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <a
                         href={`https://github.com/${it.repo}`}
                         target="_blank"
@@ -359,7 +359,7 @@ function ContactSection() {
         <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.textBright, marginBottom: 6 }}>Message Sent!</div>
         <div style={{ fontSize: 13, color: C.muted }}>Thanks for reaching out. Ikkyu will get back to you soon.</div>
-        <button onClick={() => setStatus("idle")} style={{ marginTop: 20, padding: "8px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${C.accent}`, color: C.accent, fontFamily: F.mono, fontSize: 11, cursor: "pointer" }}>
+        <button onClick={() => setStatus("idle")} style={{ marginTop: 20, padding: "8px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${C.accent}`, color: C.accent, fontFamily: F.sans, fontSize: 11, cursor: "pointer" }}>
           Send another
         </button>
       </div>
@@ -373,26 +373,26 @@ function ContactSection() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
-          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Name <span style={{ color: C.accent }}>*</span></div>
+          <div style={{ fontSize: 10, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Name <span style={{ color: C.accent }}>*</span></div>
           <input value={form.name} onChange={set("name")} onFocus={onFocus("name")} onBlur={onBlur} placeholder="Jane Smith" required style={inp("name")} />
         </div>
         <div>
-          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Email <span style={{ color: C.accent }}>*</span></div>
+          <div style={{ fontSize: 10, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Email <span style={{ color: C.accent }}>*</span></div>
           <input type="email" value={form.email} onChange={set("email")} onFocus={onFocus("email")} onBlur={onBlur} placeholder="jane@company.com" required style={inp("email")} />
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
-          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Company</div>
+          <div style={{ fontSize: 10, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Company</div>
           <input value={form.company} onChange={set("company")} onFocus={onFocus("company")} onBlur={onBlur} placeholder="Acme Corp" style={inp("company")} />
         </div>
         <div>
-          <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Role / Position</div>
+          <div style={{ fontSize: 10, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Role / Position</div>
           <input value={form.role} onChange={set("role")} onFocus={onFocus("role")} onBlur={onBlur} placeholder="CTO / Recruiter" style={inp("role")} />
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Message <span style={{ color: C.accent }}>*</span></div>
+        <div style={{ fontSize: 10, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Message <span style={{ color: C.accent }}>*</span></div>
         <textarea value={form.message} onChange={set("message")} onFocus={onFocus("message")} onBlur={onBlur} placeholder="Tell Ikkyu about the opportunity or project..." required rows={4}
           style={{ ...inp("message"), resize: "vertical" as const, minHeight: 100 }} />
       </div>
@@ -400,7 +400,7 @@ function ContactSection() {
         <div style={{ fontSize: 12, color: "#f87171", padding: "8px 12px", borderRadius: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>{errorMsg}</div>
       )}
       <button type="submit" disabled={status === "loading" || !form.name || !form.email || !form.message}
-        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "#F5F3FF", color: form.name && form.email && form.message ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
+        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "#F5F3FF", color: form.name && form.email && form.message ? "#FFFFFF" : C.faint, fontFamily: F.sans, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
         {status === "loading" ? "Sending..." : "Send Message →"}
       </button>
     </form>
@@ -506,7 +506,7 @@ export default function HomePage() {
       <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "0 24px", zIndex: 1 }}>
         <Reveal>
           <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 20 }}>
-            <span style={{ fontSize: 11, fontFamily: F.mono, letterSpacing: 2, textTransform: "uppercase", color: C.accentDim, padding: "5px 14px", borderRadius: 999, border: `1px solid rgba(124,58,237,0.25)`, background: "rgba(124,58,237,0.06)" }}>✦ Powered by AI</span>
+            <span style={{ fontSize: 11, fontFamily: F.sans, letterSpacing: 2, textTransform: "uppercase", color: C.accentDim, padding: "5px 14px", borderRadius: 999, border: `1px solid rgba(124,58,237,0.25)`, background: "rgba(124,58,237,0.06)" }}>✦ Powered by AI</span>
           </div>
         </Reveal>
         <Reveal delay={0.05}><div style={{ fontSize: "clamp(36px,6.5vw,64px)", fontWeight: 800, color: C.textBright, textAlign: "center", lineHeight: 1.05, fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: -1.5 }}>Hey 👋 I'm{" "}
@@ -532,7 +532,7 @@ export default function HomePage() {
               ))
             : STATS.map((s, i) => (
                 <div key={i} style={{ textAlign: "center", opacity: contentVisible ? 1 : 0, transition: "opacity 0.5s ease" }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: C.accentDim, fontFamily: F.mono }}>{s.n}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: C.accentDim, fontFamily: F.sans }}>{s.n}</div>
                   <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: 2, marginTop: 2, color: C.muted }}>{s.l}</div>
                 </div>
               ))
@@ -557,7 +557,7 @@ export default function HomePage() {
         <Reveal delay={0.45}><div style={{ display: "flex", gap: 6, marginTop: 20 }}>
           {[{ l: "G", u: "https://github.com/getintheQ", t: "GitHub" }, { l: "in", u: "https://linkedin.com/in/getintheq", t: "LinkedIn" }, { l: "@", u: "mailto:kiw.brw@gmail.com", t: "Email" }, { l: "↗", u: "https://www.khiw.dev/api/resume", t: "Resume" }].map((s, i) => (
             <a key={i} href={s.u} target="_blank" rel="noopener noreferrer" title={s.t}
-              style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${C.border}`, color: C.ghost, fontSize: 11, fontFamily: F.mono, transition: "all 0.2s" }}
+              style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${C.border}`, color: C.ghost, fontSize: 11, fontFamily: F.sans, transition: "all 0.2s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; e.currentTarget.style.background = C.accentBg; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.ghost; e.currentTarget.style.background = "transparent"; }}
             >{s.l}</a>
@@ -608,7 +608,7 @@ export default function HomePage() {
             <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 16, padding: "16px 0", borderBottom: i < CAREER.length - 1 ? `1px solid ${C.border}` : "none", transition: "background 0.2s", borderRadius: 4 }}
               onMouseEnter={e => (e.currentTarget.style.background = C.surface)}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-              <div style={{ fontFamily: F.mono, fontSize: 11, color: c.hi ? C.accent : C.muted, fontWeight: 500, paddingTop: 3 }}>{c.y}</div>
+              <div style={{ fontFamily: F.sans, fontSize: 11, color: c.hi ? C.accent : C.muted, fontWeight: 500, paddingTop: 3 }}>{c.y}</div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.textBright }}>{c.t}</div>
                 <div style={{ fontSize: 12, color: c.hi ? C.accent : C.muted, fontWeight: 500, marginTop: 2 }}>{c.c}</div>
@@ -670,7 +670,7 @@ export default function HomePage() {
                   </div>
                   <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, marginBottom: 6 }}>{p.d}</div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                    <div style={{ fontSize: 9, fontFamily: F.mono, color: C.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 9, fontFamily: F.sans, color: C.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                       {p.u.replace("https://", "")}
                     </div>
                     {/* "Live ↗" pill — button (not <a>) so it's valid inside the card's anchor wrapper */}
@@ -683,7 +683,7 @@ export default function HomePage() {
                       }}
                       style={{
                         flexShrink: 0, padding: "2px 8px", borderRadius: 6,
-                        fontSize: 9, fontFamily: F.mono, fontWeight: 700, letterSpacing: 1,
+                        fontSize: 9, fontFamily: F.sans, fontWeight: 700, letterSpacing: 1,
                         background: "transparent", border: `1px solid ${C.border}`,
                         color: C.muted, cursor: "pointer", textTransform: "uppercase",
                         transition: "color 0.15s, border-color 0.15s",
@@ -707,7 +707,7 @@ export default function HomePage() {
                       }}
                       style={{
                         padding: "2px 8px", borderRadius: 6,
-                        fontSize: 10, fontFamily: F.mono, fontWeight: 700, letterSpacing: 1,
+                        fontSize: 10, fontFamily: F.sans, fontWeight: 700, letterSpacing: 1,
                         background: "transparent", border: `1px solid ${p.hasCase ? "rgba(176,89,58,0.4)" : C.border}`,
                         color: p.hasCase ? C.accent : C.muted,
                         cursor: "pointer", textTransform: "uppercase",
@@ -764,7 +764,7 @@ export default function HomePage() {
             </h2>
           </Reveal>
           <Reveal delay={0.08}>
-            <p style={{ fontSize: 12, color: C.muted, marginBottom: 20, fontFamily: F.mono, letterSpacing: 1 }}>
+            <p style={{ fontSize: 12, color: C.muted, marginBottom: 20, fontFamily: F.sans, letterSpacing: 1 }}>
               Updated {formatUpdatedAt(profile.now.lastUpdated)}
             </p>
           </Reveal>
@@ -921,7 +921,7 @@ export default function HomePage() {
                         fontSize: 11,
                         fontWeight: 700,
                         color: C.accent,
-                        fontFamily: F.mono,
+                        fontFamily: F.sans,
                         flexShrink: 0,
                       }}
                       aria-hidden="true"
@@ -936,7 +936,7 @@ export default function HomePage() {
                         style={{
                           fontSize: 10,
                           color: C.muted,
-                          fontFamily: F.mono,
+                          fontFamily: F.sans,
                           marginTop: 2,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -958,7 +958,7 @@ export default function HomePage() {
                           border: `1px solid ${C.border}`,
                           color: C.accent,
                           fontSize: 10,
-                          fontFamily: F.mono,
+                          fontFamily: F.sans,
                           fontWeight: 700,
                           textDecoration: "none",
                         }}
@@ -988,7 +988,7 @@ export default function HomePage() {
                   <span style={{ fontSize: 13, color: C.accent }}>{d.i}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: C.textBright }}>{d.l}</span>
                 </div>
-                <div style={{ fontSize: 10, color: C.muted, lineHeight: 1.6, fontFamily: F.mono }}>{d.d}</div>
+                <div style={{ fontSize: 10, color: C.muted, lineHeight: 1.6, fontFamily: F.sans }}>{d.d}</div>
               </div>
             </Reveal>
           ))}
@@ -1010,7 +1010,7 @@ export default function HomePage() {
             ))
           : SKILLS.map((s, i) => (
               <Reveal key={i} delay={0.05 * i}><div style={{ marginBottom: 18 }}>
-                <div style={{ fontSize: 10, fontFamily: F.mono, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.c}</div>
+                <div style={{ fontSize: 10, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.c}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{s.s.map((t, j) => <Pill key={j}>{t}</Pill>)}</div>
               </div></Reveal>
             ))
@@ -1041,7 +1041,7 @@ export default function HomePage() {
                     <span style={{ fontSize: 15, fontWeight: 700, color: C.accent }}>{p.name}</span>
                   </div>
                   <p style={{ fontSize: 12, color: C.text, lineHeight: 1.7, marginBottom: 6 }}>{p.description}</p>
-                  {p.url && <span style={{ fontSize: 10, fontFamily: F.mono, color: C.faint }}>{p.url.replace("https://", "")}</span>}
+                  {p.url && <span style={{ fontSize: 10, fontFamily: F.sans, color: C.faint }}>{p.url.replace("https://", "")}</span>}
                 </div>
               </Reveal>
             ))
@@ -1070,7 +1070,7 @@ export default function HomePage() {
               key={`r-${i}`}
               href={s.u}
               style={{
-                fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
+                fontFamily: F.sans, fontSize: 11, letterSpacing: 1.5,
                 textTransform: "uppercase", color: C.muted, textDecoration: "none",
                 transition: "color 0.2s",
               }}
@@ -1091,7 +1091,7 @@ export default function HomePage() {
               key={`a-${i}`}
               href={s.u}
               style={{
-                fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
+                fontFamily: F.sans, fontSize: 11, letterSpacing: 1.5,
                 textTransform: "uppercase", color: C.muted, textDecoration: "none",
                 transition: "color 0.2s",
               }}
@@ -1114,7 +1114,7 @@ export default function HomePage() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
+                fontFamily: F.sans, fontSize: 11, letterSpacing: 1.5,
                 textTransform: "uppercase", color: C.muted, textDecoration: "none",
                 transition: "color 0.2s",
               }}
@@ -1132,7 +1132,7 @@ export default function HomePage() {
           <p
             style={{
               fontSize: 10,
-              fontFamily: F.mono,
+              fontFamily: F.sans,
               color: C.faint,
               letterSpacing: 1.5,
               opacity: 0.85,
