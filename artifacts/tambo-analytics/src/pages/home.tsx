@@ -516,36 +516,21 @@ export default function HomePage() {
                       Live ↗
                     </button>
                   </div>
-                  {p.hasCase && (
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, fontSize: 10, fontFamily: F.mono, color: C.accent, letterSpacing: 1, display: "flex", alignItems: "center", gap: 4 }}>
-                      Read case study →
-                    </div>
-                  )}
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, fontSize: 10, fontFamily: F.mono, color: p.hasCase ? C.accent : C.muted, letterSpacing: 1, display: "flex", alignItems: "center", gap: 4 }}>
+                    {p.hasCase ? "Read case study →" : "View project →"}
+                  </div>
                 </>
               );
               return (
                 <Reveal key={i} delay={0.03 * i}>
-                  {p.hasCase ? (
-                    <Link
-                      href={`/projects/${p.slug}`}
-                      style={cardStyle}
-                      onMouseEnter={onEnter}
-                      onMouseLeave={onLeave}
-                    >
-                      {inner}
-                    </Link>
-                  ) : (
-                    <a
-                      href={p.u}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={cardStyle}
-                      onMouseEnter={onEnter}
-                      onMouseLeave={onLeave}
-                    >
-                      {inner}
-                    </a>
-                  )}
+                  <Link
+                    href={`/projects/${p.slug}`}
+                    style={cardStyle}
+                    onMouseEnter={onEnter}
+                    onMouseLeave={onLeave}
+                  >
+                    {inner}
+                  </Link>
                 </Reveal>
               );
             })

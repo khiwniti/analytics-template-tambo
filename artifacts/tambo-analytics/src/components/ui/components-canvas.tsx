@@ -152,7 +152,14 @@ export const ComponentsCanvas: React.FC<
     }
   }, [activeCanvasId, filling, clearCanvas, addComponent]);
 
-  /** Encode the active canvas → base64 URL hash + copy share link to clipboard. */
+  /**
+   * Encode the active canvas → base64 query param `?canvas=...` and copy
+   * the share link to clipboard. URL targets `/chat/:threadId?canvas=...`
+   * (or just `/chat?canvas=...` when there's no thread yet). Caps the
+   * encoded payload at ~6 KB so the URL stays usable across browsers and
+   * messengers.
+   */
+  const MAX_CANVAS_PAYLOAD_BYTES = 6 * 1024;
   const handleShareCanvas = React.useCallback(async () => {
     if (!activeCanvasId) return;
     const canvas = canvases.find((c) => c.id === activeCanvasId);
@@ -171,8 +178,21 @@ export const ComponentsCanvas: React.FC<
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
         .replace(/=+$/, "");
-      const url = `${window.location.origin}${window.location.pathname}#c=${encoded}`;
-      await navigator.clipboard.writeText(url);
+      if (encoded.length > MAX_CANVAS_PAYLOAD_BYTES) {
+        console.warn(
+          `[ShareCanvas] payload ${encoded.length}B exceeds ${MAX_CANVAS_PAYLOAD_BYTES}B cap — refusing to share`,
+        );
+        setShareStatus("error");
+        setTimeout(() => setShareStatus("idle"), 2200);
+        return;
+      }
+      // Preserve the current path (e.g. /chat/:threadId) so reopening the
+      // link returns to the same thread. Replace any existing ?canvas=…
+      // rather than appending so the URL stays clean on re-shares.
+      const url = new URL(window.location.href);
+      url.hash = "";
+      url.searchParams.set("canvas", encoded);
+      await navigator.clipboard.writeText(url.toString());
       setShareStatus("copied");
       setTimeout(() => setShareStatus("idle"), 2200);
     } catch (err) {

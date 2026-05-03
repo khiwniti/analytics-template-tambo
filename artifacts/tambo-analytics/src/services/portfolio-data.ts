@@ -58,11 +58,13 @@ export function clearPortfolioCache(): void {
 export type ProjectCaseStudy = {
   problem?: string;
   approach?: string;
-  results?: string;
+  /** Architecture description — supports plain text or ASCII diagram. */
+  architecture?: string;
+  /** Key outcomes / metrics, rendered as a labeled stat strip. */
+  outcomes?: Array<{ label: string; value: string }>;
   tech?: string[];
-  highlights?: string[];
-  durationMonths?: number;
-  role?: string;
+  /** Optional supporting images (architecture diagrams, screenshots). */
+  images?: Array<{ src: string; caption?: string }>;
 };
 
 export type PortfolioProject = {
@@ -122,6 +124,45 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioProject |
   );
 }
 
+/** Return up to `limit` other projects (excluding the given slug). */
+export function getRelatedProjects(
+  profile: PortfolioProfile,
+  excludeSlug: string,
+  limit = 3,
+): PortfolioProject[] {
+  return profile.projects
+    .filter((p) => projectSlug(p) !== excludeSlug)
+    .slice(0, limit);
+}
+
+/**
+ * Best-effort tech inference for projects without an explicit caseStudy —
+ * pulls from the global skills list, biased by the project's tag.
+ */
+export function inferTechFromSkills(
+  profile: PortfolioProfile,
+  project: Pick<PortfolioProject, "tag">,
+): string[] {
+  const tag = project.tag.toLowerCase();
+  const all = profile.skills.flatMap((s) => s.items);
+  const tagBias: Record<string, string[]> = {
+    bim: ["IFC", "Three.js", "Next.js"],
+    "bim+ai": ["IFC", "Three.js", "Claude Sonnet", "Next.js"],
+    earth: ["FourCastNet", "PINNs", "CesiumJS"],
+    gov: ["FastAPI", "Next.js", "PostgreSQL"],
+    "gov+ai": ["LangGraph", "PINNs", "FastAPI"],
+    "3d": ["Three.js", "React"],
+    iot: ["FastAPI", "Docker", "K8s"],
+    data: ["Airflow", "Pandas", "PostgreSQL"],
+    telecom: ["Three.js", "TypeScript"],
+    "f&b": ["FastAPI", "PostgreSQL", "LangGraph"],
+  };
+  const biased = tagBias[tag] ?? [];
+  // Combine biased + a sample from each skill category, dedupe, cap to 6.
+  const seed = [...biased, ...all.slice(0, 6)];
+  return Array.from(new Set(seed)).slice(0, 6);
+}
+
 export const getPortfolioProfile = async (): Promise<PortfolioProfile> => {
   return getPortfolioData();
 };
@@ -171,12 +212,14 @@ ${p.career
 ## Projects (${p.projects.length} total)
 ${p.projects
   .map((pr) => {
-    const lines = [`- ${pr.name} [${pr.tag}]: ${pr.description}`, `  Live: ${pr.url}`];
-    if (pr.caseStudy) {
-      lines.push(`  Case study: /projects/${projectSlug(pr)} (deep-dive available — link visitors to this URL when they want details)`);
-    }
+    const lines = [`- ${pr.name} [${pr.tag}]: ${pr.description}`, `  Live: ${pr.url}`, `  Case study: /projects/${projectSlug(pr)}${pr.caseStudy ? " (full deep-dive available)" : " (overview page)"}`];
     return lines.join("\n");
   })
+  .join("\n")}
+
+## Project Case-Study URLs (always link to these when mentioning a project)
+${p.projects
+  .map((pr) => `- ${pr.name} → /projects/${projectSlug(pr)}`)
   .join("\n")}
 
 ## Domain Expertise
@@ -199,6 +242,8 @@ LinkedIn: ${p.contact.linkedin}
 
 ## Agent Instructions
 You are Ikkyu Khiw's AI portfolio assistant. Help recruiters, HR professionals, engineers, and curious visitors understand his background, skills, and projects. Be warm, concise, and truthful — only state facts from this profile. Always be enthusiastic about his unique multidisciplinary background (engineering → nuclear → AI → government).
+
+IMPORTANT — when you mention any project by name, ALWAYS include a markdown link to its case study using the URLs above (e.g. "I built [CarbonBIM](/projects/carbonbim) — an AI carbon calculator…"). This lets visitors jump straight into the deep-dive.
 
 Canvas component usage (always prefer visual components over plain text):
 - ResumeCard — resume/CV requests. Customize for the requester type and role.

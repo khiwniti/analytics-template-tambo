@@ -28,6 +28,10 @@ import type { ListResourceItem } from "@tambo-ai/react";
 import { useParams } from "wouter";
 
 const PENDING_KEY = "tambo-pending-message";
+// Dispatched on `window` after a late writer (e.g. SharedProjectImporter)
+// stashes a pending message into sessionStorage. AutoSubmitPendingMessage
+// listens for this so async deep-links don't lose the auto-submit window.
+const PENDING_EVENT = "tambo:pending-message-set";
 const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
 // Imported from shared lib so home page and /chat stay in sync
@@ -87,27 +91,57 @@ function ThreadUrlSync({ initialThreadId }: { initialThreadId?: string }) {
 function AutoSubmitPendingMessage({ onAutoSubmit }: { onAutoSubmit?: () => void }) {
   const { setValue, submit } = useTamboThreadInput();
   const submitted = useRef(false);
+  // Stash latest callbacks in refs so the effect below can use empty deps —
+  // otherwise Tambo's `setValue`/`submit` identities change when our own
+  // `onAutoSubmit` triggers a re-render, causing the effect cleanup to
+  // clear the 600 ms submit timer mid-flight.
+  const setValueRef = useRef(setValue);
+  const submitRef = useRef(submit);
+  const onAutoSubmitRef = useRef(onAutoSubmit);
+  useEffect(() => {
+    setValueRef.current = setValue;
+    submitRef.current = submit;
+    onAutoSubmitRef.current = onAutoSubmit;
+  }, [setValue, submit, onAutoSubmit]);
 
   useEffect(() => {
-    if (submitted.current) return;
-    const pending = sessionStorage.getItem(PENDING_KEY);
-    if (!pending) return;
-    sessionStorage.removeItem(PENDING_KEY);
-    submitted.current = true;
-    onAutoSubmit?.();
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    const timer = setTimeout(async () => {
-      try {
-        setValue(pending);
-        await new Promise((r) => setTimeout(r, 80));
-        await submit();
-      } catch {
-        // silent — user can still type manually
-      }
-    }, 600);
+    const tryConsume = () => {
+      if (submitted.current) return;
+      const pending = sessionStorage.getItem(PENDING_KEY);
+      if (!pending) return;
+      sessionStorage.removeItem(PENDING_KEY);
+      submitted.current = true;
+      onAutoSubmitRef.current?.();
 
-    return () => clearTimeout(timer);
-  }, [setValue, submit, onAutoSubmit]);
+      timer = setTimeout(async () => {
+        try {
+          setValueRef.current(pending);
+          await new Promise((r) => setTimeout(r, 80));
+          await submitRef.current();
+        } catch {
+          // silent — user can still type manually
+        }
+      }, 600);
+    };
+
+    // 1) Try once on mount (covers chips, starter prompts).
+    tryConsume();
+
+    // 2) Listen for late writes (covers async deep-links like
+    //    SharedProjectImporter that fetch portfolio before priming the
+    //    pending message).
+    const handler = () => tryConsume();
+    window.addEventListener(PENDING_EVENT, handler);
+
+    return () => {
+      window.removeEventListener(PENDING_EVENT, handler);
+      // NOTE: don't clear the timer on cleanup — Tambo's input hook
+      // re-renders us mid-flight and we still want the auto-submit to
+      // land. The component remains mounted for the lifetime of the page.
+    };
+  }, []);
 
   return null;
 }
@@ -239,6 +273,20 @@ function ChatWidget() {
   const [isPending, setIsPending] = useState(
     () => !!sessionStorage.getItem(PENDING_KEY)
   );
+
+  // React to late writes (async deep-links like SharedProjectImporter)
+  // so the chat panel pops open + welcome overlay hides without waiting
+  // for AutoSubmitPendingMessage to fire onAutoSubmit.
+  useEffect(() => {
+    const handler = () => {
+      if (sessionStorage.getItem(PENDING_KEY)) {
+        setOpen(true);
+        setIsPending(true);
+      }
+    };
+    window.addEventListener(PENDING_EVENT, handler);
+    return () => window.removeEventListener(PENDING_EVENT, handler);
+  }, []);
 
   // Open the chat, set the chip text, and submit
   const handleChipSubmit = async (text: string) => {
@@ -487,26 +535,100 @@ function sanitizeImportedValue(v: unknown, depth = 0): unknown {
 }
 
 /**
- * Decodes a `#c=<base64url>` URL fragment on mount and creates a new "Shared
- * Canvas" populated with the encoded components. Runs only once and clears
- * the hash so a refresh doesn't re-import. Validates+sanitizes the payload —
- * unknown component types and unsafe URL schemes are dropped. Always
- * regenerates `componentId` to avoid dedupe collisions on re-import.
+ * Reads `?project=<slug>` from the URL on mount, looks up the project from
+ * the live portfolio, and stashes a tailored question into sessionStorage
+ * under PENDING_KEY. The existing `AutoSubmitPendingMessage` then picks it
+ * up and submits it. Strips the param from the URL so a refresh doesn't
+ * re-fire the same prompt.
+ *
+ * `onPrimed(name)` is called once when a question is queued so the page
+ * can hide the welcome overlay and pass `isPending` to children.
  */
-function SharedCanvasImporter() {
+function SharedProjectImporter({ onPrimed }: { onPrimed: (name: string) => void }) {
   const consumed = useRef(false);
 
   useEffect(() => {
     if (consumed.current) return;
     consumed.current = true;
 
-    const hash = window.location.hash;
-    const match = hash.match(/^#c=([A-Za-z0-9_-]+)/);
-    if (!match) return;
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("project");
+    if (!slug) return;
+
+    // Always strip ?project= from the URL — even if the slug lookup fails
+    // — so a refresh doesn't keep retrying. Preserves other params
+    // (e.g. ?canvas=) and any hash fragment.
+    const stripParam = () => {
+      const p = new URLSearchParams(window.location.search);
+      p.delete("project");
+      const search = p.toString();
+      const cleaned =
+        window.location.pathname + (search ? `?${search}` : "") + window.location.hash;
+      window.history.replaceState(null, "", cleaned);
+    };
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getProjectBySlug } = await import("@/services/portfolio-data");
+        const project = await getProjectBySlug(slug);
+        if (cancelled) return;
+        if (!project) {
+          console.warn(`[SharedProject] no project for slug "${slug}"`);
+          stripParam();
+          return;
+        }
+        const question = `Walk me through the ${project.name} project — the problem it solves, my approach, the architecture, key outcomes, and the tech stack. Render visual cards on the canvas as you go.`;
+        // Don't clobber an explicit pending message that's already there.
+        if (!sessionStorage.getItem(PENDING_KEY)) {
+          sessionStorage.setItem(PENDING_KEY, question);
+          // Notify AutoSubmitPendingMessage which already mounted before
+          // this async write completed.
+          window.dispatchEvent(new CustomEvent(PENDING_EVENT));
+        }
+        onPrimed(project.name);
+        stripParam();
+      } catch (err) {
+        console.error("[SharedProject] failed to prime question:", err);
+        stripParam();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [onPrimed]);
+
+  return null;
+}
+
+/**
+ * Decodes a `?canvas=<base64url>` query param OR legacy `#c=<base64url>`
+ * fragment on mount and creates a new "Shared Canvas" populated with the
+ * encoded components. Runs only once and clears the param so a refresh
+ * doesn't re-import. Validates+sanitizes the payload — unknown component
+ * types and unsafe URL schemes are dropped. Always regenerates
+ * `componentId` to avoid dedupe collisions on re-import.
+ *
+ * `onImported()` fires after a successful import so the page can render a
+ * dismissible "shared snapshot" banner.
+ */
+function SharedCanvasImporter({ onImported }: { onImported: () => void }) {
+  const consumed = useRef(false);
+
+  useEffect(() => {
+    if (consumed.current) return;
+    consumed.current = true;
+
+    // Prefer query param (spec); fall back to legacy hash fragment.
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("canvas");
+    const hashMatch = window.location.hash.match(/^#c=([A-Za-z0-9_-]+)/);
+    const encoded = fromQuery ?? (hashMatch ? hashMatch[1] : null);
+    if (!encoded) return;
 
     try {
       // base64url → base64
-      const b64 = match[1].replace(/-/g, "+").replace(/_/g, "/");
+      const b64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
       const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
       const json = decodeURIComponent(escape(atob(padded)));
       const payload = JSON.parse(json) as {
@@ -553,24 +675,92 @@ function SharedCanvasImporter() {
       }
       store.setActiveCanvas(newCanvas.id);
 
-      // Clear the hash so a refresh doesn't re-import
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      // Clear the canvas param + legacy hash so a refresh doesn't re-import.
+      const cleanParams = new URLSearchParams(window.location.search);
+      cleanParams.delete("canvas");
+      const search = cleanParams.toString();
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + (search ? `?${search}` : ""),
+      );
+      onImported();
     } catch (err) {
       console.error("[SharedCanvas] failed to decode shared canvas:", err);
     }
-  }, []);
+  }, [onImported]);
 
   return null;
+}
+
+/**
+ * Subtle banner shown when the page hydrated a canvas from a shared
+ * `?canvas=` URL. Reminds the visitor it's a snapshot and points them at
+ * the existing "Clear Canvas" toolbar action to start fresh. The visitor
+ * can dismiss the banner without losing the snapshot.
+ */
+function SharedSnapshotBanner({ visible, onDismiss }: { visible: boolean; onDismiss: () => void }) {
+  if (!visible) return null;
+  return (
+    <div
+      role="status"
+      style={{
+        position: "fixed",
+        top: 16,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 60,
+        padding: "8px 14px",
+        background: "rgba(13,17,23,0.85)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        border: "1px solid rgba(52,211,153,0.3)",
+        borderRadius: 999,
+        color: "#e2e8f0",
+        fontSize: 12,
+        fontFamily: "Quicksand, sans-serif",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+      }}
+    >
+      <span style={{ color: "#34D399", fontWeight: 600 }}>Shared snapshot</span>
+      <span style={{ color: "#94a3b8" }}>— clear the canvas to start your own.</span>
+      <button
+        onClick={onDismiss}
+        aria-label="Dismiss snapshot banner"
+        style={{
+          marginLeft: 4,
+          background: "transparent",
+          border: "none",
+          color: "#64748b",
+          fontSize: 16,
+          lineHeight: 1,
+          cursor: "pointer",
+          padding: "0 2px",
+        }}
+      >
+        ×
+      </button>
+    </div>
+  );
 }
 
 export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
   const { threadId } = useParams<{ threadId?: string }>();
+  const [snapshotVisible, setSnapshotVisible] = useState(false);
+  // No-op for now — kept so SharedProjectImporter has a stable callback;
+  // AutoSubmitPendingMessage will pick up the message from sessionStorage.
+  const handleProjectPrimed = useRef((_name: string) => {}).current;
 
   return (
     <div className="h-screen w-screen overflow-hidden relative">
-      <SharedCanvasImporter />
+      <SharedCanvasImporter onImported={() => setSnapshotVisible(true)} />
+      <SharedProjectImporter onPrimed={handleProjectPrimed} />
+      <SharedSnapshotBanner visible={snapshotVisible} onDismiss={() => setSnapshotVisible(false)} />
       <TamboProvider
         apiKey={import.meta.env.VITE_TAMBO_API_KEY!}
         tamboUrl={import.meta.env.VITE_TAMBO_URL}

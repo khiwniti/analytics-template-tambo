@@ -613,24 +613,81 @@ export default function AdminPage() {
                               const merged = { ...cs, ...patch };
                               // Drop the caseStudy entirely if every field is empty
                               const isEmpty =
-                                !merged.problem && !merged.approach && !merged.results &&
-                                !merged.role && !merged.durationMonths &&
+                                !merged.problem && !merged.approach && !merged.architecture &&
                                 (!merged.tech || merged.tech.length === 0) &&
-                                (!merged.highlights || merged.highlights.length === 0);
+                                (!merged.outcomes || merged.outcomes.length === 0) &&
+                                (!merged.images || merged.images.length === 0);
                               next[i] = { ...p, caseStudy: isEmpty ? undefined : merged };
                               setField("projects", next);
                             };
+                            const outcomes = cs.outcomes ?? [];
+                            const images = cs.images ?? [];
                             return (
                               <>
                                 <TextField label="Problem" value={cs.problem ?? ""} onChange={v => updateCS({ problem: v || undefined })} multiline rows={3} />
                                 <TextField label="Approach" value={cs.approach ?? ""} onChange={v => updateCS({ approach: v || undefined })} multiline rows={3} />
-                                <TextField label="Results" value={cs.results ?? ""} onChange={v => updateCS({ results: v || undefined })} multiline rows={3} />
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: "0 16px" }}>
-                                  <TextField label="Role" value={cs.role ?? ""} onChange={v => updateCS({ role: v || undefined })} />
-                                  <NumberField label="Duration (months)" value={cs.durationMonths ?? 0} onChange={v => updateCS({ durationMonths: v > 0 ? v : undefined })} />
-                                </div>
+                                <TextField label="Architecture (text or ASCII diagram)" value={cs.architecture ?? ""} onChange={v => updateCS({ architecture: v || undefined })} multiline rows={6} />
                                 <ItemsArrayField label="Tech (one per row)" items={cs.tech ?? []} onChange={v => updateCS({ tech: v.length ? v : undefined })} placeholder="e.g. React, IFC.js" />
-                                <ItemsArrayField label="Highlights (one per row)" items={cs.highlights ?? []} onChange={v => updateCS({ highlights: v.length ? v : undefined })} placeholder="e.g. 104+ TGO emission factors integrated" />
+
+                                {/* Outcomes — label / value repeater */}
+                                <div style={{ marginBottom: 14 }}>
+                                  <FieldLabel>Outcomes (label + value)</FieldLabel>
+                                  {outcomes.map((o, oi) => (
+                                    <div key={oi} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 36px", gap: 6, marginBottom: 6 }}>
+                                      <input
+                                        value={o.label}
+                                        onChange={e => updateCS({ outcomes: outcomes.map((x, j) => j === oi ? { ...x, label: e.target.value } : x) })}
+                                        placeholder="Label (e.g. Speedup)"
+                                        style={inputStyle(false)}
+                                      />
+                                      <input
+                                        value={o.value}
+                                        onChange={e => updateCS({ outcomes: outcomes.map((x, j) => j === oi ? { ...x, value: e.target.value } : x) })}
+                                        placeholder="Value (e.g. 16,000×)"
+                                        style={inputStyle(false)}
+                                      />
+                                      <button
+                                        onClick={() => updateCS({ outcomes: outcomes.filter((_, j) => j !== oi).length ? outcomes.filter((_, j) => j !== oi) : undefined })}
+                                        style={{ padding: 0, borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 14, cursor: "pointer" }}
+                                        aria-label="Remove outcome"
+                                      >×</button>
+                                    </div>
+                                  ))}
+                                  <button
+                                    onClick={() => updateCS({ outcomes: [...outcomes, { label: "", value: "" }] })}
+                                    style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
+                                  >+ Add outcome</button>
+                                </div>
+
+                                {/* Images — src / caption repeater */}
+                                <div style={{ marginBottom: 4 }}>
+                                  <FieldLabel>Images (src + caption)</FieldLabel>
+                                  {images.map((img, ii) => (
+                                    <div key={ii} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 36px", gap: 6, marginBottom: 6 }}>
+                                      <input
+                                        value={img.src}
+                                        onChange={e => updateCS({ images: images.map((x, j) => j === ii ? { ...x, src: e.target.value } : x) })}
+                                        placeholder="https://… (image URL)"
+                                        style={inputStyle(false)}
+                                      />
+                                      <input
+                                        value={img.caption ?? ""}
+                                        onChange={e => updateCS({ images: images.map((x, j) => j === ii ? { ...x, caption: e.target.value || undefined } : x) })}
+                                        placeholder="Caption (optional)"
+                                        style={inputStyle(false)}
+                                      />
+                                      <button
+                                        onClick={() => updateCS({ images: images.filter((_, j) => j !== ii).length ? images.filter((_, j) => j !== ii) : undefined })}
+                                        style={{ padding: 0, borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 14, cursor: "pointer" }}
+                                        aria-label="Remove image"
+                                      >×</button>
+                                    </div>
+                                  ))}
+                                  <button
+                                    onClick={() => updateCS({ images: [...images, { src: "" }] })}
+                                    style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
+                                  >+ Add image</button>
+                                </div>
                               </>
                             );
                           })()}

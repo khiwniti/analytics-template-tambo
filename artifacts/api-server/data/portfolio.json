@@ -82,15 +82,14 @@
       "caseStudy": {
         "problem": "Thai construction firms face new TGO carbon-disclosure rules but lack tooling that can read raw IFC building models and emit a defensible kgCO₂e number. Spreadsheets miss 80%+ of materials and can take a junior engineer two weeks per building.",
         "approach": "Built a browser-native IFC parser on top of web-ifc, mapped 104+ TGO emission factors to IFC material classes, and wrapped everything in an LLM agent that explains assumptions and lets users override factors per element. The whole pipeline runs client-side — no model upload, no server cost.",
-        "results": "A 14-storey commercial mock model is processed in ~9 seconds vs ~40 hours by hand. Output bundles a per-element breakdown, an EN 15978 stage chart, and a TGO-formatted PDF for submission.",
-        "tech": ["Next.js", "web-ifc", "Three.js", "Claude Sonnet", "TGO 2024", "EN 15978", "Vercel Edge"],
-        "highlights": [
-          "100% in-browser — IFC models never leave the user's machine",
-          "Audited against 6 reference buildings within ±4% of consultant numbers",
-          "Conversational override flow — 'use recycled steel for these columns' updates the total live"
+        "architecture": "Browser  ─┬─►  web-ifc (WASM)  ──►  Element graph  ──►  TGO factor map\n          │                                              │\n          │                                              ▼\n          └──►  Three.js viewer  ◄────────  LLM agent (Claude Sonnet)\n                                                         │\n                                                         ▼\n                                                  EN 15978 PDF report\n\nEverything runs client-side. The LLM call is the only network hop;\nIFC bytes never leave the browser.",
+        "outcomes": [
+          { "label": "Speedup vs manual", "value": "~16,000×" },
+          { "label": "Accuracy vs consultants", "value": "±4%" },
+          { "label": "TGO factors mapped", "value": "104+" },
+          { "label": "Reference buildings audited", "value": "6" }
         ],
-        "durationMonths": 4,
-        "role": "Solo architect + builder"
+        "tech": ["Next.js", "web-ifc", "Three.js", "Claude Sonnet", "TGO 2024", "EN 15978", "Vercel Edge"]
       }
     },
     {
@@ -102,15 +101,14 @@
       "caseStudy": {
         "problem": "Thai farmers, rainmaking pilots, and disaster officers need short-range hyper-local forecasts for monsoon dynamics that GFS at 25 km resolution simply can't resolve. Commercial APIs are expensive, US-centric, and don't expose the physics.",
         "approach": "Combined FourCastNet's transformer backbone with a thin Physics-Informed Neural Network (PINN) layer that re-projects to 5 km over Southeast Asia. Wrapped in a CesiumJS globe so users can scrub through 24h of forecast wind, precipitation, and aerosol fields with sub-second interactivity.",
-        "results": "Validated against 30 days of TMD ground stations: precipitation MAE 18% lower than raw GFS, wind direction within 12° on 88% of points. Globe loads in under 3s on mid-tier mobile.",
-        "tech": ["FourCastNet", "PINNs", "DeepXDE", "CesiumJS", "FastAPI", "Cloudflare R2", "Next.js"],
-        "highlights": [
-          "Forecasts 0–24h at 5 km grid for SE Asia, refreshed every 6h from GFS",
-          "Used internally for Royal Rainmaking mission planning experiments",
-          "Open scientific notebooks let researchers reproduce every PINN loss term"
+        "architecture": "GFS 25km  ──►  FourCastNet (transformer)  ──►  Coarse 0–24h fields\n                                                       │\n                                                       ▼\n                                          PINN downscaler (DeepXDE)\n                                                       │\n                                                       ▼\n                                          5 km SE-Asia tensors  ──►  Cloudflare R2\n                                                                            │\n                                                                            ▼\n                                                                    CesiumJS globe (browser)",
+        "outcomes": [
+          { "label": "Precipitation MAE vs GFS", "value": "−18%" },
+          { "label": "Wind direction accuracy", "value": "12° / 88%" },
+          { "label": "Resolution", "value": "5 km" },
+          { "label": "Globe load time", "value": "<3 s" }
         ],
-        "durationMonths": 6,
-        "role": "Lead AI engineer"
+        "tech": ["FourCastNet", "PINNs", "DeepXDE", "CesiumJS", "FastAPI", "Cloudflare R2", "Next.js"]
       }
     },
     {
