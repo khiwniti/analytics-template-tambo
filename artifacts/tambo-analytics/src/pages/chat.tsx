@@ -612,7 +612,7 @@ function SharedProjectImporter({ onPrimed }: { onPrimed: (name: string) => void 
  * `onImported()` fires after a successful import so the page can render a
  * dismissible "shared snapshot" banner.
  */
-function SharedCanvasImporter({ onImported }: { onImported: () => void }) {
+function SharedCanvasImporter({ onImported }: { onImported: (canvasId: string) => void }) {
   const consumed = useRef(false);
 
   useEffect(() => {
@@ -669,11 +669,21 @@ function SharedCanvasImporter({ onImported }: { onImported: () => void }) {
       const store = useCanvasStore.getState();
       const rawName = typeof payload.name === "string" ? payload.name.slice(0, 80) : "";
       const name = rawName ? `${rawName} (shared)` : "Shared Canvas";
+      // Create the canvas as writable so we can populate it, then lock it
+      // to read-only after seeding. (createCanvas with isReadOnly=true would
+      // make addComponent below a no-op.)
       const newCanvas = store.createCanvas(name);
       for (const c of safeComponents) {
         store.addComponent(newCanvas.id, c);
       }
       store.setActiveCanvas(newCanvas.id);
+      // Flip into snapshot mode — the banner's "Clear snapshot" action calls
+      // unlockCanvas + clearCanvas to let the visitor start their own.
+      useCanvasStore.setState((state) => ({
+        canvases: state.canvases.map((c) =>
+          c.id === newCanvas.id ? { ...c, isReadOnly: true } : c,
+        ),
+      }));
 
       // Clear the canvas param + legacy hash so a refresh doesn't re-import.
       const cleanParams = new URLSearchParams(window.location.search);
@@ -684,7 +694,7 @@ function SharedCanvasImporter({ onImported }: { onImported: () => void }) {
         "",
         window.location.pathname + (search ? `?${search}` : ""),
       );
-      onImported();
+      onImported(newCanvas.id);
     } catch (err) {
       console.error("[SharedCanvas] failed to decode shared canvas:", err);
     }
@@ -694,13 +704,28 @@ function SharedCanvasImporter({ onImported }: { onImported: () => void }) {
 }
 
 /**
- * Subtle banner shown when the page hydrated a canvas from a shared
- * `?canvas=` URL. Reminds the visitor it's a snapshot and points them at
- * the existing "Clear Canvas" toolbar action to start fresh. The visitor
- * can dismiss the banner without losing the snapshot.
+ * Read-only snapshot banner. Shown while the active canvas was hydrated
+ * from a `?canvas=` share link. The "Clear snapshot" action removes the
+ * read-only canvas and switches to a fresh writable one so the visitor
+ * can start exploring.
  */
-function SharedSnapshotBanner({ visible, onDismiss }: { visible: boolean; onDismiss: () => void }) {
-  if (!visible) return null;
+function SharedSnapshotBanner({
+  snapshotCanvasId,
+  onCleared,
+}: {
+  snapshotCanvasId: string | null;
+  onCleared: () => void;
+}) {
+  if (!snapshotCanvasId) return null;
+  const handleClear = () => {
+    const store = useCanvasStore.getState();
+    // Replace the snapshot with a fresh writable canvas so the visitor
+    // doesn't land on an empty board with no active canvas.
+    const fresh = store.createCanvas("My canvas");
+    store.setActiveCanvas(fresh.id);
+    store.removeCanvas(snapshotCanvasId);
+    onCleared();
+  };
   return (
     <div
       role="status"
@@ -726,22 +751,25 @@ function SharedSnapshotBanner({ visible, onDismiss }: { visible: boolean; onDism
       }}
     >
       <span style={{ color: "#34D399", fontWeight: 600 }}>Shared snapshot</span>
-      <span style={{ color: "#94a3b8" }}>— clear the canvas to start your own.</span>
+      <span style={{ color: "#94a3b8" }}>— read-only view of someone else's board.</span>
       <button
-        onClick={onDismiss}
-        aria-label="Dismiss snapshot banner"
+        onClick={handleClear}
+        aria-label="Clear snapshot and start a fresh canvas"
         style={{
           marginLeft: 4,
-          background: "transparent",
-          border: "none",
-          color: "#64748b",
-          fontSize: 16,
-          lineHeight: 1,
+          padding: "3px 10px",
+          borderRadius: 999,
+          background: "rgba(52,211,153,0.15)",
+          border: "1px solid rgba(52,211,153,0.45)",
+          color: "#34D399",
+          fontFamily: "JetBrains Mono, monospace",
+          fontSize: 10,
+          letterSpacing: 1,
+          textTransform: "uppercase",
           cursor: "pointer",
-          padding: "0 2px",
         }}
       >
-        ×
+        Clear snapshot
       </button>
     </div>
   );
@@ -751,16 +779,21 @@ export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
   const { threadId } = useParams<{ threadId?: string }>();
-  const [snapshotVisible, setSnapshotVisible] = useState(false);
+  // Tracks the read-only canvas id created by SharedCanvasImporter so the
+  // banner can offer a "Clear snapshot" action that targets the right canvas.
+  const [snapshotCanvasId, setSnapshotCanvasId] = useState<string | null>(null);
   // No-op for now — kept so SharedProjectImporter has a stable callback;
   // AutoSubmitPendingMessage will pick up the message from sessionStorage.
   const handleProjectPrimed = useRef((_name: string) => {}).current;
 
   return (
     <div className="h-screen w-screen overflow-hidden relative">
-      <SharedCanvasImporter onImported={() => setSnapshotVisible(true)} />
+      <SharedCanvasImporter onImported={(id) => setSnapshotCanvasId(id)} />
       <SharedProjectImporter onPrimed={handleProjectPrimed} />
-      <SharedSnapshotBanner visible={snapshotVisible} onDismiss={() => setSnapshotVisible(false)} />
+      <SharedSnapshotBanner
+        snapshotCanvasId={snapshotCanvasId}
+        onCleared={() => setSnapshotCanvasId(null)}
+      />
       <TamboProvider
         apiKey={import.meta.env.VITE_TAMBO_API_KEY!}
         tamboUrl={import.meta.env.VITE_TAMBO_URL}

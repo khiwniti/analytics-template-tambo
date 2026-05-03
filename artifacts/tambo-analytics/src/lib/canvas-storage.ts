@@ -20,6 +20,10 @@ export interface Canvas {
   id: string;
   name: string;
   components: CanvasComponent[];
+  /** When true, all mutating store actions become no-ops for this canvas.
+   *  Used by the shared-canvas importer so visitors view a read-only snapshot
+   *  until they explicitly clear it and start their own. */
+  isReadOnly?: boolean;
 }
 
 export interface CanvasState {
@@ -30,7 +34,9 @@ export interface CanvasState {
   getCanvases: () => Canvas[];
   getCanvas: (id: string) => Canvas | undefined;
   getComponents: (canvasId: string) => CanvasComponent[];
-  createCanvas: (name?: string) => Canvas;
+  createCanvas: (name?: string, opts?: { isReadOnly?: boolean }) => Canvas;
+  /** Flip a canvas out of read-only mode (used by the "Clear snapshot" UX). */
+  unlockCanvas: (id: string) => void;
   updateCanvas: (id: string, name: string) => Canvas | null;
   removeCanvas: (id: string) => void;
   setActiveCanvas: (id: string | null) => void;
@@ -80,11 +86,16 @@ export const useCanvasStore = create<CanvasState>()(
       },
 
       // Create a new canvas
-      createCanvas: (name?: string) => {
+      createCanvas: (name?: string, opts?: { isReadOnly?: boolean }) => {
         const id = generateId();
         const canvases = get().canvases;
         const canvasName = name || `New Canvas ${canvases.length + 1}`;
-        const newCanvas: Canvas = { id, name: canvasName, components: [] };
+        const newCanvas: Canvas = {
+          id,
+          name: canvasName,
+          components: [],
+          ...(opts?.isReadOnly ? { isReadOnly: true } : {}),
+        };
 
         set((state) => ({
           canvases: [...state.canvases, newCanvas],
@@ -92,6 +103,15 @@ export const useCanvasStore = create<CanvasState>()(
         }));
 
         return newCanvas;
+      },
+
+      // Flip a canvas out of read-only mode
+      unlockCanvas: (id: string) => {
+        set((state) => ({
+          canvases: state.canvases.map((c) =>
+            c.id === id ? { ...c, isReadOnly: false } : c,
+          ),
+        }));
       },
 
       // Update canvas name
@@ -161,6 +181,8 @@ export const useCanvasStore = create<CanvasState>()(
 
       // Clear all components from a canvas
       clearCanvas: (id: string) => {
+        const target = get().canvases.find((c) => c.id === id);
+        if (target?.isReadOnly) return;
         set((state) => ({
           canvases: state.canvases.map((c) =>
             c.id === id ? { ...c, components: [] } : c,
@@ -170,6 +192,11 @@ export const useCanvasStore = create<CanvasState>()(
 
       // Add a component to a canvas
       addComponent: (canvasId: string, componentProps: CanvasComponent) => {
+        const targetCanvasReadOnly = get().canvases.find((c) => c.id === canvasId)?.isReadOnly;
+        if (targetCanvasReadOnly) {
+          console.log(`[CANVAS] addComponent blocked — canvas ${canvasId} is read-only`);
+          return;
+        }
         const componentId = componentProps.componentId || generateId();
 
         // Check for duplicate operations
@@ -239,6 +266,7 @@ export const useCanvasStore = create<CanvasState>()(
         componentId: string,
         props: Record<string, unknown>,
       ) => {
+        if (get().canvases.find((c) => c.id === canvasId)?.isReadOnly) return null;
         let updatedComponent: CanvasComponent | null = null;
 
         set((state) => {
@@ -263,6 +291,7 @@ export const useCanvasStore = create<CanvasState>()(
 
       // Remove a component from a canvas
       removeComponent: (canvasId: string, componentId: string) => {
+        if (get().canvases.find((c) => c.id === canvasId)?.isReadOnly) return;
         set((state) => ({
           canvases: state.canvases.map((c) =>
             c.id === canvasId
@@ -285,6 +314,9 @@ export const useCanvasStore = create<CanvasState>()(
       ) => {
         // Skip if source and target are the same
         if (sourceCanvasId === targetCanvasId) return null;
+        const cs = get().canvases;
+        if (cs.find((c) => c.id === sourceCanvasId)?.isReadOnly) return null;
+        if (cs.find((c) => c.id === targetCanvasId)?.isReadOnly) return null;
 
         const operationKey = `move-${componentId}-${sourceCanvasId}-${targetCanvasId}`;
         const pendingOps = get().pendingOperations;
@@ -372,6 +404,7 @@ export const useCanvasStore = create<CanvasState>()(
         componentId: string,
         newIndex: number,
       ) => {
+        if (get().canvases.find((c) => c.id === canvasId)?.isReadOnly) return;
         set((state) => {
           const updatedCanvases = state.canvases.map((c) => {
             if (c.id !== canvasId) return c;

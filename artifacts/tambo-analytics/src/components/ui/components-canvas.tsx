@@ -48,6 +48,13 @@ export const ComponentsCanvas: React.FC<
     moveComponent,
   } = useCanvasStore();
 
+  // Whether the active canvas was hydrated from a shared `?canvas=` snapshot.
+  // When true, the toolbar hides destructive/share/fill actions and per-card
+  // delete affordances are suppressed so visitors can't mutate the snapshot.
+  // Reading from the live `canvases` array (rather than `useCanvasStore` again)
+  // keeps this in sync with imports and "Clear snapshot" actions.
+  const activeIsReadOnly = !!canvases.find((c) => c.id === activeCanvasId)?.isReadOnly;
+
   // Track component IDs that have already animated (starts with all IDs present at
   // page load). Adding to this set after the first animation prevents the pop-in
   // from replaying when SortableItem remounts due to parent re-renders.
@@ -505,16 +512,18 @@ export const ComponentsCanvas: React.FC<
           width: "100%",
         }}
       >
-        {/* Delete button outside the sortable area */}
-        <div className="absolute -top-2 -right-2 z-50">
-          <button
-            onMouseDown={handleRemove}
-            className="bg-background border border-border rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Remove"
-          >
-            <XIcon className="h-3 w-3" />
-          </button>
-        </div>
+        {/* Delete button outside the sortable area — hidden in read-only snapshots */}
+        {!activeIsReadOnly && (
+          <div className="absolute -top-2 -right-2 z-50">
+            <button
+              onMouseDown={handleRemove}
+              className="bg-background border border-border rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Remove"
+            >
+              <XIcon className="h-3 w-3" />
+            </button>
+          </div>
+        )}
 
         {/* Sortable content - make it draggable to other canvases */}
         <div
@@ -525,12 +534,12 @@ export const ComponentsCanvas: React.FC<
             opacity: componentProps._isStreaming ? 1 : contentVisible ? 1 : 0,
             transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
           }}
-          {...attributes}
-          {...listeners}
-          draggable={!componentProps._isStreaming}
+          {...(activeIsReadOnly ? {} : attributes)}
+          {...(activeIsReadOnly ? {} : listeners)}
+          draggable={!componentProps._isStreaming && !activeIsReadOnly}
           onDragStart={(e) => {
-            // Prevent dragging while still generating
-            if (componentProps._isStreaming) { e.preventDefault(); return; }
+            // Prevent dragging while still generating or in read-only snapshots
+            if (componentProps._isStreaming || activeIsReadOnly) { e.preventDefault(); return; }
             // Set drag data for moving between canvases
             const dragData = {
               component: _componentType,
@@ -692,7 +701,7 @@ export const ComponentsCanvas: React.FC<
       </div>
 
       <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2">
-        {activeCanvasId && (
+        {activeCanvasId && !activeIsReadOnly && (
           <>
             {/* Fill Portfolio — populates canvas with all resume data */}
             <button

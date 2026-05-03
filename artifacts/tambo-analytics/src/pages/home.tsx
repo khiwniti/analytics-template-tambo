@@ -241,6 +241,7 @@ function ContactSection() {
 }
 
 export default function HomePage() {
+  const [, navigate] = useLocation();
   const [profile, setProfile] = useState<PortfolioProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
@@ -523,14 +524,27 @@ export default function HomePage() {
               );
               return (
                 <Reveal key={i} delay={0.03 * i}>
-                  <Link
-                    href={`/projects/${p.slug}`}
-                    style={cardStyle}
+                  {/* Use a div + onClick (rather than wrapping the whole card
+                      in an <a>/Link) so the inner "Live ↗" <button> isn't
+                      nested inside an interactive element. Keyboard access is
+                      provided via role/tabIndex/Enter+Space. */}
+                  <div
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => navigate(`/projects/${p.slug}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        navigate(`/projects/${p.slug}`);
+                      }
+                    }}
+                    style={{ ...cardStyle, cursor: "pointer" }}
                     onMouseEnter={onEnter}
                     onMouseLeave={onLeave}
+                    aria-label={`Open ${p.n} project page`}
                   >
                     {inner}
-                  </Link>
+                  </div>
                 </Reveal>
               );
             })
