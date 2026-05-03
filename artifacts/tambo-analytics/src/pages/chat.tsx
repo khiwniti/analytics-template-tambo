@@ -636,6 +636,7 @@ function focusChatInput(delay = 60) {
 function ChatWidget() {
   const { containerRef } = useThreadContainerContext();
   const { setValue, submit } = useTamboThreadInput();
+  const { messages } = useTambo();
   const { addComponent, activeCanvasId } = useCanvasStore();
   const isMobile = useIsMobile();
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -691,12 +692,20 @@ function ChatWidget() {
     }
   };
 
-  // "Get in touch" CTA handler — add ContactForm to canvas then open chat
+  // "Get in touch" CTA handler — add ContactForm prefilled with conversation summary
   const handleBookCTA = () => {
     if (activeCanvasId) {
+      const userMsgs = messages.filter((m) => m.role === "user");
+      const summary = userMsgs
+        .slice(-2)
+        .map((m) => getTextFromContent(m.content).slice(0, 120))
+        .filter(Boolean)
+        .join("; ")
+        .slice(0, 220);
       addComponent(activeCanvasId, {
         componentId: generateId(),
         _componentType: "ContactForm",
+        prefillMessage: summary || undefined,
       } as CanvasComponent);
     }
     setOpen(true);
