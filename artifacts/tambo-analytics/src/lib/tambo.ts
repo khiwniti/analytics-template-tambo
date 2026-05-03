@@ -23,6 +23,11 @@ import {
   timelineCardSchema,
 } from "@/components/tambo/timeline-card";
 import { StatCard, statCardSchema } from "@/components/tambo/stat-card";
+import { NowCard, nowCardSchema } from "@/components/tambo/now-card";
+import {
+  TestimonialCard,
+  testimonialCardSchema,
+} from "@/components/tambo/testimonial-card";
 import type { TamboComponent, TamboTool } from "@tambo-ai/react";
 import { z } from "zod";
 import {
@@ -128,5 +133,21 @@ export const components: TamboComponent[] = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: StatCard as any,
     propsSchema: statCardSchema,
+  },
+  {
+    name: "NowCard",
+    description:
+      "Render a 'What I'm Working On Now' card showing Ikkyu's current focus areas as a bulleted list. Use this when someone asks 'what are you working on?', 'what's your current focus?', 'what are you up to lately?', or any present-tense status question. Pull the items from the 'Now' section in the portfolio context.",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: NowCard as any,
+    propsSchema: nowCardSchema,
+  },
+  {
+    name: "TestimonialCard",
+    description:
+      "Render 1–3 recommendations / testimonials about Ikkyu in a stacked card layout. Use this when someone asks for recommendations, testimonials, references, social proof, or 'what do people say about working with him?'. Pull quotes from the Recommendations section in the portfolio context — choose the 1–3 most relevant to the asker's role.",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: TestimonialCard as any,
+    propsSchema: testimonialCardSchema,
   },
 ];

@@ -137,6 +137,149 @@ function ChatStarter() {
   );
 }
 
+/** Returns true only for plain http(s) URLs — blocks javascript:, data:, etc. */
+function isSafeHttpUrl(url: string | undefined | null): url is string {
+  if (!url) return false;
+  return /^https?:\/\//i.test(url.trim());
+}
+
+type GhActivityItem = {
+  type: "push" | "create" | "pr";
+  repo: string;
+  message: string;
+  url: string;
+  createdAt: string;
+};
+type GhActivityResponse = { items: GhActivityItem[]; rateLimited: boolean };
+
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return "";
+  const diffSec = Math.max(0, (Date.now() - then) / 1000);
+  if (diffSec < 60) return "just now";
+  const min = Math.floor(diffSec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 30) return `${day}d ago`;
+  const mo = Math.floor(day / 30);
+  if (mo < 12) return `${mo}mo ago`;
+  return `${Math.floor(mo / 12)}y ago`;
+}
+
+function BuildingInPublicSection() {
+  const [data, setData] = useState<GhActivityResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errored, setErrored] = useState(false);
+
+  useEffect(() => {
+    const base = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+    fetch(`${base}/api/github-activity`)
+      .then(async r => {
+        if (!r.ok) throw new Error(`status ${r.status}`);
+        return r.json() as Promise<GhActivityResponse>;
+      })
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => { setErrored(true); setLoading(false); });
+  }, []);
+
+  // Hide entirely if rate-limited with no items, or fetch failed with no data
+  if (!loading && (errored || (data && data.rateLimited && data.items.length === 0))) {
+    return null;
+  }
+  if (!loading && data && data.items.length === 0) {
+    return null;
+  }
+
+  const typeBadge = (type: GhActivityItem["type"]): string => {
+    if (type === "push") return "PUSH";
+    if (type === "pr") return "PR";
+    return "NEW";
+  };
+
+  return (
+    <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
+      <Reveal><Label>Building in Public</Label></Reveal>
+      <Reveal delay={0.05}>
+        <h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>
+          Live from GitHub
+        </h2>
+      </Reveal>
+      <Reveal delay={0.08}>
+        <p style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>
+          Recent commits, repos, and PRs from <a href="https://github.com/getintheQ" target="_blank" rel="noopener noreferrer" style={{ color: C.accent }}>@getintheQ</a> · refreshed every 10 minutes.
+        </p>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {loading
+            ? [0, 1, 2, 3].map(i => (
+                <div key={i} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}` }}>
+                  <Skel w={36} h={16} radius={4} />
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                    <Skel w="80%" h={11} radius={3} />
+                    <Skel w="40%" h={9} radius={3} />
+                  </div>
+                </div>
+              ))
+            : data!.items.map((it, i) => (
+                <a
+                  key={i}
+                  href={it.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: C.surface,
+                    border: `1px solid ${C.border}`,
+                    textDecoration: "none",
+                    color: C.text,
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = C.surfaceHover; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}
+                >
+                  <span
+                    style={{
+                      flexShrink: 0,
+                      padding: "2px 7px",
+                      borderRadius: 4,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      fontFamily: F.mono,
+                      letterSpacing: 1,
+                      background: C.accentBg,
+                      color: C.accent,
+                      border: `1px solid rgba(52,211,153,0.2)`,
+                      alignSelf: "flex-start",
+                      marginTop: 2,
+                    }}
+                  >
+                    {typeBadge(it.type)}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.5, marginBottom: 4 }}>
+                      {it.message}
+                    </div>
+                    <div style={{ fontSize: 10, fontFamily: F.mono, color: C.muted, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ color: C.accentDim }}>{it.repo}</span>
+                      <span>·</span>
+                      <span>{timeAgo(it.createdAt)}</span>
+                    </div>
+                  </div>
+                </a>
+              ))
+          }
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
 type ContactFormState = { name: string; email: string; company: string; role: string; message: string };
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
@@ -574,6 +717,58 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ══ NOW ══ */}
+      {profile?.now && profile.now.items.length > 0 && (
+        <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
+          <Reveal>
+            <Label>Now</Label>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>
+              What I'm Working On Now
+            </h2>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <p style={{ fontSize: 12, color: C.muted, marginBottom: 20, fontFamily: F.mono, letterSpacing: 1 }}>
+              Updated {formatUpdatedAt(profile.now.lastUpdated)}
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+              {profile.now.items.map((item, i) => (
+                <li
+                  key={i}
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    padding: "14px 16px",
+                    borderRadius: 10,
+                    background: C.surface,
+                    border: `1px solid ${C.border}`,
+                    fontSize: 13,
+                    color: C.text,
+                    lineHeight: 1.65,
+                  }}
+                >
+                  <span
+                    style={{
+                      flexShrink: 0,
+                      marginTop: 7,
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: C.accent,
+                      boxShadow: `0 0 8px ${C.accentDim}`,
+                    }}
+                  />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </section>
+      )}
+
       {/* ══ DOMAINS ══ */}
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
         <Reveal><Label>Expertise</Label></Reveal>
@@ -616,6 +811,152 @@ export default function HomePage() {
             ))
         }
       </section>
+
+      {/* ══ RECOMMENDATIONS ══ */}
+      {profile?.testimonials && profile.testimonials.length > 0 && (
+        <section style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 80px" }}>
+          <div style={{ maxWidth: 700, margin: "0 auto" }}>
+            <Reveal><Label>Recommendations</Label></Reveal>
+            <Reveal delay={0.05}>
+              <h2 style={{ fontSize: 28, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>
+                What People Say
+              </h2>
+            </Reveal>
+            <Reveal delay={0.08}>
+              <p style={{ fontSize: 12, color: C.muted, marginBottom: 24 }}>
+                From colleagues, clients, and collaborators across {profile.stats.industries} industries.
+              </p>
+            </Reveal>
+          </div>
+          <Reveal delay={0.1}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+                gap: 12,
+              }}
+            >
+              {profile.testimonials.map((t, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: "18px 20px",
+                    borderRadius: 12,
+                    background: C.surface,
+                    border: `1px solid ${C.border}`,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                    position: "relative",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      top: 4,
+                      left: 12,
+                      fontSize: 36,
+                      lineHeight: 1,
+                      color: C.accentDim,
+                      fontFamily: "Georgia, serif",
+                      opacity: 0.35,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    “
+                  </span>
+                  <p
+                    style={{
+                      margin: 0,
+                      paddingLeft: 18,
+                      fontSize: 13,
+                      lineHeight: 1.7,
+                      color: C.text,
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {t.quote}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      paddingTop: 12,
+                      borderTop: `1px dashed ${C.border}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: isSafeHttpUrl(t.avatarUrl)
+                          ? `url("${encodeURI(t.avatarUrl!)}") center/cover`
+                          : "rgba(52,211,153,0.12)",
+                        border: `1px solid ${C.border}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: C.accent,
+                        fontFamily: F.mono,
+                        flexShrink: 0,
+                      }}
+                      aria-hidden="true"
+                    >
+                      {!isSafeHttpUrl(t.avatarUrl) && t.author.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase() ?? "").join("")}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.textBright, lineHeight: 1.3 }}>
+                        {t.author}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          color: C.muted,
+                          fontFamily: F.mono,
+                          marginTop: 2,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {t.title}{t.company ? ` · ${t.company}` : ""}
+                      </div>
+                    </div>
+                    {isSafeHttpUrl(t.linkedinUrl) && (
+                      <a
+                        href={t.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          flexShrink: 0,
+                          padding: "4px 10px",
+                          borderRadius: 6,
+                          border: `1px solid ${C.border}`,
+                          color: C.accent,
+                          fontSize: 10,
+                          fontFamily: F.mono,
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        in ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </section>
+      )}
+
+      {/* ══ BUILDING IN PUBLIC (live GitHub feed) ══ */}
+      <BuildingInPublicSection />
 
       {/* ══ SIDE PROJECTS ══ */}
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>

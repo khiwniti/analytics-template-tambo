@@ -97,6 +97,22 @@ export type PortfolioProfile = {
   education: { degree: string; university: string; years: string; honors: string; languages: string };
   sideProjects: Array<{ name: string; url: string; description: string }>;
   contact: { email: string; github: string; linkedin: string; resume: string };
+  /** Short status update — what Ikkyu is focused on right now. Rendered as a "Now" panel on the home page. */
+  now?: {
+    /** ISO date (YYYY-MM-DD) the items were last refreshed. */
+    lastUpdated: string;
+    /** 3–6 short bullet items, each one line of plain text. */
+    items: string[];
+  };
+  /** Recommendations / testimonials shown on the home page and quotable by the AI. */
+  testimonials?: Array<{
+    quote: string;
+    author: string;
+    title: string;
+    company?: string;
+    avatarUrl?: string;
+    linkedinUrl?: string;
+  }>;
   /** ISO date (YYYY-MM-DD) of the last portfolio edit. Auto-stamped by API on PUT. */
   updatedAt?: string;
 };
@@ -240,6 +256,21 @@ ${p.education.honors} · ${p.education.languages}
 ## Side Projects
 ${p.sideProjects.map((sp) => `- ${sp.name} (${sp.url}): ${sp.description}`).join("\n")}
 
+${
+  p.now && p.now.items.length
+    ? `## Now (focus areas, last updated ${p.now.lastUpdated})\n${p.now.items.map((it) => `- ${it}`).join("\n")}\n`
+    : ""
+}
+${
+  p.testimonials && p.testimonials.length
+    ? `## Recommendations / Testimonials\n${p.testimonials
+        .map(
+          (t) =>
+            `- "${t.quote}" — ${t.author}, ${t.title}${t.company ? ` @ ${t.company}` : ""}`,
+        )
+        .join("\n")}\n`
+    : ""
+}
 ## Contact
 Email: ${p.contact.email}
 GitHub: ${p.contact.github}
@@ -259,5 +290,7 @@ Canvas component usage (always prefer visual components over plain text):
 - StatCard — quick facts and key numbers at a glance (years experience, projects shipped, AI agents built, etc). Render this for "give me a snapshot" or "impress me in 10 seconds" type questions.
 - SelectForm — whenever you need to ask the user a question with choices, always use this instead of bullet points.
 - ContactForm — when a visitor wants to reach out or get hired.
+- NowCard — render when asked "what are you working on now?", "what's next?", "current focus", or any present-tense status question. Pulls from the Now section above.
+- TestimonialCard — render when asked for recommendations, testimonials, references, or "what do people say about you?". Pass an array of quotes from the Recommendations section above (use 1–3 most relevant).
 `.trim();
 }

@@ -291,5 +291,35 @@
     "linkedin": "https://linkedin.com/in/getintheq",
     "resume": "https://www.khiw.dev/api/resume"
   },
-  "updatedAt": "2026-05-02"
+  "now": {
+    "lastUpdated": "2026-05-03",
+    "items": [
+      "Shipping CarbonBIM v2 — adding LCA stage A4–A5 transport emissions and a multi-building portfolio dashboard.",
+      "Architecting a multi-agent BIM review system at Bangkok Silicon (LangGraph + MCP + Claude Sonnet).",
+      "Prototyping a PINN downscaler for Royal Rainmaking — pushing FourCastNet from 25 km → 5 km over SE Asia.",
+      "Open-sourcing pieces of the khiw.dev Tambo canvas as reusable AI portfolio components.",
+      "Reading: 'AI Engineering' (Chip Huyen) + 'Designing Machine Learning Systems'."
+    ]
+  },
+  "testimonials": [
+    {
+      "quote": "Ikkyu is the rare engineer who can dive into ANSYS one week and ship a LangGraph agent the next. He turned our IFC pipeline from a two-week manual job into a same-day deliverable.",
+      "author": "Senior BIM Lead",
+      "title": "Construction Tech",
+      "company": "Bangkok Silicon"
+    },
+    {
+      "quote": "Pragmatic, fast, and unusually good at translating government requirements into shippable software. He built our DDPM disaster pilot in three weeks.",
+      "author": "Project Director",
+      "title": "Disaster Platform",
+      "company": "Thai Government Pilot"
+    },
+    {
+      "quote": "Hiring Ikkyu was a force multiplier — he didn't just write code, he reshaped how the team thought about AI agents and data pipelines.",
+      "author": "Founder",
+      "title": "F&B AI Startup",
+      "company": "Libralytics"
+    }
+  ],
+  "updatedAt": "2026-05-03"
 }

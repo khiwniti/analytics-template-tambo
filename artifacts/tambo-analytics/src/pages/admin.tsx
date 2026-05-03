@@ -196,7 +196,7 @@ function ItemsArrayField({
   );
 }
 
-type Tab = "profile" | "career" | "projects" | "skills" | "domains" | "education" | "contact" | "submissions";
+type Tab = "profile" | "career" | "projects" | "skills" | "domains" | "now" | "testimonials" | "education" | "contact" | "submissions";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -204,6 +204,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "projects", label: "Projects" },
   { id: "skills", label: "Skills" },
   { id: "domains", label: "Domains" },
+  { id: "now", label: "Now" },
+  { id: "testimonials", label: "Recommendations" },
   { id: "education", label: "Education" },
   { id: "contact", label: "Contact" },
   { id: "submissions", label: "Submissions" },
@@ -759,6 +761,151 @@ export default function AdminPage() {
                     </div>
                   ))}
                   <button onClick={() => setField("domains", [...profile.domains, { icon: "○", label: "", detail: "" }])} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>+ Add Domain</button>
+                </div>
+              )}
+
+              {/* ── Now ── */}
+              {activeTab === "now" && (
+                <div>
+                  <SectionHeader>Now — current focus</SectionHeader>
+                  <p style={{ fontSize: 12, color: C.muted, marginBottom: 16, lineHeight: 1.6 }}>
+                    Short status update shown on the home page and quoted by the AI when asked "what are you working on now?". Keep each item to one line.
+                  </p>
+                  <TextField
+                    label="Last updated (YYYY-MM-DD)"
+                    value={profile.now?.lastUpdated ?? ""}
+                    onChange={v => setField("now", { lastUpdated: v, items: profile.now?.items ?? [] })}
+                  />
+                  <div style={{ marginBottom: 14 }}>
+                    <FieldLabel>Items (one per row, sortable)</FieldLabel>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {(profile.now?.items ?? []).map((item, i) => {
+                        const items = profile.now?.items ?? [];
+                        const move = (delta: number) => {
+                          const next = [...items];
+                          const j = i + delta;
+                          if (j < 0 || j >= next.length) return;
+                          [next[i], next[j]] = [next[j], next[i]];
+                          setField("now", { lastUpdated: profile.now?.lastUpdated ?? "", items: next });
+                        };
+                        return (
+                          <div key={i} style={{ display: "flex", gap: 6 }}>
+                            <input
+                              value={item}
+                              onChange={e => {
+                                const next = [...items];
+                                next[i] = e.target.value;
+                                setField("now", { lastUpdated: profile.now?.lastUpdated ?? "", items: next });
+                              }}
+                              placeholder="What are you focused on right now?"
+                              style={{ ...inputStyle(false), flex: 1 }}
+                            />
+                            <button
+                              onClick={() => move(-1)}
+                              disabled={i === 0}
+                              style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: i === 0 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 11, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}
+                            >↑</button>
+                            <button
+                              onClick={() => move(1)}
+                              disabled={i === items.length - 1}
+                              style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: i === items.length - 1 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 11, cursor: i === items.length - 1 ? "default" : "pointer", opacity: i === items.length - 1 ? 0.4 : 1 }}
+                            >↓</button>
+                            <button
+                              onClick={() => {
+                                const next = items.filter((_, j) => j !== i);
+                                setField("now", { lastUpdated: profile.now?.lastUpdated ?? "", items: next });
+                              }}
+                              style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 11, cursor: "pointer" }}
+                            >✕</button>
+                          </div>
+                        );
+                      })}
+                      <button
+                        onClick={() => {
+                          const items = profile.now?.items ?? [];
+                          setField("now", {
+                            lastUpdated: profile.now?.lastUpdated ?? new Date().toISOString().slice(0, 10),
+                            items: [...items, ""],
+                          });
+                        }}
+                        style={{ alignSelf: "flex-start", padding: "4px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
+                      >+ Add item</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Recommendations / Testimonials ── */}
+              {activeTab === "testimonials" && (
+                <div>
+                  <SectionHeader>Recommendations</SectionHeader>
+                  <p style={{ fontSize: 12, color: C.muted, marginBottom: 16, lineHeight: 1.6 }}>
+                    Quotes shown on the home page and quoted by the AI when asked for references or social proof.
+                  </p>
+                  {(profile.testimonials ?? []).map((t, i) => {
+                    const list = profile.testimonials ?? [];
+                    return (
+                      <div key={i} style={{ padding: "14px 16px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, marginBottom: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 10, color: C.accentDim }}>QUOTE {i + 1}</span>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button
+                              onClick={() => { const next = [...list]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; setField("testimonials", next); }}
+                              disabled={i === 0}
+                              style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === 0 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}
+                            >↑</button>
+                            <button
+                              onClick={() => { const next = [...list]; [next[i], next[i + 1]] = [next[i + 1], next[i]]; setField("testimonials", next); }}
+                              disabled={i === list.length - 1}
+                              style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: i === list.length - 1 ? C.faint : C.muted, fontFamily: F.mono, fontSize: 10, cursor: i === list.length - 1 ? "default" : "pointer", opacity: i === list.length - 1 ? 0.4 : 1 }}
+                            >↓</button>
+                            <button
+                              onClick={() => setField("testimonials", list.filter((_, j) => j !== i))}
+                              style={{ padding: "2px 8px", borderRadius: 4, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
+                            >Remove</button>
+                          </div>
+                        </div>
+                        <TextField
+                          label="Quote"
+                          value={t.quote}
+                          multiline
+                          rows={3}
+                          onChange={v => { const next = [...list]; next[i] = { ...t, quote: v }; setField("testimonials", next); }}
+                        />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+                          <TextField
+                            label="Author"
+                            value={t.author}
+                            onChange={v => { const next = [...list]; next[i] = { ...t, author: v }; setField("testimonials", next); }}
+                          />
+                          <TextField
+                            label="Title"
+                            value={t.title}
+                            onChange={v => { const next = [...list]; next[i] = { ...t, title: v }; setField("testimonials", next); }}
+                          />
+                          <TextField
+                            label="Company (optional)"
+                            value={t.company ?? ""}
+                            onChange={v => { const next = [...list]; next[i] = { ...t, company: v || undefined }; setField("testimonials", next); }}
+                          />
+                          <TextField
+                            label="LinkedIn URL (optional)"
+                            value={t.linkedinUrl ?? ""}
+                            onChange={v => { const next = [...list]; next[i] = { ...t, linkedinUrl: v || undefined }; setField("testimonials", next); }}
+                          />
+                        </div>
+                        <TextField
+                          label="Avatar URL (optional, https://…)"
+                          value={t.avatarUrl ?? ""}
+                          onChange={v => { const next = [...list]; next[i] = { ...t, avatarUrl: v || undefined }; setField("testimonials", next); }}
+                        />
+                      </div>
+                    );
+                  })}
+                  <button
+                    onClick={() => setField("testimonials", [...(profile.testimonials ?? []), { quote: "", author: "", title: "" }])}
+                    style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}
+                  >+ Add Recommendation</button>
                 </div>
               )}
 

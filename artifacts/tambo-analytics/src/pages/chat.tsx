@@ -509,7 +509,7 @@ async function getSystemResource(uri: string) {
 /** Allowed component types for shared-canvas imports — must match registered Tambo components. */
 const ALLOWED_SHARED_COMPONENT_TYPES = new Set<string>([
   "StatCard", "ResumeCard", "SkillRadar", "TimelineCard", "ProjectShowcase",
-  "Graph", "SelectForm", "ContactForm",
+  "Graph", "SelectForm", "ContactForm", "NowCard", "TestimonialCard",
 ]);
 const MAX_SHARED_COMPONENTS = 50;
 

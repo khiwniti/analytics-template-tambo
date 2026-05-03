@@ -29,17 +29,51 @@ function validatePortfolioUpdate(body: unknown): ValidationError {
     }
   }
 
-  const arrayFields = ["career", "projects", "domains", "skills", "sideProjects"];
+  const arrayFields = ["career", "projects", "domains", "skills", "sideProjects", "testimonials"];
   for (const field of arrayFields) {
     if (field in b && !Array.isArray(b[field])) {
       return `Field "${field}" must be an array`;
     }
   }
 
-  const objectFields = ["stats", "education", "contact"];
+  const objectFields = ["stats", "education", "contact", "now"];
   for (const field of objectFields) {
     if (field in b && (typeof b[field] !== "object" || Array.isArray(b[field]) || b[field] === null)) {
       return `Field "${field}" must be an object`;
+    }
+  }
+
+  // Now: must have lastUpdated (string) and items (string[])
+  if ("now" in b && b["now"] !== undefined) {
+    const now = b["now"] as Record<string, unknown>;
+    if (typeof now["lastUpdated"] !== "string") return `Field "now.lastUpdated" must be a string`;
+    if (!Array.isArray(now["items"])) return `Field "now.items" must be an array`;
+    for (const it of now["items"]) {
+      if (typeof it !== "string") return `Field "now.items[]" entries must be strings`;
+    }
+  }
+
+  // Testimonials: validate shape + safe URL schemes for optional fields
+  if ("testimonials" in b && Array.isArray(b["testimonials"])) {
+    const isSafeUrl = (u: unknown): boolean =>
+      typeof u === "string" && /^https?:\/\//i.test(u.trim());
+    for (const t of b["testimonials"] as unknown[]) {
+      if (!t || typeof t !== "object" || Array.isArray(t)) {
+        return `Field "testimonials[]" entries must be objects`;
+      }
+      const tt = t as Record<string, unknown>;
+      if (typeof tt["quote"] !== "string") return `Field "testimonials[].quote" must be a string`;
+      if (typeof tt["author"] !== "string") return `Field "testimonials[].author" must be a string`;
+      if (typeof tt["title"] !== "string") return `Field "testimonials[].title" must be a string`;
+      if ("company" in tt && tt["company"] !== undefined && typeof tt["company"] !== "string") {
+        return `Field "testimonials[].company" must be a string`;
+      }
+      if ("avatarUrl" in tt && tt["avatarUrl"] !== undefined && tt["avatarUrl"] !== "" && !isSafeUrl(tt["avatarUrl"])) {
+        return `Field "testimonials[].avatarUrl" must be an http(s) URL`;
+      }
+      if ("linkedinUrl" in tt && tt["linkedinUrl"] !== undefined && tt["linkedinUrl"] !== "" && !isSafeUrl(tt["linkedinUrl"])) {
+        return `Field "testimonials[].linkedinUrl" must be an http(s) URL`;
+      }
     }
   }
 
