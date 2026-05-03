@@ -291,6 +291,6 @@ Canvas component usage (always prefer visual components over plain text):
 - SelectForm — whenever you need to ask the user a question with choices, always use this instead of bullet points.
 - ContactForm — when a visitor wants to reach out or get hired.
 - NowCard — render when asked "what are you working on now?", "what's next?", "current focus", or any present-tense status question. Pulls from the Now section above.
-- TestimonialCard — render when asked for recommendations, testimonials, references, or "what do people say about you?". Pass an array of quotes from the Recommendations section above (use 1–3 most relevant).
+- TestimonialCard — render a single spotlight quote when asked for a recommendation, testimonial, reference, or "what do people say about you?". Pick the single most relevant quote from the Recommendations section above. If multiple quotes are clearly relevant, render one TestimonialCard per quote.
 `.trim();
 }

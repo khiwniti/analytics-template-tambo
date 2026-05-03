@@ -758,37 +758,55 @@ export default function HomePage() {
             </p>
           </Reveal>
           <Reveal delay={0.1}>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-              {profile.now.items.map((item, i) => (
-                <li
-                  key={i}
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    padding: "14px 16px",
-                    borderRadius: 10,
-                    background: C.surface,
-                    border: `1px solid ${C.border}`,
-                    fontSize: 13,
-                    color: C.text,
-                    lineHeight: 1.65,
-                  }}
-                >
-                  <span
+            <div
+              style={{
+                padding: "22px 26px",
+                borderRadius: 14,
+                background: C.surface,
+                border: `1px solid ${C.accent}`,
+                boxShadow: "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.4)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 2,
+                  background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+                }}
+              />
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+                {profile.now.items.map((item, i) => (
+                  <li
+                    key={i}
                     style={{
-                      flexShrink: 0,
-                      marginTop: 7,
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: C.accent,
-                      boxShadow: `0 0 8px ${C.accentDim}`,
+                      display: "flex",
+                      gap: 12,
+                      fontSize: 13,
+                      color: C.text,
+                      lineHeight: 1.65,
                     }}
-                  />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+                  >
+                    <span
+                      style={{
+                        flexShrink: 0,
+                        marginTop: 7,
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        background: C.accent,
+                        boxShadow: `0 0 8px ${C.accentDim}`,
+                      }}
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </Reveal>
         </section>
       )}
@@ -855,9 +873,13 @@ export default function HomePage() {
           <Reveal delay={0.1}>
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+                display: "flex",
                 gap: 12,
+                overflowX: "auto",
+                scrollSnapType: "x mandatory",
+                paddingBottom: 12,
+                WebkitOverflowScrolling: "touch",
+                scrollbarWidth: "thin",
               }}
             >
               {profile.testimonials.map((t, i) => (
@@ -872,6 +894,9 @@ export default function HomePage() {
                     flexDirection: "column",
                     gap: 14,
                     position: "relative",
+                    flex: "0 0 calc(50% - 6px)",
+                    minWidth: 280,
+                    scrollSnapAlign: "start",
                   }}
                 >
                   <span

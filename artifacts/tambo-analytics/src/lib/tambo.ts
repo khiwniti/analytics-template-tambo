@@ -145,7 +145,7 @@ export const components: TamboComponent[] = [
   {
     name: "TestimonialCard",
     description:
-      "Render 1–3 recommendations / testimonials about Ikkyu in a stacked card layout. Use this when someone asks for recommendations, testimonials, references, social proof, or 'what do people say about working with him?'. Pull quotes from the Recommendations section in the portfolio context — choose the 1–3 most relevant to the asker's role.",
+      "Render a single spotlight recommendation / testimonial about Ikkyu. Use this when someone asks for a recommendation, testimonial, reference, social proof, or 'what do people say about working with him?'. Pull one quote from the Recommendations section in the portfolio context — choose the most relevant to the asker's role. To show several, render multiple TestimonialCards in sequence.",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: TestimonialCard as any,
     propsSchema: testimonialCardSchema,

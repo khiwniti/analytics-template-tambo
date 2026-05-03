@@ -3,7 +3,7 @@
 import * as React from "react";
 import { z } from "zod";
 
-const testimonialSchema = z.object({
+export const testimonialCardSchema = z.object({
   quote: z.string().describe("The recommendation text, kept to 1–3 sentences."),
   author: z.string().describe("Person's name, e.g. 'Jane Smith'."),
   title: z.string().describe("Their role/title, e.g. 'Senior BIM Lead'."),
@@ -16,16 +16,10 @@ const testimonialSchema = z.object({
     .string()
     .optional()
     .describe("Optional LinkedIn profile URL."),
-});
-
-export const testimonialCardSchema = z.object({
-  testimonials: z
-    .array(testimonialSchema)
-    .describe("Array of 1–3 recommendations / testimonials to display."),
-  title: z
+  heading: z
     .string()
     .optional()
-    .describe("Heading shown above the testimonials (default: 'Recommendations')."),
+    .describe("Optional small label above the quote (default: 'Recommendation')."),
 });
 
 export type TestimonialCardProps = z.infer<typeof testimonialCardSchema>;
@@ -54,22 +48,93 @@ function initials(name: string): string {
     .join("");
 }
 
-function Quote({ t }: { t: TestimonialCardProps["testimonials"][number] }) {
+export const TestimonialCard = React.forwardRef<
+  HTMLDivElement,
+  TestimonialCardProps
+>(({ quote, author, title, company, avatarUrl, linkedinUrl, heading }, ref) => {
+  const t = { quote, author, title, company, avatarUrl, linkedinUrl };
   const safeAvatar = isSafeUrl(t.avatarUrl) ? t.avatarUrl : undefined;
   const safeLinkedIn = isSafeUrl(t.linkedinUrl) ? t.linkedinUrl : undefined;
+  const headingText = heading ?? "Recommendation";
   return (
     <div
+      ref={ref}
       style={{
-        background: C.surface,
+        background: C.bg,
         border: `1px solid ${C.border}`,
-        borderRadius: 12,
-        padding: "16px 18px",
+        borderRadius: 16,
+        padding: "22px 26px",
+        fontFamily: "Quicksand, sans-serif",
+        color: C.text,
+        width: "100%",
+        boxSizing: "border-box",
+        boxShadow:
+          "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.6)",
         position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
+        overflow: "hidden",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 2,
+          background:
+            "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
+          borderRadius: "16px 16px 0 0",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: -60,
+          right: -60,
+          width: 200,
+          height: 200,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <span
+          style={{
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            background: C.accent,
+            boxShadow: `0 0 6px ${C.accentDim}`,
+          }}
+        />
+        <span
+          style={{
+            fontSize: 9,
+            fontFamily: "JetBrains Mono, monospace",
+            color: C.accentDim,
+            letterSpacing: 2.5,
+            textTransform: "uppercase",
+          }}
+        >
+          {headingText}
+        </span>
+      </div>
+
+      <div
+        style={{
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 12,
+          padding: "16px 18px",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
       <span
         style={{
           position: "absolute",
@@ -176,93 +241,6 @@ function Quote({ t }: { t: TestimonialCardProps["testimonials"][number] }) {
           </a>
         )}
       </div>
-    </div>
-  );
-}
-
-export const TestimonialCard = React.forwardRef<
-  HTMLDivElement,
-  TestimonialCardProps
->(({ testimonials, title }, ref) => {
-  const heading = title ?? "Recommendations";
-  return (
-    <div
-      ref={ref}
-      style={{
-        background: C.bg,
-        border: `1px solid ${C.border}`,
-        borderRadius: 16,
-        padding: "22px 26px",
-        fontFamily: "Quicksand, sans-serif",
-        color: C.text,
-        width: "100%",
-        boxSizing: "border-box",
-        boxShadow:
-          "0 0 0 1px rgba(52,211,153,0.08) inset, 0 8px 40px rgba(0,0,0,0.6)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background:
-            "linear-gradient(90deg, transparent, rgba(52,211,153,0.7) 30%, rgba(52,211,153,0.9) 50%, rgba(52,211,153,0.7) 70%, transparent)",
-          borderRadius: "16px 16px 0 0",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: -60,
-          right: -60,
-          width: 200,
-          height: 200,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 14,
-        }}
-      >
-        <span
-          style={{
-            width: 5,
-            height: 5,
-            borderRadius: "50%",
-            background: C.accent,
-            boxShadow: `0 0 6px ${C.accentDim}`,
-          }}
-        />
-        <span
-          style={{
-            fontSize: 9,
-            fontFamily: "JetBrains Mono, monospace",
-            color: C.accentDim,
-            letterSpacing: 2.5,
-            textTransform: "uppercase",
-          }}
-        >
-          {heading}
-        </span>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {testimonials.map((t, i) => (
-          <Quote key={i} t={t} />
-        ))}
       </div>
     </div>
   );
