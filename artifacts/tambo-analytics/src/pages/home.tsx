@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, Link } from "wouter";
-import { getPortfolioProfile, type PortfolioProfile } from "../services/portfolio-data";
+import { getPortfolioProfile, projectSlug, type PortfolioProfile } from "../services/portfolio-data";
 import { SUGGESTIONS } from "../lib/suggestions";
 
 /** Format an ISO date (YYYY-MM-DD) as `DD MMM YYYY` (e.g. "02 May 2026"). */
@@ -282,14 +282,14 @@ export default function HomePage() {
       ];
 
   const PROJECTS = profile
-    ? profile.projects.map(p => ({ n: p.name, u: p.url, tag: p.tag, d: p.description }))
+    ? profile.projects.map(p => ({ n: p.name, u: p.url, tag: p.tag, d: p.description, slug: projectSlug(p), hasCase: !!p.caseStudy }))
     : [
-        { n:"CarbonBIM", u:"https://bim.getintheq.space", tag:"BIM+AI", d:"AI carbon calculator — IFC upload, 104+ TGO emission factors" },
-        { n:"EarthCast AI", u:"https://earthcast-ai.vercel.app", tag:"Earth", d:"AI weather forecast — PINNs + FourCastNet + CesiumJS" },
-        { n:"Facility Manager", u:"https://facility-management-app-mocha.vercel.app", tag:"3D", d:"Full-stack building management with 3D viewer" },
-        { n:"NDWC Smart Alert", u:"https://ndwc-smart-alert.vercel.app", tag:"Gov", d:"Thailand flood monitoring & AI water alerts" },
-        { n:"GDAS Disaster", u:"https://gdas-ai-disaster-watch.vercel.app", tag:"Gov", d:"DDPM multi-hazard early warning (14 types, CAP v1.2)" },
-        { n:"NT Facility 3D", u:"https://nt-facility-3-d-manager-new-ui.vercel.app", tag:"Telecom", d:"National Telecom 3D facility (xeokit/Three.js)" },
+        { n:"CarbonBIM", u:"https://bim.getintheq.space", tag:"BIM+AI", d:"AI carbon calculator — IFC upload, 104+ TGO emission factors", slug:"carbonbim", hasCase:true },
+        { n:"EarthCast AI", u:"https://earthcast-ai.vercel.app", tag:"Earth", d:"AI weather forecast — PINNs + FourCastNet + CesiumJS", slug:"earthcast-ai", hasCase:true },
+        { n:"Facility Manager", u:"https://facility-management-app-mocha.vercel.app", tag:"3D", d:"Full-stack building management with 3D viewer", slug:"facility-manager", hasCase:false },
+        { n:"NDWC Smart Alert", u:"https://ndwc-smart-alert.vercel.app", tag:"Gov", d:"Thailand flood monitoring & AI water alerts", slug:"ndwc-smart-alert", hasCase:false },
+        { n:"GDAS Disaster", u:"https://gdas-ai-disaster-watch.vercel.app", tag:"Gov", d:"DDPM multi-hazard early warning (14 types, CAP v1.2)", slug:"gdas-disaster", hasCase:false },
+        { n:"NT Facility 3D", u:"https://nt-facility-3-d-manager-new-ui.vercel.app", tag:"Telecom", d:"National Telecom 3D facility (xeokit/Three.js)", slug:"nt-facility-3d", hasCase:false },
       ];
 
   const DOMAINS = profile
@@ -467,21 +467,88 @@ export default function HomePage() {
                   <Skel w="50%" h={9} radius={3} />
                 </div>
               ))
-            : PROJECTS.map((p, i) => (
-              <Reveal key={i} delay={0.03 * i}>
-                <a href={p.u} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "block", padding: "14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, textDecoration: "none", color: C.text, transition: "all 0.25s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = C.surfaceHover; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "none"; e.currentTarget.style.background = C.surface; }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+            : PROJECTS.map((p, i) => {
+              const cardStyle: React.CSSProperties = {
+                display: "block", padding: "14px", borderRadius: 10, background: C.surface,
+                border: `1px solid ${C.border}`, textDecoration: "none", color: C.text,
+                transition: "all 0.25s", position: "relative",
+              };
+              const onEnter = (e: React.MouseEvent<HTMLElement>) => {
+                e.currentTarget.style.borderColor = C.accent;
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.background = C.surfaceHover;
+              };
+              const onLeave = (e: React.MouseEvent<HTMLElement>) => {
+                e.currentTarget.style.borderColor = C.border;
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.background = C.surface;
+              };
+              const inner = (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, gap: 6 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: C.textBright }}>{p.n}</div>
                     <Pill on>{p.tag}</Pill>
                   </div>
                   <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, marginBottom: 6 }}>{p.d}</div>
-                  <div style={{ fontSize: 9, fontFamily: F.mono, color: C.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.u.replace("https://", "")}</div>
-                </a>
-              </Reveal>
-            ))
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                    <div style={{ fontSize: 9, fontFamily: F.mono, color: C.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                      {p.u.replace("https://", "")}
+                    </div>
+                    {/* "Live ↗" pill — button (not <a>) so it's valid inside the card's anchor wrapper */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        window.open(p.u, "_blank", "noopener,noreferrer");
+                      }}
+                      style={{
+                        flexShrink: 0, padding: "2px 8px", borderRadius: 6,
+                        fontSize: 9, fontFamily: F.mono, fontWeight: 700, letterSpacing: 1,
+                        background: "transparent", border: `1px solid ${C.border}`,
+                        color: C.muted, cursor: "pointer", textTransform: "uppercase",
+                        transition: "color 0.15s, border-color 0.15s",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = "rgba(52,211,153,0.4)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}
+                      aria-label={`Open ${p.n} in a new tab`}
+                    >
+                      Live ↗
+                    </button>
+                  </div>
+                  {p.hasCase && (
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.border}`, fontSize: 10, fontFamily: F.mono, color: C.accent, letterSpacing: 1, display: "flex", alignItems: "center", gap: 4 }}>
+                      Read case study →
+                    </div>
+                  )}
+                </>
+              );
+              return (
+                <Reveal key={i} delay={0.03 * i}>
+                  {p.hasCase ? (
+                    <Link
+                      href={`/projects/${p.slug}`}
+                      style={cardStyle}
+                      onMouseEnter={onEnter}
+                      onMouseLeave={onLeave}
+                    >
+                      {inner}
+                    </Link>
+                  ) : (
+                    <a
+                      href={p.u}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={cardStyle}
+                      onMouseEnter={onEnter}
+                      onMouseLeave={onLeave}
+                    >
+                      {inner}
+                    </a>
+                  )}
+                </Reveal>
+              );
+            })
           }
         </div>
       </section>

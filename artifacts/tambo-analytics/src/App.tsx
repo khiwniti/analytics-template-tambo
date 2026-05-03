@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import HomePage from "@/pages/home";
 import ChatPage from "@/pages/chat";
 import AdminPage from "@/pages/admin";
+import ProjectDetailPage from "@/pages/project-detail";
 import NotFound from "@/pages/not-found";
 import { useState, useEffect, useRef } from "react";
 
@@ -31,6 +32,9 @@ function getPageKey(loc: string): string {
   if (loc === "/" || loc === "") return "home";
   if (loc.startsWith("/chat")) return "chat";
   if (loc.startsWith("/admin")) return "admin";
+  // Coalesce all /projects/:slug pages so navigating between case studies
+  // doesn't unmount the wrapper or replay the entrance animation.
+  if (loc.startsWith("/projects")) return "projects";
   return loc;
 }
 
@@ -89,6 +93,7 @@ function AnimatedRoutes() {
         <Route path="/" component={HomePage} />
         <Route path="/chat/:threadId" component={ChatPage} />
         <Route path="/chat" component={ChatPage} />
+        <Route path="/projects/:slug" component={ProjectDetailPage} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
       </Switch>

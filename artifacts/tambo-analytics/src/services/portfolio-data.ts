@@ -50,6 +50,32 @@ export function clearPortfolioCache(): void {
   _channel?.postMessage("clear");
 }
 
+/**
+ * Optional long-form case study attached to a project. Render on
+ * /projects/:slug. All sub-fields are optional so a project can opt-in to as
+ * much depth as it wants.
+ */
+export type ProjectCaseStudy = {
+  problem?: string;
+  approach?: string;
+  results?: string;
+  tech?: string[];
+  highlights?: string[];
+  durationMonths?: number;
+  role?: string;
+};
+
+export type PortfolioProject = {
+  name: string;
+  url: string;
+  tag: string;
+  description: string;
+  /** URL-safe slug for /projects/:slug. Optional — falls back to slugify(name). */
+  slug?: string;
+  /** Optional deep-dive content shown on the project detail page. */
+  caseStudy?: ProjectCaseStudy;
+};
+
 export type PortfolioProfile = {
   name: string;
   handle: string;
@@ -63,7 +89,7 @@ export type PortfolioProfile = {
   summary: string;
   stats: { live: number; projects: number; workers: number; industries: number };
   career: Array<{ year: string; role: string; company: string; description: string; highlight?: boolean }>;
-  projects: Array<{ name: string; url: string; tag: string; description: string }>;
+  projects: PortfolioProject[];
   domains: Array<{ icon: string; label: string; detail: string }>;
   skills: Array<{ category: string; items: string[] }>;
   education: { degree: string; university: string; years: string; honors: string; languages: string };
@@ -72,6 +98,29 @@ export type PortfolioProfile = {
   /** ISO date (YYYY-MM-DD) of the last portfolio edit. Auto-stamped by API on PUT. */
   updatedAt?: string;
 };
+
+/** Convert a project name into a URL-safe slug. */
+export function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** Resolve the canonical slug for a project (explicit `slug` wins, else slugified name). */
+export function projectSlug(p: Pick<PortfolioProject, "slug" | "name">): string {
+  return (p.slug && p.slug.trim()) || slugify(p.name);
+}
+
+/** Look up a project by its slug (or its slugified name). Returns null if not found. */
+export async function getProjectBySlug(slug: string): Promise<PortfolioProject | null> {
+  const profile = await getPortfolioData();
+  const target = slug.toLowerCase();
+  return (
+    profile.projects.find((p) => projectSlug(p) === target) ?? null
+  );
+}
 
 export const getPortfolioProfile = async (): Promise<PortfolioProfile> => {
   return getPortfolioData();
@@ -120,7 +169,15 @@ ${p.career
   .join("\n")}
 
 ## Projects (${p.projects.length} total)
-${p.projects.map((pr) => `- ${pr.name} [${pr.tag}]: ${pr.description}\n  Live: ${pr.url}`).join("\n")}
+${p.projects
+  .map((pr) => {
+    const lines = [`- ${pr.name} [${pr.tag}]: ${pr.description}`, `  Live: ${pr.url}`];
+    if (pr.caseStudy) {
+      lines.push(`  Case study: /projects/${projectSlug(pr)} (deep-dive available — link visitors to this URL when they want details)`);
+    }
+    return lines.join("\n");
+  })
+  .join("\n")}
 
 ## Domain Expertise
 ${p.domains.map((d) => `- ${d.label}: ${d.detail}`).join("\n")}

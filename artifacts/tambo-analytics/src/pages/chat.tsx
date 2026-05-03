@@ -18,6 +18,7 @@ import ComponentsCanvas from "@/components/ui/components-canvas";
 import { InteractableCanvasDetails } from "@/components/ui/interactable-canvas-details";
 import { InteractableTabs } from "@/components/ui/interactable-tabs";
 import { useAnonymousUserKey } from "@/lib/use-anonymous-user-key";
+import { useCanvasStore, generateId, type CanvasComponent } from "@/lib/canvas-storage";
 import { components, tools } from "@/lib/tambo";
 import { TamboProvider, useTambo, useTamboThreadInput } from "@tambo-ai/react";
 import { TamboMcpProvider } from "@tambo-ai/react/mcp";
@@ -457,6 +458,111 @@ async function getSystemResource(uri: string) {
   return { contents: [] };
 }
 
+/** Allowed component types for shared-canvas imports — must match registered Tambo components. */
+const ALLOWED_SHARED_COMPONENT_TYPES = new Set<string>([
+  "StatCard", "ResumeCard", "SkillRadar", "TimelineCard", "ProjectShowcase",
+  "Graph", "SelectForm", "ContactForm",
+]);
+const MAX_SHARED_COMPONENTS = 50;
+
+/** Recursively sanitize a value: only allow http/https URLs, strip dangerous URL schemes. */
+function sanitizeImportedValue(v: unknown, depth = 0): unknown {
+  if (depth > 6) return null; // hard cap on nesting to avoid pathological payloads
+  if (v === null || typeof v !== "object") {
+    if (typeof v === "string") {
+      // Block javascript:, data:, vbscript:, file: URL schemes
+      const trimmed = v.trim();
+      if (/^(javascript|data|vbscript|file):/i.test(trimmed)) return "";
+    }
+    return v;
+  }
+  if (Array.isArray(v)) {
+    return v.slice(0, 200).map((x) => sanitizeImportedValue(x, depth + 1));
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+    out[k] = sanitizeImportedValue(val, depth + 1);
+  }
+  return out;
+}
+
+/**
+ * Decodes a `#c=<base64url>` URL fragment on mount and creates a new "Shared
+ * Canvas" populated with the encoded components. Runs only once and clears
+ * the hash so a refresh doesn't re-import. Validates+sanitizes the payload —
+ * unknown component types and unsafe URL schemes are dropped. Always
+ * regenerates `componentId` to avoid dedupe collisions on re-import.
+ */
+function SharedCanvasImporter() {
+  const consumed = useRef(false);
+
+  useEffect(() => {
+    if (consumed.current) return;
+    consumed.current = true;
+
+    const hash = window.location.hash;
+    const match = hash.match(/^#c=([A-Za-z0-9_-]+)/);
+    if (!match) return;
+
+    try {
+      // base64url → base64
+      const b64 = match[1].replace(/-/g, "+").replace(/_/g, "/");
+      const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+      const json = decodeURIComponent(escape(atob(padded)));
+      const payload = JSON.parse(json) as {
+        v?: number;
+        name?: string;
+        components?: unknown;
+      };
+      if (!payload || !Array.isArray(payload.components) || payload.components.length === 0) {
+        console.warn("[SharedCanvas] empty/invalid payload — skipping");
+        return;
+      }
+
+      // Validate + sanitize each component
+      const safeComponents: CanvasComponent[] = [];
+      for (const raw of payload.components.slice(0, MAX_SHARED_COMPONENTS)) {
+        if (!raw || typeof raw !== "object") continue;
+        const r = raw as Record<string, unknown>;
+        const type = typeof r._componentType === "string" ? r._componentType : "";
+        if (!ALLOWED_SHARED_COMPONENT_TYPES.has(type)) {
+          console.warn(`[SharedCanvas] dropped unknown component type: ${type}`);
+          continue;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _isStreaming, _inCanvas, canvasId, componentId: _ignoredId, ...rest } = r;
+        const sanitized = sanitizeImportedValue(rest) as Record<string, unknown>;
+        safeComponents.push({
+          ...sanitized,
+          _componentType: type,
+          componentId: generateId(), // always regenerate to prevent dedupe drops
+        } as CanvasComponent);
+      }
+
+      if (safeComponents.length === 0) {
+        console.warn("[SharedCanvas] no valid components after validation");
+        return;
+      }
+
+      const store = useCanvasStore.getState();
+      const rawName = typeof payload.name === "string" ? payload.name.slice(0, 80) : "";
+      const name = rawName ? `${rawName} (shared)` : "Shared Canvas";
+      const newCanvas = store.createCanvas(name);
+      for (const c of safeComponents) {
+        store.addComponent(newCanvas.id, c);
+      }
+      store.setActiveCanvas(newCanvas.id);
+
+      // Clear the hash so a refresh doesn't re-import
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    } catch (err) {
+      console.error("[SharedCanvas] failed to decode shared canvas:", err);
+    }
+  }, []);
+
+  return null;
+}
+
 export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
@@ -464,6 +570,7 @@ export default function ChatPage() {
 
   return (
     <div className="h-screen w-screen overflow-hidden relative">
+      <SharedCanvasImporter />
       <TamboProvider
         apiKey={import.meta.env.VITE_TAMBO_API_KEY!}
         tamboUrl={import.meta.env.VITE_TAMBO_URL}

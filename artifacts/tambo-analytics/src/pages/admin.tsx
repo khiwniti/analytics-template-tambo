@@ -597,7 +597,45 @@ export default function AdminPage() {
                         <TextField label="Tag" value={p.tag} onChange={v => { const next = [...profile.projects]; next[i] = { ...p, tag: v }; setField("projects", next); }} />
                       </div>
                       <TextField label="URL" value={p.url} onChange={v => { const next = [...profile.projects]; next[i] = { ...p, url: v }; setField("projects", next); }} />
+                      <TextField label="Slug (optional, for /projects/:slug)" value={p.slug ?? ""} onChange={v => { const next = [...profile.projects]; next[i] = { ...p, slug: v || undefined }; setField("projects", next); }} />
                       <TextField label="Description" value={p.description} onChange={v => { const next = [...profile.projects]; next[i] = { ...p, description: v }; setField("projects", next); }} multiline rows={2} />
+
+                      {/* Case study editor — collapsible */}
+                      <details style={{ marginTop: 12, paddingTop: 12, borderTop: `1px dashed ${C.border}` }}>
+                        <summary style={{ cursor: "pointer", fontFamily: F.mono, fontSize: 10, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12, userSelect: "none" }}>
+                          {p.caseStudy ? "▾ Case Study (filled)" : "▸ Add Case Study"}
+                        </summary>
+                        <div style={{ marginTop: 8, padding: "12px 14px", background: C.accentBg, borderRadius: 8, border: C.accentBorder }}>
+                          {(() => {
+                            const cs = p.caseStudy ?? {};
+                            const updateCS = (patch: Partial<typeof cs>) => {
+                              const next = [...profile.projects];
+                              const merged = { ...cs, ...patch };
+                              // Drop the caseStudy entirely if every field is empty
+                              const isEmpty =
+                                !merged.problem && !merged.approach && !merged.results &&
+                                !merged.role && !merged.durationMonths &&
+                                (!merged.tech || merged.tech.length === 0) &&
+                                (!merged.highlights || merged.highlights.length === 0);
+                              next[i] = { ...p, caseStudy: isEmpty ? undefined : merged };
+                              setField("projects", next);
+                            };
+                            return (
+                              <>
+                                <TextField label="Problem" value={cs.problem ?? ""} onChange={v => updateCS({ problem: v || undefined })} multiline rows={3} />
+                                <TextField label="Approach" value={cs.approach ?? ""} onChange={v => updateCS({ approach: v || undefined })} multiline rows={3} />
+                                <TextField label="Results" value={cs.results ?? ""} onChange={v => updateCS({ results: v || undefined })} multiline rows={3} />
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: "0 16px" }}>
+                                  <TextField label="Role" value={cs.role ?? ""} onChange={v => updateCS({ role: v || undefined })} />
+                                  <NumberField label="Duration (months)" value={cs.durationMonths ?? 0} onChange={v => updateCS({ durationMonths: v > 0 ? v : undefined })} />
+                                </div>
+                                <ItemsArrayField label="Tech (one per row)" items={cs.tech ?? []} onChange={v => updateCS({ tech: v.length ? v : undefined })} placeholder="e.g. React, IFC.js" />
+                                <ItemsArrayField label="Highlights (one per row)" items={cs.highlights ?? []} onChange={v => updateCS({ highlights: v.length ? v : undefined })} placeholder="e.g. 104+ TGO emission factors integrated" />
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </details>
                     </div>
                   ))}
                   <button onClick={() => setField("projects", [...profile.projects, { name: "", url: "", tag: "", description: "" }])} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: F.mono, fontSize: 10, cursor: "pointer" }}>+ Add Project</button>

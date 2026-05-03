@@ -22,6 +22,7 @@ import {
   CheckIcon,
   PencilIcon,
   PlusIcon,
+  Share2Icon,
   SparklesIcon,
   TrashIcon,
   XIcon,
@@ -64,6 +65,7 @@ export const ComponentsCanvas: React.FC<
   >(null);
   const [editingName, setEditingName] = React.useState("");
   const [filling, setFilling] = React.useState(false);
+  const [shareStatus, setShareStatus] = React.useState<"idle" | "copied" | "error">("idle");
 
   /** Fetch all portfolio data and populate the active canvas with cards. */
   const handleFillPortfolio = React.useCallback(async () => {
@@ -149,6 +151,36 @@ export const ComponentsCanvas: React.FC<
       setFilling(false);
     }
   }, [activeCanvasId, filling, clearCanvas, addComponent]);
+
+  /** Encode the active canvas → base64 URL hash + copy share link to clipboard. */
+  const handleShareCanvas = React.useCallback(async () => {
+    if (!activeCanvasId) return;
+    const canvas = canvases.find((c) => c.id === activeCanvasId);
+    if (!canvas || canvas.components.length === 0) {
+      setShareStatus("error");
+      setTimeout(() => setShareStatus("idle"), 2200);
+      return;
+    }
+    try {
+      // Strip volatile/runtime-only fields before encoding
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const components = canvas.components.map(({ _isStreaming, _inCanvas, canvasId, ...rest }) => rest);
+      const payload = { v: 1, name: canvas.name, components };
+      // base64url-safe (replace + / =)
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+      const url = `${window.location.origin}${window.location.pathname}#c=${encoded}`;
+      await navigator.clipboard.writeText(url);
+      setShareStatus("copied");
+      setTimeout(() => setShareStatus("idle"), 2200);
+    } catch (err) {
+      console.error("[ShareCanvas] failed:", err);
+      setShareStatus("error");
+      setTimeout(() => setShareStatus("idle"), 2200);
+    }
+  }, [activeCanvasId, canvases]);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -679,6 +711,22 @@ export const ComponentsCanvas: React.FC<
               />
               <span>{filling ? "Filling…" : "Fill Portfolio"}</span>
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </button>
+
+            {/* Share canvas — encodes components into a base64 URL fragment */}
+            <button
+              onClick={handleShareCanvas}
+              className="px-3 py-1.5 border border-gray-200 text-primary hover:text-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 rounded-md shadow-sm flex items-center gap-1.5 text-sm cursor-pointer bg-background"
+              title={shareStatus === "copied" ? "Link copied to clipboard" : shareStatus === "error" ? "Canvas is empty" : "Copy a shareable link to this canvas"}
+              style={{
+                color: shareStatus === "copied" ? "#34D399" : shareStatus === "error" ? "#f87171" : undefined,
+                borderColor: shareStatus === "copied" ? "rgba(52,211,153,0.5)" : shareStatus === "error" ? "rgba(248,113,113,0.5)" : undefined,
+              }}
+            >
+              <Share2Icon className="h-4 w-4" />
+              <span>
+                {shareStatus === "copied" ? "Link copied!" : shareStatus === "error" ? "Empty canvas" : "Share Canvas"}
+              </span>
             </button>
 
             {/* Clear canvas */}

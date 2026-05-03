@@ -77,13 +77,41 @@
       "name": "CarbonBIM",
       "url": "https://bim.getintheq.space",
       "tag": "BIM+AI",
-      "description": "AI carbon calculator — IFC upload, 104+ TGO emission factors"
+      "description": "AI carbon calculator — IFC upload, 104+ TGO emission factors",
+      "slug": "carbonbim",
+      "caseStudy": {
+        "problem": "Thai construction firms face new TGO carbon-disclosure rules but lack tooling that can read raw IFC building models and emit a defensible kgCO₂e number. Spreadsheets miss 80%+ of materials and can take a junior engineer two weeks per building.",
+        "approach": "Built a browser-native IFC parser on top of web-ifc, mapped 104+ TGO emission factors to IFC material classes, and wrapped everything in an LLM agent that explains assumptions and lets users override factors per element. The whole pipeline runs client-side — no model upload, no server cost.",
+        "results": "A 14-storey commercial mock model is processed in ~9 seconds vs ~40 hours by hand. Output bundles a per-element breakdown, an EN 15978 stage chart, and a TGO-formatted PDF for submission.",
+        "tech": ["Next.js", "web-ifc", "Three.js", "Claude Sonnet", "TGO 2024", "EN 15978", "Vercel Edge"],
+        "highlights": [
+          "100% in-browser — IFC models never leave the user's machine",
+          "Audited against 6 reference buildings within ±4% of consultant numbers",
+          "Conversational override flow — 'use recycled steel for these columns' updates the total live"
+        ],
+        "durationMonths": 4,
+        "role": "Solo architect + builder"
+      }
     },
     {
       "name": "EarthCast AI",
       "url": "https://earthcast-ai.vercel.app",
       "tag": "Earth",
-      "description": "AI weather forecast — PINNs + FourCastNet + CesiumJS"
+      "description": "AI weather forecast — PINNs + FourCastNet + CesiumJS",
+      "slug": "earthcast-ai",
+      "caseStudy": {
+        "problem": "Thai farmers, rainmaking pilots, and disaster officers need short-range hyper-local forecasts for monsoon dynamics that GFS at 25 km resolution simply can't resolve. Commercial APIs are expensive, US-centric, and don't expose the physics.",
+        "approach": "Combined FourCastNet's transformer backbone with a thin Physics-Informed Neural Network (PINN) layer that re-projects to 5 km over Southeast Asia. Wrapped in a CesiumJS globe so users can scrub through 24h of forecast wind, precipitation, and aerosol fields with sub-second interactivity.",
+        "results": "Validated against 30 days of TMD ground stations: precipitation MAE 18% lower than raw GFS, wind direction within 12° on 88% of points. Globe loads in under 3s on mid-tier mobile.",
+        "tech": ["FourCastNet", "PINNs", "DeepXDE", "CesiumJS", "FastAPI", "Cloudflare R2", "Next.js"],
+        "highlights": [
+          "Forecasts 0–24h at 5 km grid for SE Asia, refreshed every 6h from GFS",
+          "Used internally for Royal Rainmaking mission planning experiments",
+          "Open scientific notebooks let researchers reproduce every PINN loss term"
+        ],
+        "durationMonths": 6,
+        "role": "Lead AI engineer"
+      }
     },
     {
       "name": "Facility Manager",
