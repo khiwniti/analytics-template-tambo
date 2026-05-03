@@ -115,28 +115,22 @@ function AutoSubmitPendingMessage({ onAutoSubmit }: { onAutoSubmit?: () => void 
  * Page-level welcome overlay shown over the canvas when the thread has no
  * messages. Visible BEFORE the user opens the floating chat panel — clicking
  * a starter chip both opens the panel and submits the message.
+ *
+ * `isPending` is passed as a prop (not read from sessionStorage) so that
+ * same-tab state changes are tracked reliably via React state in ChatWidget.
  */
 function CanvasWelcomeOverlay({
   onChipClick,
   isMobile,
+  isPending,
 }: {
   onChipClick: (text: string) => void;
   isMobile: boolean;
+  isPending: boolean;
 }) {
   const isEmpty = useIsEmptyThread();
-  // Also hide when an auto-submit is pending — it will populate the thread
-  // in ~600ms, so showing the overlay would cause a jarring flash.
-  const [hasPending, setHasPending] = useState(
-    () => !!sessionStorage.getItem(PENDING_KEY)
-  );
-  useEffect(() => {
-    const check = () => setHasPending(!!sessionStorage.getItem(PENDING_KEY));
-    // Re-check whenever storage changes (e.g. AutoSubmitPendingMessage clears it)
-    window.addEventListener("storage", check);
-    return () => window.removeEventListener("storage", check);
-  }, []);
 
-  if (!isEmpty || hasPending) return null;
+  if (!isEmpty || isPending) return null;
 
   return (
     <div
@@ -238,6 +232,12 @@ function ChatWidget() {
   const isMobile = useIsMobile();
   // Lazy initializer — open immediately if there's a pending message
   const [open, setOpen] = useState(() => !!sessionStorage.getItem(PENDING_KEY));
+  // Track whether a pending auto-submit is in flight so the welcome overlay
+  // hides before the message arrives. Owned here (not in the overlay) so
+  // same-tab state changes propagate via React instead of the storage event.
+  const [isPending, setIsPending] = useState(
+    () => !!sessionStorage.getItem(PENDING_KEY)
+  );
 
   // Open the chat, set the chip text, and submit
   const handleChipSubmit = async (text: string) => {
@@ -299,8 +299,12 @@ function ChatWidget() {
 
   return (
     <>
-      {/* Page-level welcome overlay (only when thread is empty) */}
-      <CanvasWelcomeOverlay onChipClick={handleChipSubmit} isMobile={isMobile} />
+      {/* Page-level welcome overlay (only when thread is empty + not pending) */}
+      <CanvasWelcomeOverlay
+        onChipClick={handleChipSubmit}
+        isMobile={isMobile}
+        isPending={isPending}
+      />
 
       {/* ── Headless transparent chat panel ── */}
       <div
@@ -328,7 +332,12 @@ function ChatWidget() {
           className="!bg-transparent !border-0 !shadow-none"
           style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "transparent" }}
         >
-          <AutoSubmitPendingMessage onAutoSubmit={() => setOpen(true)} />
+          <AutoSubmitPendingMessage
+            onAutoSubmit={() => {
+              setOpen(true);
+              setIsPending(false);
+            }}
+          />
 
           {/* Scrollable messages — transparent, bubbles float over canvas */}
           <ScrollableMessageContainer

@@ -588,7 +588,7 @@ export default function HomePage() {
               {s.l}
             </Link>
           ))}
-          {/* Section anchors: use plain <a> for native fragment scrolling */}
+          {/* Section anchors: plain <a> for native fragment scrolling */}
           {[
             { l: "About", u: "#about" },
             { l: "Projects", u: "#projects" },
@@ -598,6 +598,29 @@ export default function HomePage() {
             <a
               key={`a-${i}`}
               href={s.u}
+              style={{
+                fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
+                textTransform: "uppercase", color: C.muted, textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = C.accent)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}
+            >
+              {s.l}
+            </a>
+          ))}
+          {/* External links restored alongside the new sitemap */}
+          {[
+            { l: "Resume", u: "https://www.khiw.dev/api/resume" },
+            { l: "GitHub", u: "https://github.com/getintheQ" },
+            { l: "LinkedIn", u: "https://linkedin.com/in/getintheq" },
+            { l: "Email", u: "mailto:kiw.brw@gmail.com" },
+          ].map((s, i) => (
+            <a
+              key={`e-${i}`}
+              href={s.u}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
                 textTransform: "uppercase", color: C.muted, textDecoration: "none",
