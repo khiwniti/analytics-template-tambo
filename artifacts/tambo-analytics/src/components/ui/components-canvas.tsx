@@ -637,17 +637,23 @@ export const ComponentsCanvas: React.FC<
             ) : (
               <>
                 <span>{c.name}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startRenameCanvas(c.id);
-                  }}
-                  className="ml-1 p-0.5 hover:text-foreground"
-                  title="Rename"
-                >
-                  <PencilIcon className="h-3 w-3" />
-                </button>
-                {canvases.length > 1 &&
+                {/* Read-only snapshot canvases shouldn't be renameable —
+                    they're a frozen view of someone else's board. */}
+                {!c.isReadOnly && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startRenameCanvas(c.id);
+                    }}
+                    className="ml-1 p-0.5 hover:text-foreground"
+                    title="Rename"
+                  >
+                    <PencilIcon className="h-3 w-3" />
+                  </button>
+                )}
+                {/* Per-tab delete is suppressed on read-only snapshots; the
+                    banner offers a "Clear snapshot" action instead. */}
+                {!c.isReadOnly && canvases.length > 1 &&
                   (pendingDeleteCanvasId === c.id ? (
                     <div className="ml-1 flex items-center gap-1 px-2 py-0.5 bg-red-100 dark:bg-red-400/30 rounded text-xs text-destructive dark:text-red-300">
                       <span>Delete?</span>

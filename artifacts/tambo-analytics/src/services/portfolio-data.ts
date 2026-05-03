@@ -110,9 +110,14 @@ export function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-/** Resolve the canonical slug for a project (explicit `slug` wins, else slugified name). */
+/** Resolve the canonical slug for a project (explicit `slug` wins, else slugified name).
+ *  Always normalized through `slugify` so that admin-entered values like
+ *  "CarbonBIM" or "  carbon bim  " resolve identically to the URL form
+ *  produced from the project name, and so `getProjectBySlug` (which
+ *  lowercases the URL param) always matches. */
 export function projectSlug(p: Pick<PortfolioProject, "slug" | "name">): string {
-  return (p.slug && p.slug.trim()) || slugify(p.name);
+  const explicit = p.slug && p.slug.trim();
+  return explicit ? slugify(explicit) : slugify(p.name);
 }
 
 /** Look up a project by its slug (or its slugified name). Returns null if not found. */
