@@ -575,52 +575,47 @@ export default function HomePage() {
       <footer style={{ padding: "32px 24px 40px", textAlign: "center", borderTop: `1px solid ${C.border}` }}>
         {/* Sitemap row */}
         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
+          {/* Route links: use wouter <Link> so BASE_URL prefix is respected */}
           {[
-            { l: "Home", u: "/", internal: true },
-            { l: "About", u: "/#about", internal: true },
-            { l: "Projects", u: "/#projects", internal: true },
-            { l: "Skills", u: "/#skills", internal: true },
-            { l: "Contact", u: "/#contact", internal: true },
-            { l: "AI Chat", u: "/chat", internal: true },
-            { l: "Admin", u: "/admin", internal: true },
-          ].map((s, i) => {
-            const linkStyle: React.CSSProperties = {
-              fontFamily: F.mono,
-              fontSize: 11,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              color: C.muted,
-              textDecoration: "none",
-              transition: "color 0.2s",
-            };
-            const handlers = {
-              onMouseEnter: (e: React.MouseEvent<HTMLAnchorElement>) =>
-                (e.currentTarget.style.color = C.accent),
-              onMouseLeave: (e: React.MouseEvent<HTMLAnchorElement>) =>
-                (e.currentTarget.style.color = C.muted),
-            };
-            // Internal routes use wouter's <Link> so the BASE_URL prefix is
-            // respected (e.g. /__app/chat) and we get SPA navigation.
-            if (s.internal) {
-              return (
-                <Link key={i} href={s.u} style={linkStyle} {...handlers}>
-                  {s.l}
-                </Link>
-              );
-            }
-            return (
-              <a
-                key={i}
-                href={s.u}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={linkStyle}
-                {...handlers}
-              >
-                {s.l}
-              </a>
-            );
-          })}
+            { l: "Home", u: "/" },
+            { l: "AI Chat", u: "/chat" },
+            { l: "Admin", u: "/admin" },
+          ].map((s, i) => (
+            <Link
+              key={`r-${i}`}
+              href={s.u}
+              style={{
+                fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
+                textTransform: "uppercase", color: C.muted, textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = C.accent)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}
+            >
+              {s.l}
+            </Link>
+          ))}
+          {/* Section anchors: use plain <a> for native fragment scrolling */}
+          {[
+            { l: "About", u: "#about" },
+            { l: "Projects", u: "#projects" },
+            { l: "Skills", u: "#skills" },
+            { l: "Contact", u: "#contact" },
+          ].map((s, i) => (
+            <a
+              key={`a-${i}`}
+              href={s.u}
+              style={{
+                fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5,
+                textTransform: "uppercase", color: C.muted, textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = C.accent)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}
+            >
+              {s.l}
+            </a>
+          ))}
         </div>
         <p style={{ fontSize: 11, color: C.faint, marginBottom: 4 }}>
           © 2026 · {profile ? profile.stats.projects : 50} Vercel Projects · {profile ? profile.stats.workers : 47} Cloudflare Workers · {profile ? profile.stats.industries : 9} Industries

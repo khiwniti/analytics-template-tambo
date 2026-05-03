@@ -28,13 +28,14 @@ import { useParams } from "wouter";
 const PENDING_KEY = "tambo-pending-message";
 const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
+// Same content as home.tsx SUGGESTIONS so both surfaces feel coherent
 const STARTER_CHIPS = [
-  "Show me your top 3 projects",
-  "What's your AI agent stack?",
-  "Walk me through your career",
-  "Skill profile, please",
-  "Why hire you?",
-  "Government work?",
+  "What's your most impressive AI project?",
+  "Walk me through your full-stack skills",
+  "How do you approach AI agent architecture?",
+  "What industries have you worked in?",
+  "Tell me about your government AI work",
+  "What makes you unique as a developer?",
 ];
 
 /** Tracks viewport ≤ 640px so the chat panel can render as a full-width sheet. */
@@ -133,7 +134,19 @@ function CanvasWelcomeOverlay({
   isMobile: boolean;
 }) {
   const isEmpty = useIsEmptyThread();
-  if (!isEmpty) return null;
+  // Also hide when an auto-submit is pending — it will populate the thread
+  // in ~600ms, so showing the overlay would cause a jarring flash.
+  const [hasPending, setHasPending] = useState(
+    () => !!sessionStorage.getItem(PENDING_KEY)
+  );
+  useEffect(() => {
+    const check = () => setHasPending(!!sessionStorage.getItem(PENDING_KEY));
+    // Re-check whenever storage changes (e.g. AutoSubmitPendingMessage clears it)
+    window.addEventListener("storage", check);
+    return () => window.removeEventListener("storage", check);
+  }, []);
+
+  if (!isEmpty || hasPending) return null;
 
   return (
     <div
