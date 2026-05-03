@@ -488,8 +488,12 @@ const SYSTEM_CONTEXT_URI = "system://portfolio-context";
 const systemContextResource: ListResourceItem = {
   uri: SYSTEM_CONTEXT_URI,
   name: "Portfolio Context",
-  description:
+  description: [
     "Ikkyu Khiw's complete portfolio profile, career history, projects, skills, and AI agent persona instructions.",
+    "Component-rendering guidance:",
+    "- Render NowCard whenever the user asks 'what are you working on now?', 'what's next?', 'current focus', 'this week/month', or any present-tense status question. Pull bullets from the Now section in the portfolio context.",
+    "- Render TestimonialCard whenever the user asks for a recommendation, testimonial, reference, social proof, or 'what do people say about working with him?'. Pick the single most relevant quote from the Recommendations section. To show several quotes, render multiple TestimonialCards in sequence (one card per quote, single-spotlight schema).",
+  ].join("\n"),
   mimeType: "text/plain",
 };
 
