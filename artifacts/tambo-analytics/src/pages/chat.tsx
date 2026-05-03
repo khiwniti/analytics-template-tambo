@@ -345,6 +345,23 @@ const CHIP_MAP: Record<string, string[]> = {
   Graph: ["Tell me more about this", "Show me his resume", "What projects use this?"],
 };
 
+/** Keyword-based chip heuristics for purely textual AI replies (no canvas component). */
+function deriveTextChips(lastAssistantText: string): string[] {
+  const t = lastAssistantText.toLowerCase();
+  if (/project|built|github|open.?source|showcase/.test(t))
+    return ["See the code", "What was hardest to build?", "Show his resume"];
+  if (/skill|stack|language|framework|typescript|python|react/.test(t))
+    return ["Show a project that uses these skills", "See full resume", "Book Ikkyu"];
+  if (/experience|career|job|role|company|work/.test(t))
+    return ["Show me his full timeline", "Tell me about his AI work", "Book Ikkyu"];
+  if (/ai|ml|model|llm|agent|rag|gpt|openai|embedding/.test(t))
+    return ["Show his AI projects", "What was hardest to build?", "Hire me for this"];
+  if (/contact|reach|email|hire|recruit|opportunit/.test(t))
+    return ["Show me his resume", "Open the contact form", "Tell me about his projects"];
+  // Generic fallback
+  return ["Show me his resume", "What projects has he built?", "What's he working on now?"];
+}
+
 function useFollowUpChips(): string[] {
   const { messages } = useTambo();
   const { active: isActive } = useAIStatus();
@@ -358,9 +375,11 @@ function useFollowUpChips(): string[] {
     if (isActive || messages.length < 2) return [];
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistant) return [];
+    // Component-driven chips take priority
     const chips = CHIP_MAP[lastSettledComponentType];
     if (chips && chips.length > 0) return chips.slice(0, 3);
-    return ["Show me his resume", "What projects has he built?", "What's he working on now?"];
+    // Keyword heuristics for purely textual replies
+    return deriveTextChips(getTextFromContent(lastAssistant.content));
   }, [messages, isActive, lastSettledComponentType]);
 }
 
