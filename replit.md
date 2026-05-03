@@ -26,7 +26,7 @@ A Tambo AI analytics template. Ported from Next.js to Vite + React.
 - **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Auto-submits pending message stored in sessionStorage (from home page). TamboProvider configured with portfolio tools, contextHelpers, and systemContext resource. Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
   - **AI Status Strip**: slim frosted pill above input showing real-time tool call / component generation status (e.g. "Reading profile", "Building resume…") with pulsing emerald dot
   - **Follow-up Chips**: context-aware suggestion pills after each AI response, derived from the last canvas component type (ResumeCard → role/project chips, ProjectShowcase → outcome/contact chips, etc.)
-  - **"Get in touch" CTA**: floating pill left of FAB that appears after 2+ user turns or hiring keywords detected; adds ContactForm to canvas on click
+  - **"Book Ikkyu" CTA**: floating pill left of FAB that appears after 2+ user turns or hiring keywords detected; adds ContactForm to canvas on click; prefilled with conversation summary; auto-hides when ContactForm already on canvas
   - **Smart thread titles**: localStorage-based title derived from first user message; displayed in thread sidebar instead of raw ID; searchable
   - **Keyboard polish**: Escape closes panel + returns focus to FAB; auto-focus on open; `visualViewport` resize listener keeps panel above mobile keyboard
   - **Thread title storage**: `src/lib/thread-titles.ts` — shared by chat.tsx and thread-history.tsx

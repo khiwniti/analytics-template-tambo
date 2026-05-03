@@ -330,14 +330,14 @@ function useAIStatus(): { label: string; active: boolean } {
 
 // ─── Follow-up Chips ─────────────────────────────────────────────────────────
 const CHIP_MAP: Record<string, string[]> = {
-  ResumeCard: ["What roles are you targeting?", "Show me your top project", "How can I reach you?"],
-  ProjectShowcase: ["Tell me about another project", "What were the key outcomes?", "How can I contact you?"],
+  ResumeCard: ["What roles are you open to?", "Show me your top project", "Hire me for this"],
+  ProjectShowcase: ["See the code", "What was hardest to build?", "Hire me for this"],
   TimelineCard: ["Show me his resume", "Tell me about his AI work", "What's his biggest achievement?"],
   StatCard: ["Tell me more about his projects", "Show me his resume", "What's his strongest skill?"],
-  SkillRadar: ["Show a project that uses these skills", "See full resume", "Get in touch"],
+  SkillRadar: ["Show a project that uses these skills", "See full resume", "Book Ikkyu"],
   ContactForm: ["Show me his resume", "Tell me about his projects"],
   NowCard: ["Tell me more about his projects", "What are his skills?", "How can I contact him?"],
-  TestimonialCard: ["Show another recommendation", "See his resume", "Get in touch"],
+  TestimonialCard: ["Show another recommendation", "See his resume", "Book Ikkyu"],
   Graph: ["Tell me more about this", "Show me his resume", "What projects use this?"],
 };
 
@@ -371,7 +371,7 @@ function useHiringSignal(): boolean {
       .map((m) => getTextFromContent(m.content))
       .join(" ")
       .toLowerCase();
-    return /hire|recrui|talent|opportunit|role|position|job|contact|reach|connect|interview|team|join|avail|work with|looking for/.test(
+    return /hire|recrui|talent|opportunit|rate|salary|contract|full.?time|part.?time|freelance|role|position|job|contact|reach|connect|interview|team|join|avail|work with|looking for/.test(
       text,
     );
   }, [messages]);
@@ -389,6 +389,13 @@ function ThreadTitleAutoSave() {
 
     const firstUser = messages.find((m) => m.role === "user");
     if (!firstUser) return;
+
+    // Never regenerate — use cached title if one already exists
+    const existing = getThreadTitles()[currentThreadId];
+    if (existing) {
+      saved.current.add(currentThreadId);
+      return;
+    }
 
     saved.current.add(currentThreadId);
 
@@ -518,7 +525,7 @@ function FollowUpChips({ onChipClick }: { onChipClick: (text: string) => void })
   );
 }
 
-// ─── "Get in touch" floating CTA ──────────────────────────────────────────────
+// ─── "Book Ikkyu" floating CTA ────────────────────────────────────────────────
 function BookCTA({
   onActivate,
   isMobile,
@@ -585,7 +592,7 @@ function BookCTA({
           whiteSpace: "nowrap",
         }}
       >
-        Get in touch
+        Book Ikkyu
       </button>
       <button
         onClick={(e) => {
@@ -692,7 +699,7 @@ function ChatWidget() {
     }
   };
 
-  // "Get in touch" CTA handler — add ContactForm prefilled with conversation summary
+  // "Book Ikkyu" CTA handler — add ContactForm prefilled with conversation summary
   const handleBookCTA = () => {
     if (activeCanvasId) {
       const userMsgs = messages.filter((m) => m.role === "user");
@@ -776,7 +783,7 @@ function ChatWidget() {
         isPending={isPending}
       />
 
-      {/* "Get in touch" floating CTA */}
+      {/* "Book Ikkyu" floating CTA */}
       <BookCTA onActivate={handleBookCTA} isMobile={isMobile} />
 
       {/* ── Headless transparent chat panel ── */}
