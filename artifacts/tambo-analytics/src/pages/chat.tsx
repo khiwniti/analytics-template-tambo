@@ -709,17 +709,17 @@ function SharedCanvasImporter({ onImported }: { onImported: (canvasId: string) =
  * read-only canvas and switches to a fresh writable one so the visitor
  * can start exploring.
  */
-function SharedSnapshotBanner({
-  snapshotCanvasId,
-  onCleared,
-}: {
-  snapshotCanvasId: string | null;
-  onCleared: () => void;
-}) {
-  // Only show the banner while the imported snapshot canvas is the *active*
-  // tab, so the read-only messaging matches what the user is actually viewing.
-  const activeCanvasId = useCanvasStore((s) => s.activeCanvasId);
-  if (!snapshotCanvasId || activeCanvasId !== snapshotCanvasId) return null;
+function SharedSnapshotBanner() {
+  // Derive snapshot state from the persisted store rather than ephemeral
+  // React state — the canvas store is persisted via zustand/persist, so on
+  // refresh `isReadOnly` survives but any importer-state would be lost.
+  // Using the active canvas's `isReadOnly` flag keeps the banner / clear
+  // action available across reloads.
+  const activeCanvas = useCanvasStore((s) =>
+    s.canvases.find((c) => c.id === s.activeCanvasId) ?? null,
+  );
+  if (!activeCanvas?.isReadOnly) return null;
+  const snapshotCanvasId = activeCanvas.id;
   const handleClear = () => {
     const store = useCanvasStore.getState();
     // Replace the snapshot with a fresh writable canvas so the visitor
@@ -727,7 +727,6 @@ function SharedSnapshotBanner({
     const fresh = store.createCanvas("My canvas");
     store.setActiveCanvas(fresh.id);
     store.removeCanvas(snapshotCanvasId);
-    onCleared();
   };
   return (
     <div
@@ -782,21 +781,19 @@ export default function ChatPage() {
   const mcpServers = useMcpServers();
   const userKey = useAnonymousUserKey();
   const { threadId } = useParams<{ threadId?: string }>();
-  // Tracks the read-only canvas id created by SharedCanvasImporter so the
-  // banner can offer a "Clear snapshot" action that targets the right canvas.
-  const [snapshotCanvasId, setSnapshotCanvasId] = useState<string | null>(null);
   // No-op for now — kept so SharedProjectImporter has a stable callback;
   // AutoSubmitPendingMessage will pick up the message from sessionStorage.
   const handleProjectPrimed = useRef((_name: string) => {}).current;
+  // No-op importer callback — the banner derives snapshot state from the
+  // store's `isReadOnly` flag (which is persisted), so it survives refresh
+  // even after the importer has cleared the URL param.
+  const handleSnapshotImported = useRef((_id: string) => {}).current;
 
   return (
     <div className="h-screen w-screen overflow-hidden relative">
-      <SharedCanvasImporter onImported={(id) => setSnapshotCanvasId(id)} />
+      <SharedCanvasImporter onImported={handleSnapshotImported} />
       <SharedProjectImporter onPrimed={handleProjectPrimed} />
-      <SharedSnapshotBanner
-        snapshotCanvasId={snapshotCanvasId}
-        onCleared={() => setSnapshotCanvasId(null)}
-      />
+      <SharedSnapshotBanner />
       <TamboProvider
         apiKey={import.meta.env.VITE_TAMBO_API_KEY!}
         tamboUrl={import.meta.env.VITE_TAMBO_URL}
