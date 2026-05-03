@@ -298,7 +298,7 @@ const COMPONENT_LABELS: Record<string, string> = {
 };
 
 function useAIStatus(): { label: string; active: boolean } {
-  const { messages } = useTambo();
+  const { messages, isIdle } = useTambo();
   const streamingType = useCanvasStore((s) => {
     for (const canvas of s.canvases) {
       for (const comp of canvas.components) {
@@ -324,6 +324,10 @@ function useAIStatus(): { label: string; active: boolean } {
   }
   if (streamingType) {
     return { label: COMPONENT_LABELS[streamingType] ?? "Generating…", active: true };
+  }
+  // Fallback: plain-text streaming — replace generic typing dots with strip
+  if (!isIdle) {
+    return { label: "Thinking…", active: true };
   }
   return { label: "", active: false };
 }
@@ -626,6 +630,10 @@ const CHAT_KEYFRAMES = `
     from { opacity: 0; transform: translateY(5px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* Hide three-dot typing indicator when the AI status strip is showing */
+  [data-ai-status="active"] [data-slot="typing-indicator"] {
+    display: none !important;
+  }
 `;
 
 function focusChatInput(delay = 60) {
@@ -643,7 +651,7 @@ function focusChatInput(delay = 60) {
 function ChatWidget() {
   const { containerRef } = useThreadContainerContext();
   const { setValue, submit } = useTamboThreadInput();
-  const { messages } = useTambo();
+  const { messages, isIdle } = useTambo();
   const { addComponent, activeCanvasId } = useCanvasStore();
   const isMobile = useIsMobile();
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -663,7 +671,11 @@ function ChatWidget() {
     if (!isMobile) return;
     const vv = window.visualViewport;
     if (!vv) return;
-    const onResize = () => setViewportHeight(vv.height);
+    const onResize = () => {
+      // Only apply keyboard-avoidance when keyboard is actually open
+      const keyboardOpen = vv.height < window.innerHeight - 50;
+      setViewportHeight(keyboardOpen ? vv.height : null);
+    };
     vv.addEventListener("resize", onResize);
     return () => vv.removeEventListener("resize", onResize);
   }, [isMobile]);
@@ -791,6 +803,7 @@ function ChatWidget() {
         role="dialog"
         aria-label="Chat with Ikkyu's portfolio AI"
         aria-hidden={!open}
+        data-ai-status={!isIdle ? "active" : undefined}
         style={{
           position: "fixed",
           bottom: open ? openBottom : closedBottom,
