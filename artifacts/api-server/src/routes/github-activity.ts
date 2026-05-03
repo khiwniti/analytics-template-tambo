@@ -43,6 +43,14 @@ type GhEvent = {
   };
 };
 
+const MAX_ITEMS = 6;
+const MAX_MSG_LEN = 80;
+
+function truncate(s: string, max: number): string {
+  const one = s.split("\n")[0];
+  return one.length > max ? one.slice(0, max - 1) + "…" : one;
+}
+
 function normalize(events: GhEvent[]): ActivityItem[] {
   const items: ActivityItem[] = [];
   for (const ev of events) {
@@ -54,11 +62,10 @@ function normalize(events: GhEvent[]): ActivityItem[] {
       const first = commits[0];
       if (!first?.message) continue;
       const sha = first.sha ?? "";
-      const more = commits.length > 1 ? ` (+${commits.length - 1} more)` : "";
       items.push({
         type: "push",
         repo,
-        message: first.message.split("\n")[0].slice(0, 140) + more,
+        message: truncate(first.message, MAX_MSG_LEN),
         url: sha ? `${repoUrl}/commit/${sha}` : repoUrl,
         createdAt: ev.created_at,
       });
@@ -66,7 +73,7 @@ function normalize(events: GhEvent[]): ActivityItem[] {
       items.push({
         type: "create",
         repo,
-        message: `Created repository ${repo}`,
+        message: truncate(`Created repository ${repo}`, MAX_MSG_LEN),
         url: repoUrl,
         createdAt: ev.created_at,
       });
@@ -76,13 +83,54 @@ function normalize(events: GhEvent[]): ActivityItem[] {
       items.push({
         type: "pr",
         repo,
-        message: `Opened PR #${pr.number ?? ""}: ${pr.title.slice(0, 140)}`,
+        message: truncate(`Opened PR #${pr.number ?? ""}: ${pr.title}`, MAX_MSG_LEN),
         url: pr.html_url,
         createdAt: ev.created_at,
       });
     }
   }
-  return items.slice(0, 10);
+  return items.slice(0, MAX_ITEMS);
+}
+
+type GhRepo = {
+  name?: string;
+  full_name?: string;
+  description?: string | null;
+  html_url?: string;
+  fork?: boolean;
+  pushed_at?: string;
+  updated_at?: string;
+  stargazers_count?: number;
+};
+
+/** Fallback: top public repos by stars/recent push when there are no events. */
+async function fetchPinnedFallback(headers: Record<string, string>): Promise<ActivityItem[]> {
+  try {
+    const res = await fetch(
+      `https://api.github.com/users/${GITHUB_USER}/repos?type=owner&sort=pushed&per_page=30`,
+      { headers },
+    );
+    if (!res.ok) return [];
+    const repos = (await res.json()) as GhRepo[];
+    const ranked = repos
+      .filter((r) => !r.fork && r.html_url && r.name)
+      .sort(
+        (a, b) =>
+          (b.stargazers_count ?? 0) - (a.stargazers_count ?? 0) ||
+          new Date(b.pushed_at ?? 0).getTime() - new Date(a.pushed_at ?? 0).getTime(),
+      )
+      .slice(0, MAX_ITEMS);
+    return ranked.map((r) => ({
+      type: "create" as const,
+      repo: r.full_name ?? r.name ?? "",
+      message: truncate(r.description ?? `Pinned repo ${r.name}`, MAX_MSG_LEN),
+      url: r.html_url ?? `https://github.com/${GITHUB_USER}`,
+      createdAt: r.pushed_at ?? r.updated_at ?? new Date().toISOString(),
+    }));
+  } catch (err) {
+    logger.warn({ err }, "Pinned-repo fallback failed");
+    return [];
+  }
 }
 
 async function fetchActivity(): Promise<CachePayload> {
@@ -115,7 +163,11 @@ async function fetchActivity(): Promise<CachePayload> {
       };
     }
     const events = (await res.json()) as GhEvent[];
-    const items = normalize(events);
+    let items = normalize(events);
+    if (items.length === 0) {
+      logger.info("No recent GitHub events; falling back to pinned repos");
+      items = await fetchPinnedFallback(headers);
+    }
     const hash = createHash("sha1").update(JSON.stringify(items)).digest("hex").slice(0, 16);
     const etag = `"gh-${items.length}-${hash}"`;
     return { items, rateLimited: false, fetchedAt: Date.now(), etag };

@@ -184,11 +184,18 @@ function BuildingInPublicSection() {
       .catch(() => { setErrored(true); setLoading(false); });
   }, []);
 
-  // Hide entirely if rate-limited with no items, or fetch failed with no data
-  if (!loading && (errored || (data && data.rateLimited && data.items.length === 0))) {
+  // Log + hide entirely only when both rate-limited AND no items.
+  // For other empty states, render a graceful "nothing to show" panel.
+  if (!loading && data?.rateLimited && data.items.length === 0) {
+    if (typeof window !== "undefined") {
+      console.warn("[BuildingInPublic] GitHub feed rate-limited with no fallback items; hiding section.");
+    }
     return null;
   }
-  if (!loading && data && data.items.length === 0) {
+  if (!loading && errored) {
+    if (typeof window !== "undefined") {
+      console.warn("[BuildingInPublic] GitHub feed fetch failed; hiding section.");
+    }
     return null;
   }
 
@@ -223,7 +230,14 @@ function BuildingInPublicSection() {
                   </div>
                 </div>
               ))
-            : data!.items.map((it, i) => (
+            : data!.items.length === 0
+              ? (
+                <div style={{ padding: "20px 16px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, color: C.muted, fontSize: 12, fontFamily: F.mono, textAlign: "center" }}>
+                  No public activity right now — check back soon, or visit{" "}
+                  <a href="https://github.com/getintheQ" target="_blank" rel="noopener noreferrer" style={{ color: C.accent }}>@getintheQ</a> on GitHub.
+                </div>
+              )
+              : data!.items.map((it, i) => (
                 <a
                   key={i}
                   href={it.url}
