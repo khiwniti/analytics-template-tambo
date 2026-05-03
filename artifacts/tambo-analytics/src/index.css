@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -6,14 +6,14 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Soft Editorial light theme (khiw.dev / Ikkyu):
-  bg:          #FAFAF7  → hsl(48 23% 97%)   warm off-white
+  GenAI Startup theme (khiw.dev / Ikkyu):
+  bg:          #FFFFFF  → hsl(0 0% 100%)    pure white
   surface:     #FFFFFF  → hsl(0 0% 100%)    paper card
-  surface-2:   #F5F2EC  → hsl(40 20% 94%)   subtle warm beige
-  border:      #E5E1D8  → hsl(40 18% 87%)   hairline
-  accent:      #B0593A  → hsl(15 49% 46%)   warm terracotta
-  secondary:   #475569  → hsl(215 25% 35%)  slate blue
-  text-bright: #1F2937  → hsl(220 26% 16%)  charcoal headlines
+  surface-2:   #F5F3FF  → hsl(250 100% 97%) very light violet
+  border:      #E5E7EB  → hsl(220 13% 91%)  subtle gray
+  accent:      #7C3AED  → hsl(263 70% 50%)  violet purple
+  secondary:   #6D28D9  → hsl(263 58% 40%)  deeper violet
+  text-bright: #111827  → hsl(222 47% 11%)  near-black
   text:        #374151  → hsl(220 19% 27%)  body
   muted:       #6B7280  → hsl(220 9% 46%)
   faint:       #9CA3AF  → hsl(220 9% 65%)
@@ -60,30 +60,30 @@
 
 @layer base {
   :root {
-    /* ── Background & Foreground (warm off-white + charcoal) ── */
-    --background: 48 23% 97%;
+    /* ── Background & Foreground (pure white + near-black) ── */
+    --background: 0 0% 100%;
     --foreground: 220 19% 27%;
 
-    /* ── Cards & Popovers (paper white) ── */
+    /* ── Cards & Popovers (white) ── */
     --card: 0 0% 100%;
-    --card-foreground: 220 26% 16%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 26% 16%;
+    --popover-foreground: 222 47% 11%;
 
-    /* ── Primary = warm terracotta ── */
-    --primary: 15 49% 46%;
+    /* ── Primary = violet purple ── */
+    --primary: 263 70% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* ── Secondary = slate blue ── */
-    --secondary: 215 25% 35%;
+    /* ── Secondary = deeper violet ── */
+    --secondary: 263 58% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    /* ── Muted (warm beige surface) ── */
-    --muted: 40 20% 94%;
+    /* ── Muted (very light violet surface) ── */
+    --muted: 250 100% 97%;
     --muted-foreground: 220 9% 46%;
 
-    /* ── Accent = same terracotta family ── */
-    --accent: 15 49% 46%;
+    /* ── Accent = violet ── */
+    --accent: 263 70% 50%;
     --accent-foreground: 0 0% 100%;
 
     /* ── Destructive ── */
@@ -91,73 +91,73 @@
     --destructive-foreground: 0 0% 100%;
 
     /* ── Border, Input, Ring ── */
-    --border: 40 18% 87%;
+    --border: 220 13% 91%;
     --border-dimension-50: linear-gradient(
       180deg,
-      hsl(40 18% 90%) 0%,
-      hsl(40 18% 87%) 50%,
-      hsl(40 18% 82%) 100%
+      hsl(220 13% 93%) 0%,
+      hsl(220 13% 91%) 50%,
+      hsl(220 13% 87%) 100%
     );
     --border-dimension-100: linear-gradient(
       180deg,
-      hsl(40 18% 92%) 0%,
-      hsl(40 18% 87%) 50%,
-      hsl(40 18% 80%) 100%
+      hsl(220 13% 95%) 0%,
+      hsl(220 13% 91%) 50%,
+      hsl(220 13% 85%) 100%
     );
-    --input: 40 20% 94%;
-    --ring: 15 49% 46%;
+    --input: 250 100% 97%;
+    --ring: 263 70% 50%;
 
     /* ── Radius & Layout ── */
-    --radius: 0.625rem;
+    --radius: 0.75rem;
     --panel-left-width: 500px;
     --panel-right-width: 500px;
     --sidebar-width: 16rem;
 
-    /* ── Charts (editorial palette: terracotta + slate + warm earth) ── */
-    --chart-1: 15 49% 46%;
-    --chart-2: 215 25% 35%;
-    --chart-3: 28 60% 55%;
-    --chart-4: 195 35% 45%;
-    --chart-5: 35 30% 40%;
+    /* ── Charts (violet palette) ── */
+    --chart-1: 263 70% 50%;
+    --chart-2: 316 72% 61%;
+    --chart-3: 217 91% 60%;
+    --chart-4: 142 71% 45%;
+    --chart-5: 263 58% 40%;
 
     /* ── Container & Backdrop ── */
-    --container: 40 20% 94%;
-    --backdrop: 220 26% 10% / 0.35;
-    --muted-backdrop: 220 26% 10% / 0.12;
+    --container: 250 100% 97%;
+    --backdrop: 222 47% 11% / 0.35;
+    --muted-backdrop: 222 47% 11% / 0.10;
 
-    /* ── Fonts: Quicksand sans + Fraunces serif headlines + JetBrains Mono ── */
-    --font-geist-sans: 'Quicksand', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    /* ── Fonts: Inter display + Quicksand body + JetBrains Mono ── */
+    --font-geist-sans: 'Inter', 'Quicksand', ui-sans-serif, system-ui, -apple-system, sans-serif;
     --font-geist-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
     --app-font-sans: var(--font-geist-sans);
     --app-font-mono: var(--font-geist-mono);
     --app-font-serif: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
   }
 
-  /* .dark unused — single light theme. Mirror :root so any stray .dark wrapper renders identically. */
+  /* .dark unused — single light theme. Mirror :root. */
   .dark {
-    --background: 48 23% 97%;
+    --background: 0 0% 100%;
     --foreground: 220 19% 27%;
     --card: 0 0% 100%;
-    --card-foreground: 220 26% 16%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 26% 16%;
-    --primary: 15 49% 46%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 263 70% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 25% 35%;
+    --secondary: 263 58% 40%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 40 20% 94%;
+    --muted: 250 100% 97%;
     --muted-foreground: 220 9% 46%;
-    --accent: 15 49% 46%;
+    --accent: 263 70% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 65% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 40 18% 87%;
-    --input: 40 20% 94%;
-    --ring: 15 49% 46%;
-    --container: 40 20% 94%;
-    --backdrop: 220 26% 10% / 0.35;
-    --muted-backdrop: 220 26% 10% / 0.12;
-    --radius: 0.625rem;
+    --border: 220 13% 91%;
+    --input: 250 100% 97%;
+    --ring: 263 70% 50%;
+    --container: 250 100% 97%;
+    --backdrop: 222 47% 11% / 0.35;
+    --muted-backdrop: 222 47% 11% / 0.10;
+    --radius: 0.75rem;
     --panel-left-width: 500px;
     --panel-right-width: 500px;
     --sidebar-width: 3rem;
@@ -191,14 +191,27 @@
   height: 0;
 }
 
-/* Scrollbar — light, warm */
+/* Scrollbar — light violet */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(40 18% 80%); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(40 18% 70%); }
+::-webkit-scrollbar-thumb { background: hsl(263 30% 85%); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(263 40% 75%); }
 
-/* Selection — warm terracotta tint */
-::selection { background: hsl(15 49% 46% / 0.18); color: hsl(220 26% 16%); }
+/* Selection — violet tint */
+::selection { background: hsl(263 70% 50% / 0.18); color: hsl(222 47% 11%); }
+
+/* Gradient orb blobs — decorative background elements */
+.orb-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+}
+.orb-purple { background: radial-gradient(circle, #A855F7 0%, transparent 70%); }
+.orb-pink   { background: radial-gradient(circle, #EC4899 0%, transparent 70%); }
+.orb-blue   { background: radial-gradient(circle, #60A5FA 0%, transparent 70%); }
 
 @layer utilities {
   /* Background Utilities */

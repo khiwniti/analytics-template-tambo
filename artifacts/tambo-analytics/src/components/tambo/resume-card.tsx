@@ -30,14 +30,14 @@ export const resumeCardSchema = z.object({
 export type ResumeCardProps = z.infer<typeof resumeCardSchema>;
 
 const C = {
-  bg: "#FAFAF7",
+  bg: "#FFFFFF",
   surface: "#FFFFFF",
-  border: "rgba(15,23,42,0.08)",
-  accent: "#B0593A",
-  accentDim: "rgba(176,89,58,0.65)",
-  text: "#1F2937",
+  border: "rgba(0,0,0,0.08)",
+  accent: "#7C3AED",
+  accentDim: "rgba(124,58,237,0.65)",
+  text: "#111827",
   muted: "#6B7280",
-  tag: "rgba(176,89,58,0.10)",
+  tag: "rgba(124,58,237,0.10)",
 };
 
 function Section({
@@ -380,7 +380,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
               onClick={handleDownload}
               disabled={downloading}
               style={{
-                background: "rgba(176,89,58,0.15)",
+                background: "rgba(124,58,237,0.15)",
                 border: `1px solid ${C.border}`,
                 borderRadius: 8,
                 padding: "8px 14px",
@@ -394,8 +394,8 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
                 whiteSpace: "nowrap",
                 opacity: downloading ? 0.6 : 1,
               }}
-              onMouseEnter={(e) => { if (!downloading) e.currentTarget.style.background = "rgba(176,89,58,0.25)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(176,89,58,0.15)"; }}
+              onMouseEnter={(e) => { if (!downloading) e.currentTarget.style.background = "rgba(124,58,237,0.25)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.15)"; }}
             >
               {downloading ? "Generating..." : "⬇ Download PDF"}
             </button>
@@ -455,7 +455,7 @@ export const ResumeCard = React.forwardRef<HTMLDivElement, ResumeCardProps>(
                   display: "block",
                   transition: "border-color 0.2s",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(176,89,58,0.35)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(124,58,237,0.35)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; }}
               >
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 2 }}>{proj.name}</div>

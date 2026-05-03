@@ -328,7 +328,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(176,89,58,0.2)",
                   borderRadius: 8,
-                  color: "#1F2937",
+                  color: "#111827",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
                 }}
@@ -382,7 +382,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(176,89,58,0.2)",
                   borderRadius: 8,
-                  color: "#1F2937",
+                  color: "#111827",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
                 }}
@@ -445,11 +445,11 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(176,89,58,0.2)",
                   borderRadius: 8,
-                  color: "#1F2937",
+                  color: "#111827",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: 11,
                 }}
-                itemStyle={{ color: "#1F2937" }}
+                itemStyle={{ color: "#111827" }}
                 labelStyle={{ color: "#B0593A" }}
               />
               {showLegend && (
@@ -471,7 +471,7 @@ export const Graph = React.forwardRef<HTMLDivElement, GraphProps>(
           ref={ref}
           style={{
             fontFamily: "Quicksand, sans-serif",
-            color: "#1F2937",
+            color: "#111827",
             position: "relative",
           }}
           className={cn(graphVariants({ variant, size }), className)}

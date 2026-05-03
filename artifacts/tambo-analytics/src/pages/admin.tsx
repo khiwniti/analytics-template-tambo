@@ -2,18 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import { type PortfolioProfile, clearPortfolioCache } from "../services/portfolio-data";
 
 const C = {
-  primary: "#FAFAF7",
+  primary: "#FFFFFF",
   surface: "#FFFFFF",
-  surface2: "#F5F2EC",
-  border: "rgba(15,23,42,0.08)",
-  accent: "#B0593A",
-  accentDim: "rgba(176,89,58,0.65)",
-  accentBg: "rgba(176,89,58,0.08)",
-  accentBorder: "1px solid rgba(176,89,58,0.35)",
+  surface2: "#F5F3FF",
+  border: "rgba(0,0,0,0.08)",
+  accent: "#7C3AED",
+  accentDim: "rgba(124,58,237,0.65)",
+  accentBg: "rgba(124,58,237,0.08)",
+  accentBorder: "1px solid rgba(124,58,237,0.35)",
   red: "#f87171",
   redBg: "rgba(248,113,113,0.08)",
   redBorder: "rgba(248,113,113,0.2)",
-  textBright: "#1F2937",
+  textBright: "#111827",
   text: "#374151",
   muted: "#6B7280",
   faint: "#9CA3AF",
@@ -41,7 +41,7 @@ async function checkToken(token: string): Promise<boolean> {
 
 function inputStyle(focused: boolean): React.CSSProperties {
   return {
-    background: "#FAFAF7",
+    background: "#FFFFFF",
     border: `1px solid ${focused ? C.accent : C.border}`,
     borderRadius: 8,
     padding: "8px 12px",
@@ -271,7 +271,7 @@ function LoginGate({ onLogin }: { onLogin: (token: string) => void }) {
           <button
             type="submit"
             disabled={!token.trim() || loading}
-            style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: token.trim() ? C.accent : "#F5F2EC", color: token.trim() ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: token.trim() ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}
+            style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: token.trim() ? C.accent : "#F5F3FF", color: token.trim() ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: token.trim() ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}
           >{loading ? "Verifying..." : "Unlock →"}</button>
         </form>
       </div>

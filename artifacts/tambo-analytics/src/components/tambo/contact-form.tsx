@@ -40,14 +40,14 @@ type FormState = {
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
 const C = {
-  primary: "#FAFAF7",
+  primary: "#FFFFFF",
   surface: "#FFFFFF",
-  surfaceHover: "#F5F2EC",
-  border: "rgba(15,23,42,0.08)",
-  accent: "#B0593A",
-  accentDim: "rgba(176,89,58,0.65)",
-  accentBg: "rgba(176,89,58,0.08)",
-  textBright: "#1F2937",
+  surfaceHover: "#F5F3FF",
+  border: "rgba(0,0,0,0.08)",
+  accent: "#7C3AED",
+  accentDim: "rgba(124,58,237,0.65)",
+  accentBg: "rgba(124,58,237,0.08)",
+  textBright: "#111827",
   text: "#374151",
   muted: "#6B7280",
   faint: "#9CA3AF",

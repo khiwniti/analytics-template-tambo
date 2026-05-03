@@ -32,14 +32,14 @@ export const timelineCardSchema = z.object({
 export type TimelineCardProps = z.infer<typeof timelineCardSchema>;
 
 const C = {
-  bg: "#FAFAF7",
+  bg: "#FFFFFF",
   surface: "#FFFFFF",
-  border: "rgba(15,23,42,0.08)",
-  accent: "#B0593A",
-  accentDim: "rgba(176,89,58,0.65)",
-  text: "#1F2937",
+  border: "rgba(0,0,0,0.08)",
+  accent: "#7C3AED",
+  accentDim: "rgba(124,58,237,0.65)",
+  text: "#111827",
   muted: "#6B7280",
-  tag: "rgba(176,89,58,0.10)",
+  tag: "rgba(124,58,237,0.10)",
 };
 
 export const TimelineCard = React.forwardRef<HTMLDivElement, TimelineCardProps>(

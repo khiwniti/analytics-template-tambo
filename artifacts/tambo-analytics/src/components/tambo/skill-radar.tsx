@@ -37,16 +37,16 @@ export const skillRadarSchema = z.object({
 export type SkillRadarProps = z.infer<typeof skillRadarSchema>;
 
 const C = {
-  bg: "#FAFAF7",
+  bg: "#FFFFFF",
   surface: "#FFFFFF",
-  border: "rgba(15,23,42,0.08)",
-  accent: "#B0593A",
-  accentDim: "rgba(176,89,58,0.65)",
-  accentFill: "rgba(176,89,58,0.18)",
-  accentBg: "rgba(176,89,58,0.06)",
-  text: "#1F2937",
+  border: "rgba(0,0,0,0.08)",
+  accent: "#7C3AED",
+  accentDim: "rgba(124,58,237,0.65)",
+  accentFill: "rgba(124,58,237,0.18)",
+  accentBg: "rgba(124,58,237,0.06)",
+  text: "#111827",
   muted: "#6B7280",
-  grid: "rgba(15,23,42,0.10)",
+  grid: "rgba(0,0,0,0.08)",
 };
 
 export const SkillRadar = React.forwardRef<HTMLDivElement, SkillRadarProps>(

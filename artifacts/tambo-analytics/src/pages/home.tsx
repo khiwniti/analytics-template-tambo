@@ -18,13 +18,14 @@ function formatUpdatedAt(iso: string): string {
 }
 
 const C = {
-  primary: "#FAFAF7", surface: "#FFFFFF", surfaceHover: "#F5F2EC",
-  border: "rgba(15,23,42,0.08)", borderHover: "rgba(176,89,58,0.45)",
-  accent: "#B0593A", accentDim: "rgba(176,89,58,0.65)", accentBg: "rgba(176,89,58,0.08)",
-  secondary: "#475569",
-  textBright: "#1F2937", text: "#374151", muted: "#6B7280", faint: "#9CA3AF", ghost: "#6B7280",
-  skelBase: "rgba(15,23,42,0.06)", skelShine: "rgba(15,23,42,0.10)",
-  paperShadow: "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06)",
+  primary: "#FFFFFF", surface: "#FFFFFF", surfaceHover: "#F5F3FF",
+  border: "rgba(0,0,0,0.08)", borderHover: "rgba(124,58,237,0.45)",
+  accent: "#7C3AED", accentDim: "rgba(124,58,237,0.65)", accentBg: "rgba(124,58,237,0.08)",
+  secondary: "#6D28D9",
+  textBright: "#111827", text: "#374151", muted: "#6B7280", faint: "#9CA3AF", ghost: "#6B7280",
+  skelBase: "rgba(0,0,0,0.06)", skelShine: "rgba(0,0,0,0.10)",
+  paperShadow: "0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(124,58,237,0.08)",
+  gradientText: "linear-gradient(135deg, #7C3AED, #EC4899)",
 };
 const F = { sans: "'Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','Geist Mono',monospace", thai: "'Sarabun','Noto Sans Thai',sans-serif" };
 
@@ -399,7 +400,7 @@ function ContactSection() {
         <div style={{ fontSize: 12, color: "#f87171", padding: "8px 12px", borderRadius: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>{errorMsg}</div>
       )}
       <button type="submit" disabled={status === "loading" || !form.name || !form.email || !form.message}
-        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "#F5F2EC", color: form.name && form.email && form.message ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
+        style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "#F5F3FF", color: form.name && form.email && form.message ? "#FFFFFF" : C.faint, fontFamily: F.mono, fontSize: 12, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
         {status === "loading" ? "Sending..." : "Send Message →"}
       </button>
     </form>
@@ -489,19 +490,31 @@ export default function HomePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box}
-        ::selection{background:rgba(176,89,58,0.18);color:#1F2937}
-        ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(15,23,42,0.18);border-radius:3px}
+        ::selection{background:rgba(124,58,237,0.18);color:#111827}
+        ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.18);border-radius:3px}
         a{color:${C.accent};text-decoration:none}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
         @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
       `}</style>
 
+      {/* ══ Gradient orb blobs ══ */}
+      <div className="orb-blob orb-purple" style={{ width: 420, height: 420, top: -80, left: -120 }} />
+      <div className="orb-blob orb-pink"   style={{ width: 360, height: 360, top: -60, right: -100 }} />
+      <div className="orb-blob orb-blue"   style={{ width: 380, height: 380, bottom: 60, left: -140 }} />
+
       {/* ══ HERO ══ */}
-      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "0 24px" }}>
-        <Reveal><div style={{ fontSize: "clamp(36px,6.5vw,64px)", fontWeight: 600, color: C.textBright, textAlign: "center", lineHeight: 1.05, fontFamily: "'Fraunces', Georgia, serif", letterSpacing: -1 }}>Hey 👋 I'm Ikkyu</div></Reveal>
+      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "0 24px", zIndex: 1 }}>
+        <Reveal>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 20 }}>
+            <span style={{ fontSize: 11, fontFamily: F.mono, letterSpacing: 2, textTransform: "uppercase", color: C.accentDim, padding: "5px 14px", borderRadius: 999, border: `1px solid rgba(124,58,237,0.25)`, background: "rgba(124,58,237,0.06)" }}>✦ Powered by AI</span>
+          </div>
+        </Reveal>
+        <Reveal delay={0.05}><div style={{ fontSize: "clamp(36px,6.5vw,64px)", fontWeight: 800, color: C.textBright, textAlign: "center", lineHeight: 1.05, fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: -1.5 }}>Hey 👋 I'm{" "}
+          <span style={{ background: C.gradientText, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Ikkyu</span>
+        </div></Reveal>
         <Reveal delay={0.1}><div style={{ marginTop: 24, textAlign: "center" }}>
-          <span style={{ background: C.accent, color: "#FFFFFF", padding: "4px 10px", borderRadius: 6, fontWeight: 700, fontSize: 15 }}>AI-Augmented</span>
-          <span style={{ color: C.text, fontSize: 17, marginLeft: 8, fontWeight: 500 }}>Full-Stack Developer</span>
+          <span style={{ background: C.gradientText, color: "#FFFFFF", padding: "5px 14px", borderRadius: 999, fontWeight: 700, fontSize: 14 }}>AI-Augmented</span>
+          <span style={{ color: C.text, fontSize: 17, marginLeft: 10, fontWeight: 500 }}>Full-Stack Developer</span>
         </div></Reveal>
         <Reveal delay={0.15}><p style={{ marginTop: 12, fontSize: 14, color: C.muted }}>AI Agent Architect</p></Reveal>
         <Reveal delay={0.2}><div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 24, fontSize: 12, color: C.muted }}>

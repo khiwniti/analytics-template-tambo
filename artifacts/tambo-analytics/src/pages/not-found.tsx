@@ -1,12 +1,12 @@
 import { Link } from "wouter";
 
 const C = {
-  primary: "#FAFAF7",
+  primary: "#FFFFFF",
   surface: "#FFFFFF",
-  border: "rgba(15,23,42,0.08)",
-  accent: "#B0593A",
-  accentDim: "rgba(176,89,58,0.65)",
-  textBright: "#1F2937",
+  border: "rgba(0,0,0,0.08)",
+  accent: "#7C3AED",
+  accentDim: "rgba(124,58,237,0.65)",
+  textBright: "#111827",
   text: "#374151",
   muted: "#6B7280",
   faint: "#9CA3AF",
