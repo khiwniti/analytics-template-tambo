@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
 import { getPortfolioProfile, projectSlug, type PortfolioProfile } from "../services/portfolio-data";
 import { SUGGESTIONS } from "../lib/suggestions";
@@ -29,19 +30,15 @@ const F = { sans: "'Quicksand',system-ui,sans-serif", mono: "'JetBrains Mono','G
 
 
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const [v, setV] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setV(true); o.disconnect(); } }, { threshold: 0.08 });
-    o.observe(el);
-    return () => o.disconnect();
-  }, []);
   return (
-    <div ref={ref} style={{ opacity: v ? 1 : 0, transform: v ? "none" : "translateY(18px)", transition: `all 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}s` }}>
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.08 }}
+      transition={{ type: "spring", stiffness: 90, damping: 18, mass: 0.7, delay }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -506,11 +503,11 @@ export default function HomePage() {
           <span style={{ background: C.accent, color: "#FFFFFF", padding: "4px 10px", borderRadius: 6, fontWeight: 700, fontSize: 15 }}>AI-Augmented</span>
           <span style={{ color: C.text, fontSize: 17, marginLeft: 8, fontWeight: 500 }}>Full-Stack Developer</span>
         </div></Reveal>
-        <Reveal delay={0.15}><p style={{ marginTop: 12, fontSize: 14, color: C.muted }}>AI Agent Architect<span style={{ color: C.accentDim, marginLeft: 2, animation: "pulse 2s infinite" }}>|</span></p></Reveal>
+        <Reveal delay={0.15}><p style={{ marginTop: 12, fontSize: 14, color: C.muted }}>AI Agent Architect</p></Reveal>
         <Reveal delay={0.2}><div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 24, fontSize: 12, color: C.muted }}>
           <span>📍 Bangkok, Thailand 🇹🇭</span><span style={{ color: C.border }}>·</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: C.surface, border: `1px solid ${C.border}`, boxShadow: C.paperShadow }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, animation: "pulse 2s infinite" }} />Available</span>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />Available</span>
         </div></Reveal>
         <Reveal delay={0.25}><div style={{ display: "flex", gap: 24, marginTop: 28 }}>
           {loading
@@ -778,7 +775,7 @@ export default function HomePage() {
                   left: 0,
                   right: 0,
                   height: 2,
-                  background: "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
+                  background: "none",
                 }}
               />
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>

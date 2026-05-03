@@ -727,7 +727,7 @@ export const ComponentsCanvas: React.FC<
               style={{
                 background: filling
                   ? "rgba(176,89,58,0.15)"
-                  : "linear-gradient(135deg, rgba(176,89,58,0.2) 0%, rgba(176,89,58,0.08) 100%)",
+                  : "rgba(176,89,58,0.10)",
                 border: "1px solid rgba(176,89,58,0.4)",
                 color: "#B0593A",
                 borderRadius: 8,
@@ -834,7 +834,7 @@ export const ComponentsCanvas: React.FC<
               onClick={handleFillPortfolio}
               disabled={filling}
               style={{
-                background: "linear-gradient(135deg, rgba(176,89,58,0.22) 0%, rgba(176,89,58,0.06) 100%)",
+                background: "rgba(176,89,58,0.10)",
                 border: "1px solid rgba(176,89,58,0.45)",
                 color: "#B0593A",
                 borderRadius: 10,

@@ -67,7 +67,7 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
             right: 0,
             height: 2,
             background:
-              "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
+              "none",
             borderRadius: "16px 16px 0 0",
           }}
         />
@@ -80,7 +80,7 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
             height: 180,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(176,89,58,0.06) 0%, transparent 70%)",
+              "none",
             pointerEvents: "none",
           }}
         />
@@ -101,7 +101,6 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
                 height: 7,
                 borderRadius: "50%",
                 background: C.accent,
-                animation: "nowPulse 2s ease-in-out infinite",
                 display: "inline-block",
               }}
             />
@@ -180,7 +179,6 @@ export const NowCard = React.forwardRef<HTMLDivElement, NowCardProps>(
           ))}
         </ul>
 
-        <style>{`@keyframes nowPulse{0%,100%{opacity:1}50%{opacity:0.35}}`}</style>
       </div>
     );
   },

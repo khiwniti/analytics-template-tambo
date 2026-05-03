@@ -479,7 +479,7 @@ function AIStatusStrip() {
           borderRadius: "50%",
           background: "#B0593A",
           flexShrink: 0,
-          animation: "tambo-pulse 1.2s ease-in-out infinite",
+          animation: "tambo-fadein 1.2s ease-in-out infinite",
         }}
       />
       <span
@@ -598,7 +598,7 @@ function BookCTA({
           borderRadius: "50%",
           background: "#B0593A",
           flexShrink: 0,
-          animation: "tambo-pulse 2s ease-in-out infinite",
+          animation: "tambo-fadein 2s ease-in-out infinite",
         }}
       />
       <button
@@ -641,10 +641,6 @@ function BookCTA({
 
 // ─── CSS keyframes (injected once) ───────────────────────────────────────────
 const CHAT_KEYFRAMES = `
-  @keyframes tambo-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.45; transform: scale(0.82); }
-  }
   @keyframes tambo-fadein {
     from { opacity: 0; transform: translateY(5px); }
     to   { opacity: 1; transform: translateY(0); }

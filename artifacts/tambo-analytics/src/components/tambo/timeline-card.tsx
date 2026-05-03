@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { z } from "zod";
 
 export const timelineCardSchema = z.object({
@@ -64,7 +65,7 @@ export const TimelineCard = React.forwardRef<HTMLDivElement, TimelineCardProps>(
             right: 0,
             height: 2,
             background:
-              "linear-gradient(90deg, transparent, rgba(176,89,58,0.7) 30%, rgba(176,89,58,0.9) 50%, rgba(176,89,58,0.7) 70%, transparent)",
+              "none",
             borderRadius: "16px 16px 0 0",
           }}
         />
@@ -78,7 +79,7 @@ export const TimelineCard = React.forwardRef<HTMLDivElement, TimelineCardProps>(
             height: 180,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(176,89,58,0.06) 0%, transparent 70%)",
+              "none",
             pointerEvents: "none",
           }}
         />
@@ -112,8 +113,12 @@ export const TimelineCard = React.forwardRef<HTMLDivElement, TimelineCardProps>(
 
         <div style={{ position: "relative" }}>
           {entries.map((entry, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ opacity: 0, x: -12 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ type: "spring", stiffness: 110, damping: 18, delay: 0.06 * i }}
               style={{
                 display: "flex",
                 gap: 16,
@@ -212,7 +217,7 @@ export const TimelineCard = React.forwardRef<HTMLDivElement, TimelineCardProps>(
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

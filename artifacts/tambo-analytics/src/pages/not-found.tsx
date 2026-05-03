@@ -62,9 +62,7 @@ export default function NotFound() {
             fontWeight: 600,
             lineHeight: 1,
             letterSpacing: "-0.04em",
-            background: `linear-gradient(135deg, ${C.accent} 0%, rgba(176,89,58,0.4) 100%)`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: C.accent,
             marginBottom: 16,
             textShadow: "none",
           }}
@@ -126,7 +124,7 @@ export default function NotFound() {
             style={{
               padding: "11px 22px",
               borderRadius: 10,
-              background: `linear-gradient(135deg, rgba(176,89,58,0.22) 0%, rgba(176,89,58,0.06) 100%)`,
+              background: "rgba(176,89,58,0.10)",
               border: `1px solid ${C.accentDim}`,
               color: C.accent,
               fontFamily: F.sans,

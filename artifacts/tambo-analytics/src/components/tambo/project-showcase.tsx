@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { z } from "zod";
 
 export const projectShowcaseSchema = z.object({
@@ -44,8 +45,13 @@ export const ProjectShowcase = React.forwardRef<
   const [hovered, setHovered] = React.useState(false);
 
   return (
-    <div
+    <motion.div
       ref={ref}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ type: "spring", stiffness: 95, damping: 18, mass: 0.7 }}
+      whileHover={{ y: -2 }}
       style={{
         background: hovered ? "rgba(176,89,58,0.05)" : "transparent",
         padding: "24px 28px",
@@ -53,7 +59,6 @@ export const ProjectShowcase = React.forwardRef<
         color: C.text,
         width: "100%",
         boxSizing: "border-box" as const,
-        transition: "background 0.25s cubic-bezier(0.22,1,0.36,1)",
         cursor: url ? "pointer" : "default",
         position: "relative",
       }}
@@ -72,8 +77,8 @@ export const ProjectShowcase = React.forwardRef<
           right: 0,
           height: 2,
           background: hovered
-            ? "linear-gradient(90deg, transparent, rgba(176,89,58,0.9) 30%, rgba(176,89,58,1) 50%, rgba(176,89,58,0.9) 70%, transparent)"
-            : "linear-gradient(90deg, transparent, rgba(176,89,58,0.5) 30%, rgba(176,89,58,0.7) 50%, rgba(176,89,58,0.5) 70%, transparent)",
+            ? "none"
+            : "none",
           borderRadius: "16px 16px 0 0",
           transition: "opacity 0.25s",
         }}
@@ -88,7 +93,7 @@ export const ProjectShowcase = React.forwardRef<
           width: 160,
           height: 160,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(176,89,58,0.08) 0%, transparent 70%)",
+          background: "none",
           pointerEvents: "none",
         }}
       />
@@ -231,7 +236,7 @@ export const ProjectShowcase = React.forwardRef<
           ))}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 });
 
