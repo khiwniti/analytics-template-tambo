@@ -24,6 +24,12 @@ A Tambo AI analytics template. Ported from Next.js to Vite + React.
 
 - **Home page** (`/`): Ikkyu's personal portfolio (khiw.dev design). Dark theme with hero, stats, tech pills, scroll-reveal sections (About, Career, Projects, Domains, Skills, Side Projects, Contact). Features AI chat starter with suggestion chips + contact form that saves to the DB. Nav buttons: About / Projects / Skills / Contact. Source: `artifacts/tambo-analytics/src/pages/home.tsx`
 - **Chat page** (`/chat`): Full Tambo AI chat + drag-and-drop analytics canvas. Auto-submits pending message stored in sessionStorage (from home page). TamboProvider configured with portfolio tools, contextHelpers, and systemContext resource. Source: `artifacts/tambo-analytics/src/pages/chat.tsx`
+  - **AI Status Strip**: slim frosted pill above input showing real-time tool call / component generation status (e.g. "Reading profile", "Building resume…") with pulsing emerald dot
+  - **Follow-up Chips**: context-aware suggestion pills after each AI response, derived from the last canvas component type (ResumeCard → role/project chips, ProjectShowcase → outcome/contact chips, etc.)
+  - **"Get in touch" CTA**: floating pill left of FAB that appears after 2+ user turns or hiring keywords detected; adds ContactForm to canvas on click
+  - **Smart thread titles**: localStorage-based title derived from first user message; displayed in thread sidebar instead of raw ID; searchable
+  - **Keyboard polish**: Escape closes panel + returns focus to FAB; auto-focus on open; `visualViewport` resize listener keeps panel above mobile keyboard
+  - **Thread title storage**: `src/lib/thread-titles.ts` — shared by chat.tsx and thread-history.tsx
 - **Canvas**: Dot-grid background (`rgba(52,211,153,0.28)` dots on dark). Components pop in with animation (Task #20).
 - **AI Components** (registered in `src/lib/tambo.ts`):
   - `ResumeCard` — tailored resume with PDF export. Canvas-safe.

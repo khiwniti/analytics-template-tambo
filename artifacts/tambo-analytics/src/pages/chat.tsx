@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useMcpServers } from "@/components/tambo/mcp-config-modal";
 import {
   MessageInput,
@@ -24,6 +24,13 @@ import { TamboProvider, useTambo, useTamboThreadInput } from "@tambo-ai/react";
 import { TamboMcpProvider } from "@tambo-ai/react/mcp";
 import { buildPortfolioContextText } from "@/services/portfolio-data";
 import { SUGGESTIONS } from "@/lib/suggestions";
+import { getToolUseBlocks } from "@/components/tambo/message";
+import {
+  getThreadTitles,
+  setThreadTitle,
+  deriveTitle,
+  THREAD_TITLE_EVENT,
+} from "@/lib/thread-titles";
 import type { ListResourceItem } from "@tambo-ai/react";
 import { useParams } from "wouter";
 
@@ -261,18 +268,370 @@ function CanvasWelcomeOverlay({
   );
 }
 
+// ─── Extract plain text from TamboThreadMessage content ─────────────────────
+function getTextFromContent(content: unknown): string {
+  if (!content) return "";
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return (content as Array<{ type?: string; text?: string }>)
+    .filter((c) => c?.type === "text" && typeof c.text === "string")
+    .map((c) => c.text ?? "")
+    .join(" ");
+}
+
+// ─── AI Status ───────────────────────────────────────────────────────────────
+const TOOL_LABELS: Record<string, string> = {
+  getPortfolioProfile: "Reading profile",
+  getProjectDetails: "Fetching project",
+};
+const COMPONENT_LABELS: Record<string, string> = {
+  ResumeCard: "Building resume",
+  ProjectShowcase: "Creating project card",
+  Graph: "Drawing chart",
+  SkillRadar: "Mapping skills",
+  TimelineCard: "Building timeline",
+  StatCard: "Compiling stats",
+  SelectForm: "Preparing choices",
+  ContactForm: "Opening contact form",
+  NowCard: "Loading focus",
+  TestimonialCard: "Finding recommendation",
+};
+
+function useAIStatus(): { label: string; active: boolean } {
+  const { messages } = useTambo();
+  const streamingType = useCanvasStore((s) => {
+    for (const canvas of s.canvases) {
+      for (const comp of canvas.components) {
+        if (comp._isStreaming) return comp._componentType ?? "";
+      }
+    }
+    return "";
+  });
+  const lastAssistant = useMemo(
+    () => [...messages].reverse().find((m) => m.role === "assistant"),
+    [messages],
+  );
+  if (lastAssistant) {
+    const toolBlocks = getToolUseBlocks(lastAssistant);
+    const activeTool = toolBlocks.find((t) => !t.hasCompleted);
+    if (activeTool) {
+      const label =
+        TOOL_LABELS[activeTool.name ?? ""] ??
+        activeTool.statusMessage ??
+        `Calling ${activeTool.name ?? "tool"}`;
+      return { label, active: true };
+    }
+  }
+  if (streamingType) {
+    return { label: COMPONENT_LABELS[streamingType] ?? "Generating…", active: true };
+  }
+  return { label: "", active: false };
+}
+
+// ─── Follow-up Chips ─────────────────────────────────────────────────────────
+const CHIP_MAP: Record<string, string[]> = {
+  ResumeCard: ["What roles are you targeting?", "Show me your top project", "How can I reach you?"],
+  ProjectShowcase: ["Tell me about another project", "What were the key outcomes?", "How can I contact you?"],
+  TimelineCard: ["Show me his resume", "Tell me about his AI work", "What's his biggest achievement?"],
+  StatCard: ["Tell me more about his projects", "Show me his resume", "What's his strongest skill?"],
+  SkillRadar: ["Show a project that uses these skills", "See full resume", "Get in touch"],
+  ContactForm: ["Show me his resume", "Tell me about his projects"],
+  NowCard: ["Tell me more about his projects", "What are his skills?", "How can I contact him?"],
+  TestimonialCard: ["Show another recommendation", "See his resume", "Get in touch"],
+  Graph: ["Tell me more about this", "Show me his resume", "What projects use this?"],
+};
+
+function useFollowUpChips(): string[] {
+  const { messages } = useTambo();
+  const { active: isActive } = useAIStatus();
+  const lastSettledComponentType = useCanvasStore((s) => {
+    const active = s.canvases.find((c) => c.id === s.activeCanvasId);
+    if (!active) return "";
+    const settled = active.components.filter((c) => !c._isStreaming);
+    return settled[settled.length - 1]?._componentType ?? "";
+  });
+  return useMemo(() => {
+    if (isActive || messages.length < 2) return [];
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistant) return [];
+    const chips = CHIP_MAP[lastSettledComponentType];
+    if (chips && chips.length > 0) return chips.slice(0, 3);
+    return ["Show me his resume", "What projects has he built?", "What's he working on now?"];
+  }, [messages, isActive, lastSettledComponentType]);
+}
+
+// ─── Hiring-signal detector ───────────────────────────────────────────────────
+function useHiringSignal(): boolean {
+  const { messages } = useTambo();
+  return useMemo(() => {
+    const userMsgs = messages.filter((m) => m.role === "user");
+    if (userMsgs.length < 2) return false;
+    if (userMsgs.length >= 3) return true;
+    const text = userMsgs
+      .map((m) => getTextFromContent(m.content))
+      .join(" ")
+      .toLowerCase();
+    return /hire|recrui|role|position|job|contact|reach|connect|interview/.test(text);
+  }, [messages]);
+}
+
+// ─── Thread title auto-save ───────────────────────────────────────────────────
+function ThreadTitleAutoSave() {
+  const { messages, currentThreadId } = useTambo();
+  const saved = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!currentThreadId || saved.current.has(currentThreadId)) return;
+    if (messages.length < 2) return;
+    const firstUser = messages.find((m) => m.role === "user");
+    if (!firstUser) return;
+    const text = getTextFromContent(firstUser.content);
+    const title = deriveTitle(text);
+    if (title) {
+      setThreadTitle(currentThreadId, title);
+      saved.current.add(currentThreadId);
+      window.dispatchEvent(
+        new CustomEvent(THREAD_TITLE_EVENT, {
+          detail: { threadId: currentThreadId, title },
+        }),
+      );
+    }
+  }, [messages, currentThreadId]);
+
+  return null;
+}
+
+// ─── AIStatusStrip component ──────────────────────────────────────────────────
+function AIStatusStrip() {
+  const { label, active } = useAIStatus();
+  if (!active) return null;
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "4px 10px",
+        marginBottom: 4,
+        background: "rgba(13,17,23,0.72)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: "1px solid rgba(52,211,153,0.22)",
+        borderRadius: 999,
+        alignSelf: "flex-start",
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: "#34D399",
+          flexShrink: 0,
+          animation: "tambo-pulse 1.2s ease-in-out infinite",
+        }}
+      />
+      <span
+        style={{
+          fontSize: 11,
+          fontFamily: "JetBrains Mono, monospace",
+          color: "rgba(52,211,153,0.9)",
+          letterSpacing: "0.03em",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// ─── FollowUpChips component ──────────────────────────────────────────────────
+function FollowUpChips({ onChipClick }: { onChipClick: (text: string) => void }) {
+  const chips = useFollowUpChips();
+  if (chips.length === 0) return null;
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 5,
+        flexWrap: "nowrap",
+        overflowX: "auto",
+        paddingBottom: 2,
+        marginBottom: 4,
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      }}
+    >
+      {chips.map((chip) => (
+        <button
+          key={chip}
+          onClick={() => onChipClick(chip)}
+          style={{
+            flexShrink: 0,
+            padding: "4px 10px",
+            borderRadius: 999,
+            border: "1px solid rgba(52,211,153,0.22)",
+            background: "rgba(52,211,153,0.06)",
+            color: "rgba(52,211,153,0.88)",
+            fontFamily: "Quicksand, sans-serif",
+            fontSize: 11,
+            fontWeight: 500,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            transition: "background 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "rgba(52,211,153,0.14)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "rgba(52,211,153,0.06)";
+          }}
+        >
+          {chip}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── "Get in touch" floating CTA ──────────────────────────────────────────────
+function BookCTA({
+  onActivate,
+  isMobile,
+}: {
+  onActivate: () => void;
+  isMobile: boolean;
+}) {
+  const show = useHiringSignal();
+  const [dismissed, setDismissed] = useState(false);
+  if (!show || dismissed) return null;
+
+  const bottom = isMobile
+    ? "calc(76px + env(safe-area-inset-bottom, 0px))"
+    : 144;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom,
+        right: isMobile ? 74 : 80,
+        zIndex: 52,
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "6px 10px 6px 8px",
+        background: "rgba(13,17,23,0.9)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1px solid rgba(52,211,153,0.38)",
+        borderRadius: 999,
+        boxShadow:
+          "0 4px 18px rgba(0,0,0,0.45), 0 0 0 1px rgba(52,211,153,0.07)",
+        animation: "tambo-fadein 0.4s ease",
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: "#34D399",
+          flexShrink: 0,
+          animation: "tambo-pulse 2s ease-in-out infinite",
+        }}
+      />
+      <button
+        onClick={onActivate}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#34D399",
+          fontFamily: "Quicksand, sans-serif",
+          fontSize: 12,
+          fontWeight: 600,
+          cursor: "pointer",
+          padding: 0,
+          whiteSpace: "nowrap",
+        }}
+      >
+        Get in touch
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setDismissed(true);
+        }}
+        aria-label="Dismiss"
+        style={{
+          background: "none",
+          border: "none",
+          color: "rgba(148,163,184,0.55)",
+          cursor: "pointer",
+          fontSize: 12,
+          padding: "0 0 0 2px",
+          lineHeight: 1,
+        }}
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+// ─── CSS keyframes (injected once) ───────────────────────────────────────────
+const CHAT_KEYFRAMES = `
+  @keyframes tambo-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.82); }
+  }
+  @keyframes tambo-fadein {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+function focusChatInput(delay = 60) {
+  setTimeout(() => {
+    const wrapper = document.querySelector(
+      '[data-slot="message-input-textarea"]',
+    ) as HTMLElement | null;
+    const editable = wrapper?.querySelector(
+      '[contenteditable="true"]',
+    ) as HTMLElement | null;
+    editable?.focus();
+  }, delay);
+}
+
 function ChatWidget() {
   const { containerRef } = useThreadContainerContext();
   const { setValue, submit } = useTamboThreadInput();
+  const { addComponent, activeCanvasId } = useCanvasStore();
   const isMobile = useIsMobile();
+  const fabRef = useRef<HTMLButtonElement>(null);
+
   // Lazy initializer — open immediately if there's a pending message
   const [open, setOpen] = useState(() => !!sessionStorage.getItem(PENDING_KEY));
   // Track whether a pending auto-submit is in flight so the welcome overlay
   // hides before the message arrives. Owned here (not in the overlay) so
   // same-tab state changes propagate via React instead of the storage event.
   const [isPending, setIsPending] = useState(
-    () => !!sessionStorage.getItem(PENDING_KEY)
+    () => !!sessionStorage.getItem(PENDING_KEY),
   );
+
+  // Mobile keyboard: track visualViewport height so the panel stays above keyboard
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  useEffect(() => {
+    if (!isMobile) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => setViewportHeight(vv.height);
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, [isMobile]);
 
   // React to late writes (async deep-links like SharedProjectImporter)
   // so the chat panel pops open + welcome overlay hides without waiting
@@ -288,12 +647,16 @@ function ChatWidget() {
     return () => window.removeEventListener(PENDING_EVENT, handler);
   }, []);
 
+  // Auto-focus input when panel opens
+  useEffect(() => {
+    if (open) focusChatInput(80);
+  }, [open]);
+
   // Open the chat, set the chip text, and submit
   const handleChipSubmit = async (text: string) => {
     setOpen(true);
     try {
       setValue(text);
-      // Wait a frame for the panel to mount before submit
       await new Promise((r) => setTimeout(r, 80));
       await submit();
     } catch {
@@ -301,59 +664,84 @@ function ChatWidget() {
     }
   };
 
-  // Global keyboard shortcut: Cmd/Ctrl+K or "/" focuses the chat input
+  // "Get in touch" CTA handler — add ContactForm to canvas then open chat
+  const handleBookCTA = () => {
+    if (activeCanvasId) {
+      addComponent(activeCanvasId, {
+        componentId: generateId(),
+        _componentType: "ContactForm",
+      } as CanvasComponent);
+    }
+    setOpen(true);
+    focusChatInput(120);
+  };
+
+  // Global keyboard shortcuts: Cmd/Ctrl+K, "/" → open & focus; Escape → close
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const tag = target?.tagName;
       const isTyping =
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        target?.isContentEditable;
+        tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable;
 
       const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k";
       const isSlash = e.key === "/" && !isTyping;
+      const isEscape = e.key === "Escape";
+
+      if (isEscape && open) {
+        e.preventDefault();
+        setOpen(false);
+        setTimeout(() => fabRef.current?.focus(), 50);
+        return;
+      }
 
       if (!isCmdK && !isSlash) return;
-
       e.preventDefault();
       setOpen(true);
-
-      // Wait for the panel to mount/transition, then focus the editable area
-      setTimeout(() => {
-        const wrapper = document.querySelector(
-          '[data-slot="message-input-textarea"]'
-        ) as HTMLElement | null;
-        const editable =
-          wrapper?.querySelector('[contenteditable="true"]') as HTMLElement | null;
-        editable?.focus();
-      }, 60);
+      focusChatInput();
     };
 
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, []);
+    window.addEventListener("keydown", handleKey, { capture: true });
+    return () => window.removeEventListener("keydown", handleKey, { capture: true });
+  }, [open]);
 
   // Sizing: full-width sheet on mobile, fixed widget on desktop
   const panelWidth = isMobile ? "calc(100vw - 16px)" : 340;
-  const panelHeight = isMobile ? "min(72vh, 520px)" : 420;
   const panelRight = isMobile ? 8 : 16;
   const closedBottom = isMobile ? "-100vh" : -700;
-  const openBottom = isMobile
-    ? "calc(80px + env(safe-area-inset-bottom, 0px))"
-    : 148;
   const fabBottom = isMobile
     ? "calc(16px + env(safe-area-inset-bottom, 0px))"
     : 84;
 
+  // On mobile with keyboard open, anchor the panel just above the keyboard
+  const mobileOpenBottom =
+    isMobile && viewportHeight != null
+      ? `${window.innerHeight - viewportHeight + 8}px`
+      : "calc(80px + env(safe-area-inset-bottom, 0px))";
+
+  const openBottom = isMobile ? mobileOpenBottom : 148;
+
+  // Panel height: shrink on mobile when keyboard is up so it doesn't overflow
+  const panelHeight =
+    isMobile && viewportHeight != null
+      ? Math.min(viewportHeight - 60, 520)
+      : isMobile
+        ? "min(72vh, 520px)"
+        : 420;
+
   return (
     <>
+      <style>{CHAT_KEYFRAMES}</style>
+
       {/* Page-level welcome overlay (only when thread is empty + not pending) */}
       <CanvasWelcomeOverlay
         onChipClick={handleChipSubmit}
         isMobile={isMobile}
         isPending={isPending}
       />
+
+      {/* "Get in touch" floating CTA */}
+      <BookCTA onActivate={handleBookCTA} isMobile={isMobile} />
 
       {/* ── Headless transparent chat panel ── */}
       <div
@@ -379,7 +767,13 @@ function ChatWidget() {
           ref={containerRef}
           disableSidebarSpacing
           className="!bg-transparent !border-0 !shadow-none"
-          style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "transparent" }}
+          style={{
+            flex: 1,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            background: "transparent",
+          }}
         >
           <AutoSubmitPendingMessage
             onAutoSubmit={() => {
@@ -387,19 +781,36 @@ function ChatWidget() {
               setIsPending(false);
             }}
           />
+          <ThreadTitleAutoSave />
 
           {/* Scrollable messages — transparent, bubbles float over canvas */}
           <ScrollableMessageContainer
             className="!bg-transparent"
-            style={{ flex: 1, padding: "8px 4px", overflowY: "auto", background: "transparent" }}
+            style={{
+              flex: 1,
+              padding: "8px 4px",
+              overflowY: "auto",
+              background: "transparent",
+            }}
           >
             <ThreadContent>
               <ThreadContentMessages />
             </ThreadContent>
           </ScrollableMessageContainer>
 
-          {/* Floating pill input at the bottom of messages */}
-          <div style={{ flexShrink: 0, paddingTop: 8, paddingBottom: 4 }}>
+          {/* Status strip + follow-up chips + input pill */}
+          <div style={{ flexShrink: 0, paddingTop: 4, paddingBottom: 4 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0,
+                paddingBottom: 4,
+              }}
+            >
+              <AIStatusStrip />
+              <FollowUpChips onChipClick={handleChipSubmit} />
+            </div>
             <MessageInput>
               <div
                 style={{
@@ -412,11 +823,12 @@ function ChatWidget() {
                   border: "1px solid rgba(52,211,153,0.25)",
                   borderRadius: 24,
                   padding: "8px 10px 8px 16px",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.08)",
+                  boxShadow:
+                    "0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.08)",
                 }}
               >
                 <MessageInputTextarea
-                  placeholder="Ask anything about Ikkyu... (press / or ⌘K)"
+                  placeholder="Ask anything about Ikkyu... (/ or ⌘K)"
                   style={{
                     flex: 1,
                     minHeight: 20,
@@ -441,6 +853,7 @@ function ChatWidget() {
 
       {/* ── Toggle FAB — sits above the ComponentsCanvas "Clear Canvas" button ── */}
       <button
+        ref={fabRef}
         onClick={() => setOpen((o) => !o)}
         style={{
           position: "fixed",
@@ -463,15 +876,13 @@ function ChatWidget() {
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow =
-            "0 6px 28px hsl(var(--primary) / 0.7)";
+          e.currentTarget.style.boxShadow = "0 6px 28px hsl(var(--primary) / 0.7)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow =
-            "0 4px 20px hsl(var(--primary) / 0.5)";
+          e.currentTarget.style.boxShadow = "0 4px 20px hsl(var(--primary) / 0.5)";
         }}
-        title={open ? "Close chat" : "Chat with Ikkyu's AI (press / or ⌘K)"}
+        title={open ? "Close chat (Esc)" : "Chat with Ikkyu's AI (press / or ⌘K)"}
       >
         {open ? "✕" : "💬"}
       </button>

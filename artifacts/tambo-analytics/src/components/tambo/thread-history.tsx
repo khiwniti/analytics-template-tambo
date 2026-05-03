@@ -1,6 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import {
+  getThreadTitles,
+  THREAD_TITLE_EVENT,
+} from "@/lib/thread-titles";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   type ThreadListResponse,
@@ -16,6 +20,18 @@ import {
   SearchIcon,
 } from "lucide-react";
 import React, { useMemo } from "react";
+
+function useThreadTitleMap(): Record<string, string> {
+  const [titles, setTitles] = React.useState<Record<string, string>>(
+    () => getThreadTitles(),
+  );
+  React.useEffect(() => {
+    const handler = () => setTitles(getThreadTitles());
+    window.addEventListener(THREAD_TITLE_EVENT, handler);
+    return () => window.removeEventListener(THREAD_TITLE_EVENT, handler);
+  }, []);
+  return titles;
+}
 
 /** Thread item from the thread list API */
 type ThreadListItem = ThreadListResponse["threads"][number];
@@ -357,6 +373,8 @@ const ThreadHistoryList = React.forwardRef<
     onThreadChange,
   } = useThreadHistoryContext();
 
+  const titleMap = useThreadTitleMap();
+
   const [hasMounted, setHasMounted] = React.useState(false);
   const [editingThread, setEditingThread] =
     React.useState<ThreadListItem | null>(null);
@@ -404,17 +422,17 @@ const ThreadHistoryList = React.forwardRef<
 
   // Filter threads based on search query
   const filteredThreads = useMemo(() => {
-    // While collapsed we do not need the list, avoid extra work.
     if (isCollapsed) return [];
-
     if (!threads?.threads) return [];
-
     const query = searchQuery.toLowerCase();
     return threads.threads.filter((thread: ThreadListItem) => {
-      const idMatches = thread.id.toLowerCase().includes(query);
-      return idMatches;
+      const title = titleMap[thread.id] ?? "";
+      return (
+        thread.id.toLowerCase().includes(query) ||
+        title.toLowerCase().includes(query)
+      );
     });
-  }, [isCollapsed, threads, searchQuery]);
+  }, [isCollapsed, threads, searchQuery, titleMap]);
 
   const handleSwitchThread = async (threadId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -519,7 +537,7 @@ const ThreadHistoryList = React.forwardRef<
               ) : (
                 <>
                   <span className="font-medium line-clamp-1">
-                    {`Thread ${thread.id.substring(0, 8)}`}
+                    {titleMap[thread.id] ?? `Thread ${thread.id.substring(0, 8)}`}
                   </span>
                   <p className="text-xs text-muted-foreground truncate mt-1">
                     {new Date(thread.createdAt).toLocaleString(undefined, {
