@@ -238,11 +238,8 @@ function BuildingInPublicSection() {
                 </div>
               )
               : data!.items.map((it, i) => (
-                <a
+                <div
                   key={i}
-                  href={it.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   style={{
                     display: "flex",
                     gap: 12,
@@ -250,7 +247,6 @@ function BuildingInPublicSection() {
                     borderRadius: 10,
                     background: C.surface,
                     border: `1px solid ${C.border}`,
-                    textDecoration: "none",
                     color: C.text,
                     transition: "all 0.2s",
                   }}
@@ -276,16 +272,30 @@ function BuildingInPublicSection() {
                     {typeBadge(it.type)}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.5, marginBottom: 4 }}>
+                    <a
+                      href={it.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: 12, color: C.text, lineHeight: 1.5, marginBottom: 4, display: "block", textDecoration: "none" }}
+                    >
                       {it.message}
-                    </div>
+                    </a>
                     <div style={{ fontSize: 10, fontFamily: F.mono, color: C.muted, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ color: C.accentDim }}>{it.repo}</span>
+                      <a
+                        href={`https://github.com/${it.repo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: C.accentDim, textDecoration: "none" }}
+                        onMouseEnter={e => { e.currentTarget.style.color = C.accent; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = C.accentDim; }}
+                      >
+                        {it.repo}
+                      </a>
                       <span>·</span>
                       <span>{timeAgo(it.createdAt)}</span>
                     </div>
                   </div>
-                </a>
+                </div>
               ))
           }
         </div>
