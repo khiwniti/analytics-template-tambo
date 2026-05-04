@@ -65,6 +65,36 @@ export interface CanvasState {
 export const generateId = () =>
   `id-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
+/**
+ * Identity key used to detect duplicate components inside a canvas.
+ * The AI sometimes generates the same logical card twice with different
+ * componentIds, which used to slip through the componentId check.
+ *
+ * Singletons (StatCard, SkillRadar, TimelineCard) are keyed by type alone —
+ * only one per canvas. ProjectShowcase is keyed by projectName and ResumeCard
+ * by targetRole so legitimately distinct variants are still allowed. All
+ * other / unknown component types fall through to a per-instance key so they
+ * are NOT deduped (componentId remains the only collision check).
+ */
+const SINGLETON_TYPES = new Set(["StatCard", "SkillRadar", "TimelineCard"]);
+
+export const getDedupeKey = (c: CanvasComponent): string => {
+  const t = c._componentType;
+  if (t === "ProjectShowcase") {
+    const name = typeof c.projectName === "string" ? c.projectName.trim().toLowerCase() : "";
+    return `ProjectShowcase:${name}`;
+  }
+  if (t === "ResumeCard") {
+    const role = typeof c.targetRole === "string" ? c.targetRole.trim().toLowerCase() : "";
+    return `ResumeCard:${role}`;
+  }
+  if (SINGLETON_TYPES.has(t)) {
+    return t;
+  }
+  // Unknown / future types: never collide via this key (componentId still checked).
+  return `__nodedupe__:${c.componentId || Math.random()}`;
+};
+
 // Create the store with persistence
 export const useCanvasStore = create<CanvasState>()(
   persist(
@@ -214,14 +244,19 @@ export const useCanvasStore = create<CanvasState>()(
 
         // Update state
         set((state) => {
-          // Check if component already exists
+          // Check if component already exists (by id OR by type-based dedupe key)
           const targetCanvas = state.canvases.find((c) => c.id === canvasId);
+          const incomingKey = getDedupeKey({ ...componentProps, componentId });
           if (
             targetCanvas &&
-            targetCanvas.components.some((c) => c.componentId === componentId)
+            targetCanvas.components.some(
+              (c) =>
+                c.componentId === componentId ||
+                getDedupeKey(c) === incomingKey,
+            )
           ) {
             console.log(
-              `[CANVAS] Component ${componentId} already exists in canvas ${canvasId}`,
+              `[CANVAS] Skipping duplicate ${componentProps._componentType} (${incomingKey}) in canvas ${canvasId}`,
             );
             // Remove operation from pending after 100ms
             setTimeout(() => {
@@ -332,6 +367,18 @@ export const useCanvasStore = create<CanvasState>()(
         pendingOps.add(operationKey);
         set({ pendingOperations: new Set(pendingOps) });
 
+        // Always clear the pending op after this call returns, regardless of
+        // which branch was taken inside set(). Without this, an early return
+        // (missing source/component/target, or duplicate-detected) would leave
+        // the operationKey wedged in pendingOperations forever, blocking all
+        // subsequent identical moves.
+        const clearPending = () =>
+          setTimeout(() => {
+            const ops = get().pendingOperations;
+            ops.delete(operationKey);
+            set({ pendingOperations: new Set(ops) });
+          }, 100);
+
         let movedComponent: CanvasComponent | null = null;
 
         set((state) => {
@@ -346,16 +393,21 @@ export const useCanvasStore = create<CanvasState>()(
           );
           if (!component) return state;
 
-          // Check if component already exists in target
+          // Check if component already exists in target (by id OR by dedupe key)
           const targetCanvas = state.canvases.find(
             (c) => c.id === targetCanvasId,
           );
+          const incomingKey = getDedupeKey(component);
           if (
             targetCanvas &&
-            targetCanvas.components.some((c) => c.componentId === componentId)
+            targetCanvas.components.some(
+              (c) =>
+                c.componentId === componentId ||
+                getDedupeKey(c) === incomingKey,
+            )
           ) {
             console.log(
-              `[CANVAS] Component ${componentId} already exists in target canvas ${targetCanvasId}`,
+              `[CANVAS] Skipping duplicate move of ${component._componentType} (${incomingKey}) into canvas ${targetCanvasId}`,
             );
             return state;
           }
@@ -385,16 +437,10 @@ export const useCanvasStore = create<CanvasState>()(
             return c;
           });
 
-          // Remove operation from pending after 100ms
-          setTimeout(() => {
-            const ops = get().pendingOperations;
-            ops.delete(operationKey);
-            set({ pendingOperations: new Set(ops) });
-          }, 100);
-
           return { canvases: updatedCanvases };
         });
 
+        clearPending();
         return movedComponent;
       },
 

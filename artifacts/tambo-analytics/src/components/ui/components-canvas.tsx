@@ -524,7 +524,7 @@ export const ComponentsCanvas: React.FC<
             ? { duration: 0.2, ease: "easeIn" }
             : { type: "spring", stiffness: 110, damping: 18, mass: 0.7, delay: isNew ? 0.06 * index : 0 }
         }
-        whileHover={{ y: -3, boxShadow: "0 4px 12px rgba(15,23,42,0.06), 0 20px 48px rgba(15,23,42,0.10)" }}
+        whileHover={{ scale: 1.015 }}
         style={{ width: "100%", display: "block" }}
       >
         {/* Delete button outside the sortable area — hidden in read-only snapshots */}
@@ -548,11 +548,10 @@ export const ComponentsCanvas: React.FC<
             // Fade real content in after streaming resolves
             opacity: componentProps._isStreaming ? 1 : contentVisible ? 1 : 0,
             transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
-            // ── Floating card — components define their own surface; wrapper just floats them ──
-            background: "rgba(255,255,255,0.97)",
+            // ── Free-floating: no wrapper chrome. Components define their own surface ──
+            background: "transparent",
             borderRadius: 20,
             overflow: "hidden",
-            boxShadow: "0 2px 8px rgba(15,23,42,0.04), 0 12px 32px rgba(15,23,42,0.07)",
           }}
           {...(activeIsReadOnly ? {} : attributes)}
           {...(activeIsReadOnly ? {} : listeners)}
@@ -877,26 +876,40 @@ export const ComponentsCanvas: React.FC<
             >
               <div
                 style={{
-                  columns: "2 300px",
-                  columnGap: 20,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                  gridAutoRows: "min-content",
+                  gridAutoFlow: "dense",
+                  alignItems: "start",
+                  gap: 16,
                 }}
               >
-                {activeCanvas.components.map((c, i) => (
-                  <div
-                    key={c.componentId}
-                    style={{
-                      breakInside: "avoid",
-                      marginBottom: 20,
-                      display: "block",
-                    }}
-                  >
-                    <SortableItem
-                      componentProps={c}
-                      isNew={!seenComponentIds.current.has(c.componentId)}
-                      index={i}
-                    />
-                  </div>
-                ))}
+                {activeCanvas.components.map((c, i) => {
+                  // Per-type column span: compact cards take 2, wide content (resume) spans the row.
+                  const t = c._componentType;
+                  const span =
+                    t === "ResumeCard"
+                      ? 4
+                      : t === "ProjectShowcase" || t === "TimelineCard"
+                        ? 2
+                        : 2;
+                  return (
+                    <div
+                      key={c.componentId}
+                      style={{
+                        gridColumn: `span ${span}`,
+                        display: "block",
+                        alignSelf: "start",
+                      }}
+                    >
+                      <SortableItem
+                        componentProps={c}
+                        isNew={!seenComponentIds.current.has(c.componentId)}
+                        index={i}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </SortableContext>
           </DndContext>
