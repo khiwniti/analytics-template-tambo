@@ -513,6 +513,7 @@ export const ComponentsCanvas: React.FC<
     return (
       <motion.div
         className="relative group"
+        data-testid="canvas-card"
         initial={isNew ? { opacity: 0, y: 14 } : false}
         animate={
           removing
@@ -524,7 +525,10 @@ export const ComponentsCanvas: React.FC<
             ? { duration: 0.2, ease: "easeIn" }
             : { type: "spring", stiffness: 110, damping: 18, mass: 0.7, delay: isNew ? 0.06 * index : 0 }
         }
-        whileHover={{ scale: 1.015 }}
+        whileHover={{
+          scale: 1.025,
+          transition: { type: "spring", stiffness: 320, damping: 22 },
+        }}
         style={{ width: "100%", display: "block" }}
       >
         {/* Delete button outside the sortable area — hidden in read-only snapshots */}
@@ -885,19 +889,25 @@ export const ComponentsCanvas: React.FC<
                 }}
               >
                 {activeCanvas.components.map((c, i) => {
-                  // Per-type column span: compact cards take 2, wide content (resume) spans the row.
+                  // Per-type column span:
+                  //  • Compact (StatCard) → 1 col — tucks into gaps next to taller cards
+                  //  • SkillRadar → 2 cols — chart needs minimum width to be readable
+                  //  • ProjectShowcase / TimelineCard → 2 cols — medium content
+                  //  • ResumeCard → wide feature card (grid-column 1/-1 makes it
+                  //    fill the row regardless of how many auto-fill tracks exist;
+                  //    falls back gracefully on narrow viewports because browsers
+                  //    clamp grid spans to the number of available columns)
                   const t = c._componentType;
+                  const isFullRow = t === "ResumeCard";
                   const span =
-                    t === "ResumeCard"
-                      ? 4
-                      : t === "ProjectShowcase" || t === "TimelineCard"
-                        ? 2
-                        : 2;
+                    t === "ProjectShowcase" || t === "TimelineCard" || t === "SkillRadar"
+                      ? 2
+                      : 1;
                   return (
                     <div
                       key={c.componentId}
                       style={{
-                        gridColumn: `span ${span}`,
+                        gridColumn: isFullRow ? "1 / -1" : `span ${span}`,
                         display: "block",
                         alignSelf: "start",
                       }}

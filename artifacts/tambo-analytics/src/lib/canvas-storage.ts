@@ -70,29 +70,23 @@ export const generateId = () =>
  * The AI sometimes generates the same logical card twice with different
  * componentIds, which used to slip through the componentId check.
  *
- * Singletons (StatCard, SkillRadar, TimelineCard) are keyed by type alone —
- * only one per canvas. ProjectShowcase is keyed by projectName and ResumeCard
- * by targetRole so legitimately distinct variants are still allowed. All
- * other / unknown component types fall through to a per-instance key so they
- * are NOT deduped (componentId remains the only collision check).
+ * Rule: every component type is a singleton per canvas (keyed by
+ * `_componentType`) EXCEPT ProjectShowcase, which is keyed by
+ * `_componentType + projectName` so multiple distinct projects coexist.
+ * This means a second StatCard / SkillRadar / TimelineCard / ResumeCard
+ * is rejected as a duplicate even when its props differ.
  */
-const SINGLETON_TYPES = new Set(["StatCard", "SkillRadar", "TimelineCard"]);
-
 export const getDedupeKey = (c: CanvasComponent): string => {
   const t = c._componentType;
   if (t === "ProjectShowcase") {
     const name = typeof c.projectName === "string" ? c.projectName.trim().toLowerCase() : "";
-    return `ProjectShowcase:${name}`;
+    // If projectName is missing/blank, fall back to a per-instance key so
+    // multiple unnamed projects aren't collapsed into a single bucket.
+    return name
+      ? `ProjectShowcase:${name}`
+      : `ProjectShowcase:__unnamed__:${c.componentId || Math.random()}`;
   }
-  if (t === "ResumeCard") {
-    const role = typeof c.targetRole === "string" ? c.targetRole.trim().toLowerCase() : "";
-    return `ResumeCard:${role}`;
-  }
-  if (SINGLETON_TYPES.has(t)) {
-    return t;
-  }
-  // Unknown / future types: never collide via this key (componentId still checked).
-  return `__nodedupe__:${c.componentId || Math.random()}`;
+  return t;
 };
 
 // Create the store with persistence
