@@ -524,8 +524,8 @@ export const ComponentsCanvas: React.FC<
             ? { duration: 0.2, ease: "easeIn" }
             : { type: "spring", stiffness: 110, damping: 18, mass: 0.7, delay: isNew ? 0.06 * index : 0 }
         }
-        whileHover={{ y: -2 }}
-        style={{ width: "100%" }}
+        whileHover={{ y: -3, boxShadow: "0 4px 12px rgba(15,23,42,0.06), 0 20px 48px rgba(15,23,42,0.10)" }}
+        style={{ width: "100%", display: "block" }}
       >
         {/* Delete button outside the sortable area — hidden in read-only snapshots */}
         {!activeIsReadOnly && (
@@ -548,12 +548,11 @@ export const ComponentsCanvas: React.FC<
             // Fade real content in after streaming resolves
             opacity: componentProps._isStreaming ? 1 : contentVisible ? 1 : 0,
             transition: [style.transition, "opacity 350ms ease-in"].filter(Boolean).join(", "),
-            // ── Shared canvas card surface — all card components inherit this chrome ──
-            background: "#FFFFFF",
-            border: "1px solid rgba(15,23,42,0.08)",
-            borderRadius: 16,
+            // ── Floating card — components define their own surface; wrapper just floats them ──
+            background: "rgba(255,255,255,0.97)",
+            borderRadius: 20,
             overflow: "hidden",
-            boxShadow: "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06)",
+            boxShadow: "0 2px 8px rgba(15,23,42,0.04), 0 12px 32px rgba(15,23,42,0.07)",
           }}
           {...(activeIsReadOnly ? {} : attributes)}
           {...(activeIsReadOnly ? {} : listeners)}
@@ -878,20 +877,25 @@ export const ComponentsCanvas: React.FC<
             >
               <div
                 style={{
-                  display: "grid",
-                  // Single column on narrow viewports (mobile), auto-fill grid otherwise
-                  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 320px), 1fr))",
-                  gap: 16,
-                  alignItems: "start",
+                  columns: "2 300px",
+                  columnGap: 20,
                 }}
               >
                 {activeCanvas.components.map((c, i) => (
-                  <SortableItem
+                  <div
                     key={c.componentId}
-                    componentProps={c}
-                    isNew={!seenComponentIds.current.has(c.componentId)}
-                    index={i}
-                  />
+                    style={{
+                      breakInside: "avoid",
+                      marginBottom: 20,
+                      display: "block",
+                    }}
+                  >
+                    <SortableItem
+                      componentProps={c}
+                      isNew={!seenComponentIds.current.has(c.componentId)}
+                      index={i}
+                    />
+                  </div>
                 ))}
               </div>
             </SortableContext>
