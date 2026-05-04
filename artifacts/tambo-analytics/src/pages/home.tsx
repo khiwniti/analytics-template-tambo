@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
 import { getPortfolioProfile, projectSlug, type PortfolioProfile } from "../services/portfolio-data";
 import { SUGGESTIONS } from "../lib/suggestions";
+import { translations } from "../lib/i18n";
+import { useLang, LangCtx, useLangCtx } from "../lib/useLang";
 
 /** Format an ISO date (YYYY-MM-DD) as `DD MMM YYYY` (e.g. "02 May 2026"). */
 function formatUpdatedAt(iso: string): string {
@@ -70,6 +72,7 @@ function ChatStarter() {
   const [, navigate] = useLocation();
   const [input, setInput] = useState("");
   const [focused, setFocused] = useState(false);
+  const { t } = useLangCtx();
 
   const goToChat = (message: string) => {
     const trimmed = message.trim();
@@ -81,7 +84,7 @@ function ChatStarter() {
   return (
     <div style={{ width: "100%", maxWidth: 520, marginTop: 36 }}>
       <div style={{ marginBottom: 10, fontFamily: F.sans, fontSize: 12, color: C.accentDim, letterSpacing: 3, textTransform: "uppercase", textAlign: "center" }}>
-        Ask me anything · Powered by AI
+        {t.askMeAnything}
       </div>
 
       {/* Input */}
@@ -93,7 +96,7 @@ function ChatStarter() {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={e => { if (e.key === "Enter") goToChat(input); }}
-          placeholder="Ask about my skills, projects, or experience..."
+          placeholder={t.chatPlaceholder}
           style={{
             flex: 1, background: "transparent", border: "none", outline: "none",
             color: C.textBright, fontFamily: F.sans, fontSize: 16, fontWeight: 500,
@@ -313,6 +316,7 @@ function ContactSection() {
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [focused, setFocused] = useState<string | null>(null);
+  const { t } = useLangCtx();
 
   const set = useCallback((field: keyof ContactFormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [field]: e.target.value }));
@@ -355,12 +359,12 @@ function ContactSection() {
 
   if (status === "success") {
     return (
-      <div style={{ padding: "40px 32px", borderRadius: 16, background: C.accentBg, border: "1px solid rgba(176,89,58,0.2)", textAlign: "center" }}>
+      <div style={{ padding: "40px 32px", borderRadius: 16, background: C.accentBg, border: "1px solid rgba(124,58,237,0.2)", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: C.textBright, marginBottom: 6 }}>Message Sent!</div>
-        <div style={{ fontSize: 16, color: C.muted }}>Thanks for reaching out. Ikkyu will get back to you soon.</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.textBright, marginBottom: 6 }}>{t.messageSent}</div>
+        <div style={{ fontSize: 16, color: C.muted }}>{t.messageSentDesc}</div>
         <button onClick={() => setStatus("idle")} style={{ marginTop: 20, padding: "8px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${C.accent}`, color: C.accent, fontFamily: F.sans, fontSize: 14, cursor: "pointer" }}>
-          Send another
+          {t.sendAnother}
         </button>
       </div>
     );
@@ -373,26 +377,26 @@ function ContactSection() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
-          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Name <span style={{ color: C.accent }}>*</span></div>
+          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>{t.formName} <span style={{ color: C.accent }}>*</span></div>
           <input value={form.name} onChange={set("name")} onFocus={onFocus("name")} onBlur={onBlur} placeholder="Jane Smith" required style={inp("name")} />
         </div>
         <div>
-          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Email <span style={{ color: C.accent }}>*</span></div>
+          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>{t.formEmail} <span style={{ color: C.accent }}>*</span></div>
           <input type="email" value={form.email} onChange={set("email")} onFocus={onFocus("email")} onBlur={onBlur} placeholder="jane@company.com" required style={inp("email")} />
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
-          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Company</div>
+          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>{t.formCompany}</div>
           <input value={form.company} onChange={set("company")} onFocus={onFocus("company")} onBlur={onBlur} placeholder="Acme Corp" style={inp("company")} />
         </div>
         <div>
-          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Role / Position</div>
+          <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>{t.formRole}</div>
           <input value={form.role} onChange={set("role")} onFocus={onFocus("role")} onBlur={onBlur} placeholder="CTO / Recruiter" style={inp("role")} />
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Message <span style={{ color: C.accent }}>*</span></div>
+        <div style={{ fontSize: 13, fontFamily: F.sans, color: C.accentDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>{t.formMessage} <span style={{ color: C.accent }}>*</span></div>
         <textarea value={form.message} onChange={set("message")} onFocus={onFocus("message")} onBlur={onBlur} placeholder="Tell Ikkyu about the opportunity or project..." required rows={4}
           style={{ ...inp("message"), resize: "vertical" as const, minHeight: 100 }} />
       </div>
@@ -401,7 +405,7 @@ function ContactSection() {
       )}
       <button type="submit" disabled={status === "loading" || !form.name || !form.email || !form.message}
         style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: form.name && form.email && form.message ? C.accent : "#F5F3FF", color: form.name && form.email && form.message ? "#FFFFFF" : C.faint, fontFamily: F.sans, fontSize: 15, fontWeight: 700, cursor: form.name && form.email && form.message ? "pointer" : "default", transition: "all 0.2s", letterSpacing: 1 }}>
-        {status === "loading" ? "Sending..." : "Send Message →"}
+        {status === "loading" ? t.formSending : t.formSend}
       </button>
     </form>
   );
@@ -412,6 +416,8 @@ export default function HomePage() {
   const [profile, setProfile] = useState<PortfolioProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
+  const [lang, setLang] = useLang();
+  const t = translations[lang];
 
   useEffect(() => {
     getPortfolioProfile()
@@ -428,12 +434,12 @@ export default function HomePage() {
 
   const STATS = profile
     ? [
-        { n: String(profile.stats.live), l: "Live" },
-        { n: String(profile.stats.projects), l: "Projects" },
-        { n: String(profile.stats.workers), l: "Workers" },
-        { n: String(profile.stats.industries), l: "Industries" },
+        { n: String(profile.stats.live), l: t.statLive },
+        { n: String(profile.stats.projects), l: t.statProjects },
+        { n: String(profile.stats.workers), l: t.statWorkers },
+        { n: String(profile.stats.industries), l: t.statIndustries },
       ]
-    : [{ n:"29",l:"Live" },{ n:"50",l:"Projects" },{ n:"47",l:"Workers" },{ n:"9",l:"Industries" }];
+    : [{ n:"29",l:t.statLive },{ n:"50",l:t.statProjects },{ n:"47",l:t.statWorkers },{ n:"9",l:t.statIndustries }];
 
   const CAREER = profile
     ? profile.career.map(c => ({ y: c.year, t: c.role, c: c.company, d: c.description, hi: c.highlight ?? false }))
@@ -486,9 +492,10 @@ export default function HomePage() {
   const edu = profile?.education;
 
   return (
-    <div style={{ background: C.primary, color: C.text, fontFamily: F.sans, minHeight: "100vh", overflowX: "hidden" }}>
+    <LangCtx.Provider value={{ t, lang, setLang }}>
+    <div style={{ background: C.primary, color: C.text, fontFamily: lang === "th" ? F.thai : F.sans, minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box}
         ::selection{background:rgba(124,58,237,0.18);color:#111827}
         ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.18);border-radius:3px}
@@ -503,24 +510,34 @@ export default function HomePage() {
       <div className="orb-blob orb-blue"   style={{ width: 380, height: 380, bottom: 60, left: -140 }} />
 
       {/* ══ HERO ══ */}
-      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "0 24px", zIndex: 1 }}>
+      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "100px 24px 80px", zIndex: 1 }}>
         <Reveal>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 20 }}>
-            <span style={{ fontSize: 14, fontFamily: F.sans, letterSpacing: 2, textTransform: "uppercase", color: C.accentDim, padding: "5px 14px", borderRadius: 999, border: `1px solid rgba(124,58,237,0.25)`, background: "rgba(124,58,237,0.06)" }}>✦ Powered by AI</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 24 }}>
+            <span style={{ fontSize: 14, fontFamily: F.sans, letterSpacing: 2, textTransform: "uppercase", color: C.accentDim, padding: "5px 14px", borderRadius: 999, border: `1px solid rgba(124,58,237,0.25)`, background: "rgba(124,58,237,0.06)" }}>{t.poweredByAI}</span>
+            {/* Language toggle */}
+            <button
+              onClick={() => setLang(lang === "en" ? "th" : "en")}
+              title={lang === "en" ? "Switch to Thai" : "เปลี่ยนเป็นอังกฤษ"}
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 999, border: `1px solid rgba(124,58,237,0.25)`, background: "rgba(124,58,237,0.06)", cursor: "pointer", fontFamily: F.sans, fontSize: 13, fontWeight: 700, color: C.accentDim, transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.accentBg; e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(124,58,237,0.06)"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.25)"; e.currentTarget.style.color = C.accentDim; }}
+            >
+              {lang === "en" ? "🇹🇭 TH" : "🇬🇧 EN"}
+            </button>
           </div>
         </Reveal>
-        <Reveal delay={0.05}><div style={{ fontSize: "clamp(36px,6.5vw,64px)", fontWeight: 800, color: C.textBright, textAlign: "center", lineHeight: 1.05, fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: -1.5 }}>Hey 👋 I'm{" "}
+        <Reveal delay={0.05}><div style={{ fontSize: "clamp(36px,6.5vw,64px)", fontWeight: 800, color: C.textBright, textAlign: "center", lineHeight: 1.05, fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: -1.5 }}>{t.greeting}{" "}
           <span style={{ background: C.gradientText, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Ikkyu</span>
         </div></Reveal>
         <Reveal delay={0.1}><div style={{ marginTop: 24, textAlign: "center" }}>
-          <span style={{ background: C.gradientText, color: "#FFFFFF", padding: "5px 14px", borderRadius: 999, fontWeight: 700, fontSize: 17 }}>AI-Augmented</span>
-          <span style={{ color: C.text, fontSize: 21, marginLeft: 10, fontWeight: 500 }}>Full-Stack Developer</span>
+          <span style={{ background: C.gradientText, color: "#FFFFFF", padding: "5px 14px", borderRadius: 999, fontWeight: 700, fontSize: 17 }}>{t.aiAugmented}</span>
+          <span style={{ color: C.text, fontSize: 21, marginLeft: 10, fontWeight: 500 }}>{t.role}</span>
         </div></Reveal>
-        <Reveal delay={0.15}><p style={{ marginTop: 12, fontSize: 17, color: C.muted }}>AI Agent Architect</p></Reveal>
+        <Reveal delay={0.15}><p style={{ marginTop: 12, fontSize: 17, color: C.muted }}>{t.subrole}</p></Reveal>
         <Reveal delay={0.2}><div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 24, fontSize: 15, color: C.muted }}>
-          <span>📍 Bangkok, Thailand 🇹🇭</span><span style={{ color: C.border }}>·</span>
+          <span>📍 {t.location}</span><span style={{ color: C.border }}>·</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: C.surface, border: `1px solid ${C.border}`, boxShadow: C.paperShadow }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />Available</span>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />{t.available}</span>
         </div></Reveal>
         <Reveal delay={0.25}><div style={{ display: "flex", gap: 24, marginTop: 28 }}>
           {loading
@@ -546,12 +563,17 @@ export default function HomePage() {
         <Reveal delay={0.35}><ChatStarter /></Reveal>
 
         <Reveal delay={0.4}><div style={{ display: "flex", gap: 8, marginTop: 24 }}>
-          {["About", "Projects", "Skills", "Contact"].map((b, i) => (
-            <button key={i} onClick={() => document.getElementById(b.toLowerCase())?.scrollIntoView({ behavior: "smooth" })}
+          {[
+            { label: t.navAbout, id: "about" },
+            { label: t.navProjects, id: "projects" },
+            { label: t.navSkills, id: "skills" },
+            { label: t.navContact, id: "contact" },
+          ].map((b, i) => (
+            <button key={i} onClick={() => document.getElementById(b.id)?.scrollIntoView({ behavior: "smooth" })}
               style={{ padding: "8px 20px", borderRadius: 6, border: `2px solid ${C.border}`, background: "transparent", color: C.text, fontSize: 16, fontWeight: 700, fontFamily: F.sans, cursor: "pointer", transition: "all 0.2s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text; }}
-            >{b}</button>
+            >{b.label}</button>
           ))}
         </div></Reveal>
         <Reveal delay={0.45}><div style={{ display: "flex", gap: 6, marginTop: 20 }}>
@@ -567,8 +589,8 @@ export default function HomePage() {
 
       {/* ══ ABOUT ══ */}
       <section id="about" style={{ maxWidth: 700, margin: "0 auto", padding: "80px 24px" }}>
-        <Reveal><Label>About</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24, lineHeight: 1.2 }}>From Mechanical Engineer<br />to AI Architect</h2></Reveal>
+        <Reveal><Label>{t.labelAbout}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24, lineHeight: 1.2 }}>{t.aboutHeadingLine1}<br />{t.aboutHeadingLine2}</h2></Reveal>
         <Reveal delay={0.1}><div style={{ fontSize: 17, lineHeight: 1.9, display: "flex", flexDirection: "column", gap: 16 }}>
           {profile
             ? profile.summary.split(". ").reduce<string[][]>((acc, s, i) => {
@@ -590,8 +612,8 @@ export default function HomePage() {
 
       {/* ══ CAREER ══ */}
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Career</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 32 }}>Timeline</h2></Reveal>
+        <Reveal><Label>{t.labelCareer}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 32 }}>{t.careerHeading}</h2></Reveal>
         {loading
           ? [0,1,2,3,4].map(i => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 16, padding: "16px 0", borderBottom: i < 4 ? `1px solid ${C.border}` : "none" }}>
@@ -618,7 +640,7 @@ export default function HomePage() {
           </Reveal>
         ))}
         <Reveal delay={0.3}><div style={{ marginTop: 24, padding: "16px 20px", borderRadius: 10, background: C.accentBg, border: "1px solid rgba(176,89,58,0.1)" }}>
-          <div style={{ fontSize: 16, color: C.accent, fontWeight: 700 }}>Education</div>
+          <div style={{ fontSize: 16, color: C.accent, fontWeight: 700 }}>{t.education}</div>
           <div style={{ fontSize: 16, color: C.text, marginTop: 4 }}>
             {edu ? `${edu.degree} — ${edu.university} (${edu.years})` : "B.Eng Mechanical Engineering — Naresuan University (2015–2019)"}
           </div>
@@ -630,9 +652,9 @@ export default function HomePage() {
 
       {/* ══ PROJECTS ══ */}
       <section id="projects" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Projects</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>Selected Work</h2></Reveal>
-        <Reveal delay={0.08}><p style={{ fontSize: 15, color: C.muted, marginBottom: 24 }}>From {profile ? `${profile.stats.projects}+` : "50+"} Vercel deployments and {profile ? profile.stats.workers : 47} Cloudflare Workers</p></Reveal>
+        <Reveal><Label>{t.labelProjects}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>{t.projectsHeading}</h2></Reveal>
+        <Reveal delay={0.08}><p style={{ fontSize: 15, color: C.muted, marginBottom: 24 }}>{t.projectsSubtitle(profile ? `${profile.stats.projects}` : "50", profile ? profile.stats.workers : 47)}</p></Reveal>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 10 }}>
           {loading
             ? [0,1,2,3,4,5].map(i => (
@@ -692,7 +714,7 @@ export default function HomePage() {
                       onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}
                       aria-label={`Open ${p.n} in a new tab`}
                     >
-                      Live ↗
+                      {t.liveLink}
                     </button>
                   </div>
                   {/* Distinct second action: "Read case study" / "View project"
@@ -708,16 +730,16 @@ export default function HomePage() {
                       style={{
                         padding: "2px 8px", borderRadius: 6,
                         fontSize: 13, fontFamily: F.sans, fontWeight: 700, letterSpacing: 1,
-                        background: "transparent", border: `1px solid ${p.hasCase ? "rgba(176,89,58,0.4)" : C.border}`,
+                        background: "transparent", border: `1px solid ${p.hasCase ? "rgba(124,58,237,0.4)" : C.border}`,
                         color: p.hasCase ? C.accent : C.muted,
                         cursor: "pointer", textTransform: "uppercase",
                         transition: "color 0.15s, border-color 0.15s, background 0.15s",
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(176,89,58,0.08)"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.08)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                       aria-label={p.hasCase ? `Read ${p.n} case study` : `View ${p.n} project page`}
                     >
-                      {p.hasCase ? "Read case study →" : "View project →"}
+                      {p.hasCase ? t.readCase : t.viewProject}
                     </button>
                   </div>
                 </>
@@ -756,16 +778,16 @@ export default function HomePage() {
       {profile?.now && profile.now.items.length > 0 && (
         <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
           <Reveal>
-            <Label>Now</Label>
+            <Label>{t.labelNow}</Label>
           </Reveal>
           <Reveal delay={0.05}>
             <h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>
-              What I'm Working On Now
+              {t.nowHeading}
             </h2>
           </Reveal>
           <Reveal delay={0.08}>
             <p style={{ fontSize: 15, color: C.muted, marginBottom: 20, fontFamily: F.sans, letterSpacing: 1 }}>
-              Updated {formatUpdatedAt(profile.now.lastUpdated)}
+              {t.updatedAt(formatUpdatedAt(profile.now.lastUpdated))}
             </p>
           </Reveal>
           <Reveal delay={0.1}>
@@ -826,15 +848,15 @@ export default function HomePage() {
       {profile?.testimonials && profile.testimonials.length > 0 && (
         <section style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 80px" }}>
           <div style={{ maxWidth: 700, margin: "0 auto" }}>
-            <Reveal><Label>Recommendations</Label></Reveal>
+            <Reveal><Label>{t.labelRecommendations}</Label></Reveal>
             <Reveal delay={0.05}>
               <h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>
-                What People Say
+                {t.recommendationsHeading}
               </h2>
             </Reveal>
             <Reveal delay={0.08}>
               <p style={{ fontSize: 15, color: C.muted, marginBottom: 24 }}>
-                From colleagues, clients, and collaborators across {profile.stats.industries} industries.
+                {t.recommendationsSubtitle(profile.stats.industries)}
               </p>
             </Reveal>
           </div>
@@ -976,8 +998,8 @@ export default function HomePage() {
 
       {/* ══ DOMAINS ══ */}
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Expertise</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Industry Domains</h2></Reveal>
+        <Reveal><Label>{t.labelExpertise}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>{t.domainsHeading}</h2></Reveal>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {DOMAINS.map((d, i) => (
             <Reveal key={i} delay={0.05 * i}>
@@ -997,8 +1019,8 @@ export default function HomePage() {
 
       {/* ══ SKILLS ══ */}
       <section id="skills" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Skills</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Tech Stack</h2></Reveal>
+        <Reveal><Label>{t.labelSkills}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>{t.skillsHeading}</h2></Reveal>
         {loading
           ? [0,1,2,3,4].map(i => (
               <div key={i} style={{ marginBottom: 18 }}>
@@ -1023,8 +1045,8 @@ export default function HomePage() {
 
       {/* ══ SIDE PROJECTS ══ */}
       <section style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Open Source</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>Passion Projects</h2></Reveal>
+        <Reveal><Label>{t.labelOpenSource}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 24 }}>{t.openSourceHeading}</h2></Reveal>
         {loading
           ? [0,1].map(i => (
               <div key={i} style={{ padding: "18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 10, borderLeft: `3px solid ${C.accent}`, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1050,9 +1072,9 @@ export default function HomePage() {
 
       {/* ══ CONTACT ══ */}
       <section id="contact" style={{ maxWidth: 700, margin: "0 auto", padding: "40px 24px 80px" }}>
-        <Reveal><Label>Contact</Label></Reveal>
-        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>Want to work together?</h2></Reveal>
-        <Reveal delay={0.08}><p style={{ fontSize: 17, color: C.muted, marginBottom: 32, lineHeight: 1.7 }}>Recruiters, collaborators, and interesting humans welcome. Fill out the form below or reach out via <a href="mailto:kiw.brw@gmail.com" style={{ color: C.accent }}>kiw.brw@gmail.com</a>.</p></Reveal>
+        <Reveal><Label>{t.labelContact}</Label></Reveal>
+        <Reveal delay={0.05}><h2 style={{ fontSize: 34, fontWeight: 700, color: C.textBright, marginBottom: 8 }}>{t.contactHeading}</h2></Reveal>
+        <Reveal delay={0.08}><p style={{ fontSize: 17, color: C.muted, marginBottom: 32, lineHeight: 1.7 }}>{t.contactSubtitle} <a href="mailto:kiw.brw@gmail.com" style={{ color: C.accent }}>kiw.brw@gmail.com</a>.</p></Reveal>
         <Reveal delay={0.1}><ContactSection /></Reveal>
       </section>
 
@@ -1062,9 +1084,9 @@ export default function HomePage() {
         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
           {/* Route links: use wouter <Link> so BASE_URL prefix is respected */}
           {[
-            { l: "Home", u: "/" },
-            { l: "AI Chat", u: "/chat" },
-            { l: "Admin", u: "/admin" },
+            { l: t.footerHome, u: "/" },
+            { l: t.footerAIChat, u: "/chat" },
+            { l: t.footerAdmin, u: "/admin" },
           ].map((s, i) => (
             <Link
               key={`r-${i}`}
@@ -1082,10 +1104,10 @@ export default function HomePage() {
           ))}
           {/* Section anchors: plain <a> for native fragment scrolling */}
           {[
-            { l: "About", u: "#about" },
-            { l: "Projects", u: "#projects" },
-            { l: "Skills", u: "#skills" },
-            { l: "Contact", u: "#contact" },
+            { l: t.footerAbout, u: "#about" },
+            { l: t.footerProjects, u: "#projects" },
+            { l: t.footerSkills, u: "#skills" },
+            { l: t.footerContact, u: "#contact" },
           ].map((s, i) => (
             <a
               key={`a-${i}`}
@@ -1103,10 +1125,10 @@ export default function HomePage() {
           ))}
           {/* External links restored alongside the new sitemap */}
           {[
-            { l: "Resume", u: "https://www.khiw.dev/api/resume" },
-            { l: "GitHub", u: "https://github.com/getintheQ" },
-            { l: "LinkedIn", u: "https://linkedin.com/in/getintheq" },
-            { l: "Email", u: "mailto:kiw.brw@gmail.com" },
+            { l: t.footerResume, u: "https://www.khiw.dev/api/resume" },
+            { l: t.footerGitHub, u: "https://github.com/getintheQ" },
+            { l: t.footerLinkedIn, u: "https://linkedin.com/in/getintheq" },
+            { l: t.footerEmail, u: "mailto:kiw.brw@gmail.com" },
           ].map((s, i) => (
             <a
               key={`e-${i}`}
@@ -1126,7 +1148,7 @@ export default function HomePage() {
           ))}
         </div>
         <p style={{ fontSize: 14, color: C.faint, marginBottom: 4 }}>
-          © 2026 · {profile ? profile.stats.projects : 50} Vercel Projects · {profile ? profile.stats.workers : 47} Cloudflare Workers · {profile ? profile.stats.industries : 9} Industries
+          {t.footerCopy(profile ? profile.stats.projects : 50, profile ? profile.stats.workers : 47, profile ? profile.stats.industries : 9)}
         </p>
         {profile?.updatedAt && (
           <p
@@ -1142,23 +1164,31 @@ export default function HomePage() {
               gap: 8,
             }}
           >
-            <span>Last updated · {formatUpdatedAt(profile.updatedAt)}</span>
-            <span
+            <span>{t.lastUpdated} · {formatUpdatedAt(profile.updatedAt)}</span>
+            <button
+              onClick={() => setLang(lang === "en" ? "th" : "en")}
               style={{
-                padding: "1px 6px",
+                padding: "1px 8px",
                 borderRadius: 4,
                 border: `1px solid ${C.border}`,
                 background: "#FFFFFF",
                 color: C.muted,
                 fontSize: 12,
                 letterSpacing: 1.5,
+                cursor: "pointer",
+                fontFamily: F.sans,
+                fontWeight: 700,
+                transition: "all 0.2s",
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
             >
-              EN
-            </span>
+              {lang === "en" ? "🇹🇭 TH" : "🇬🇧 EN"}
+            </button>
           </p>
         )}
       </footer>
     </div>
+    </LangCtx.Provider>
   );
 }
