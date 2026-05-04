@@ -878,38 +878,33 @@ export const ComponentsCanvas: React.FC<
               items={activeCanvas.components.map((c) => c.componentId)}
               strategy={rectSortingStrategy}
             >
+              {/*
+                True masonry via CSS multi-column layout: short cards tuck
+                directly under tall ones in the same column with NO row-height
+                banding (the gap problem of CSS Grid). The auto + 200px hint
+                yields 2–4 narrow tracks depending on viewport width, and wide
+                feature cards break out via `column-span: all` to fill the
+                entire row, giving the layout natural width variety on top of
+                masonry packing.
+              */}
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                  gridAutoRows: "min-content",
-                  gridAutoFlow: "dense",
-                  alignItems: "start",
-                  gap: 16,
+                  columns: "auto 200px",
+                  columnGap: 16,
                 }}
               >
                 {activeCanvas.components.map((c, i) => {
-                  // Per-type column span:
-                  //  • Compact (StatCard) → 1 col — tucks into gaps next to taller cards
-                  //  • SkillRadar → 2 cols — chart needs minimum width to be readable
-                  //  • ProjectShowcase / TimelineCard → 2 cols — medium content
-                  //  • ResumeCard → wide feature card (grid-column 1/-1 makes it
-                  //    fill the row regardless of how many auto-fill tracks exist;
-                  //    falls back gracefully on narrow viewports because browsers
-                  //    clamp grid spans to the number of available columns)
-                  const t = c._componentType;
-                  const isFullRow = t === "ResumeCard";
-                  const span =
-                    t === "ProjectShowcase" || t === "TimelineCard" || t === "SkillRadar"
-                      ? 2
-                      : 1;
+                  const isFullRow = c._componentType === "ResumeCard";
                   return (
                     <div
                       key={c.componentId}
                       style={{
-                        gridColumn: isFullRow ? "1 / -1" : `span ${span}`,
+                        breakInside: "avoid",
+                        marginBottom: 16,
                         display: "block",
-                        alignSelf: "start",
+                        // ResumeCard breaks out of the column flow as a
+                        // full-width feature row.
+                        columnSpan: isFullRow ? "all" : "none",
                       }}
                     >
                       <SortableItem
