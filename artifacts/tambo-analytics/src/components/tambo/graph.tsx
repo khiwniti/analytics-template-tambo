@@ -24,7 +24,7 @@ export const graphVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-background",
+        default: "bg-transparent",
         solid: [
           "shadow-lg shadow-zinc-900/10 dark:shadow-zinc-900/20",
           "bg-muted",
